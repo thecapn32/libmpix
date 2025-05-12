@@ -1,0 +1,13 @@
+PROJECT_NAME		= libmpix
+PROJECT_BRIEF		= The open imaging DSP library
+OPTIMIZE_OUTPUT_FOR_C	= YES
+SHOW_FILES		= NO
+SHOW_NAMESPACES		= NO
+INPUT			= . ../include
+IMAGE_PATH		= img
+RECURSIVE		= YES
+SEARCH_INCLUDES		= YES
+USE_MDFILE_AS_MAINPAGE	= index.md
+HTML_EXTRA_STYLESHEET	= stylesheet.css
+HTML_HEADER		= header.html
+HTML_FOOTER		= footer.html
