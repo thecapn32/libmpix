@@ -1,73 +1,43 @@
-/*
- * Copyright (c) 2025 tinyVision.ai Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <assert.h>
 
-#include <zephyr/sys/byteorder.h>
+#include <mpix/op_convert.h>
 #include <mpix/print.h>
-#include <mpix/convert.h>
-#include <zephyr/shell/shell.h>
+#include <mpix/utils.h>
 
-#ifdef CONFIG_MPIX_PRINT_NONE
-#define MPIX_PRINT(...)
-#endif
-
-#ifdef CONFIG_MPIX_PRINT_PRINTF
-#define MPIX_PRINT(...) printf(__VA_ARGS__)
-#endif
-
-#ifdef CONFIG_MPIX_PRINT_PRINTK
-#define MPIX_PRINT(...) printk(__VA_ARGS__)
-#endif
-
-#ifdef CONFIG_MPIX_PRINT_SHELL
-#define MPIX_PRINT(...) shell_print(mpix_print_shell, __VA_ARGS__)
-#endif
-
-static struct shell *mpix_print_shell;
-
-void mpix_print_set_shell(struct shell *sh)
-{
-	mpix_print_shell = sh;
-}
-
-__unused static uint8_t mpix_rgb24_to_256color(const uint8_t rgb24[3])
+static uint8_t mpix_rgb24_to_256color(const uint8_t rgb24[3])
 {
 	return 16 + rgb24[0] * 6 / 256 * 36 + rgb24[1] * 6 / 256 * 6 + rgb24[2] * 6 / 256 * 1;
 }
 
-__unused static uint8_t mpix_gray8_to_256color(uint8_t gray8)
+static uint8_t mpix_gray8_to_256color(uint8_t gray8)
 {
 	return 232 + gray8 * 24 / 256;
 }
 
-static void mpix_print_truecolor(const uint8_t rgb24row0[3], const uint8_t rgb24row1[3])
+static void mpix_print_truecolor(const uint8_t row0[3], const uint8_t row1[3])
 {
-	MPIX_PRINT("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
-		    rgb24row0[0], rgb24row0[1], rgb24row0[2],
-		    rgb24row1[0], rgb24row1[1], rgb24row1[2]);
+	printf("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
+		row0[0], row0[1], row0[2], row1[0], row1[1], row1[2]);
 }
 
-static void mpix_print_256color(const uint8_t rgb24row0[3], const uint8_t rgb24row1[3])
+static void mpix_print_256color(const uint8_t row0[3], const uint8_t row1[3])
 {
-	MPIX_PRINT("\e[48;5;%um\e[38;5;%um▄",
-		    mpix_rgb24_to_256color(rgb24row0),
-		    mpix_rgb24_to_256color(rgb24row1));
+	printf("\e[48;5;%um\e[38;5;%um▄",
+		mpix_rgb24_to_256color(row0), mpix_rgb24_to_256color(row1));
 }
 
-static void mpix_print_256gray(uint8_t gray8row0, uint8_t gray8row1)
+static void mpix_print_256gray(uint8_t row0, uint8_t row1)
 {
-	MPIX_PRINT("\e[48;5;%um\e[38;5;%um▄",
-		    mpix_gray8_to_256color(gray8row0),
-		    mpix_gray8_to_256color(gray8row1));
+	printf("\e[48;5;%um\e[38;5;%um▄",
+		mpix_gray8_to_256color(row0), mpix_gray8_to_256color(row1));
 }
 
-typedef void fn_print_t(const uint8_t rgb24row0[3], const uint8_t rgb24row1[3]);
+typedef void fn_print_t(const uint8_t row0[3], const uint8_t row1[3]);
 
 typedef void fn_conv_t(const uint8_t *src, uint8_t *dst, uint16_t w);
 
@@ -81,13 +51,13 @@ static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t
 		for (size_t w = 0; w + npix <= width; w += npix, i += nbytes) {
 			uint8_t rgb24a[3 * 2], rgb24b[3 * 2];
 
-			__ASSERT_NO_MSG(npix <= 2);
+			assert(npix <= 2);
 
 			fn_conv(&src[i + pitch * 0], rgb24a, npix);
 			fn_conv(&src[i + pitch * 1], rgb24b, npix);
 
 			if (i + pitch > size) {
-				MPIX_PRINT("\e[m *** early end of buffer at %zu bytes ***\n",
+				printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
@@ -96,7 +66,7 @@ static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t
 				fn_print(&rgb24a[n * 3], &rgb24b[n * 3]);
 			}
 		}
-		MPIX_PRINT("\e[m|\n");
+		printf("\e[m|\n");
 
 		/* Skip the second h being printed at the same time */
 		i += pitch;
@@ -107,40 +77,40 @@ static void mpix_print_buffer(const uint8_t *buffer, size_t size, uint16_t width
 			       uint32_t fourcc, fn_print_t *fn)
 {
 	switch (fourcc) {
-	case VIDEO_PIX_FMT_RGB24:
-		mpix_print(buffer, size, width, height, fn, mpix_line_rgb24_to_rgb24,
-			    video_bits_per_pixel(fourcc), 1);
+	case MPIX_FMT_RGB24:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_rgb24_to_rgb24,
+			    mpix_bits_per_pixel(fourcc), 1);
 		break;
-	case VIDEO_PIX_FMT_RGB565:
-		mpix_print(buffer, size, width, height, fn, mpix_line_rgb565le_to_rgb24,
-			    video_bits_per_pixel(fourcc), 1);
+	case MPIX_FMT_RGB565:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_rgb565le_to_rgb24,
+			    mpix_bits_per_pixel(fourcc), 1);
 		break;
-	case VIDEO_PIX_FMT_RGB565X:
-		mpix_print(buffer, size, width, height, fn, mpix_line_rgb565be_to_rgb24,
-			    video_bits_per_pixel(fourcc), 1);
+	case MPIX_FMT_RGB565X:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_rgb565be_to_rgb24,
+			    mpix_bits_per_pixel(fourcc), 1);
 		break;
-	case VIDEO_PIX_FMT_RGB332:
-		mpix_print(buffer, size, width, height, fn, mpix_line_rgb332_to_rgb24,
-			    video_bits_per_pixel(fourcc), 1);
+	case MPIX_FMT_RGB332:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_rgb332_to_rgb24,
+			    mpix_bits_per_pixel(fourcc), 1);
 		break;
-	case VIDEO_PIX_FMT_YUYV:
-		mpix_print(buffer, size, width, height, fn, mpix_line_yuyv_to_rgb24_bt709,
-			    video_bits_per_pixel(fourcc), 2);
+	case MPIX_FMT_YUYV:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_yuyv_to_rgb24_bt709,
+			    mpix_bits_per_pixel(fourcc), 2);
 		break;
-	case VIDEO_PIX_FMT_YUV24:
-		mpix_print(buffer, size, width, height, fn, mpix_line_yuv24_to_rgb24_bt709,
-			    video_bits_per_pixel(fourcc), 1);
+	case MPIX_FMT_YUV24:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_yuv24_to_rgb24_bt709,
+			    mpix_bits_per_pixel(fourcc), 1);
 		break;
-	case VIDEO_PIX_FMT_RGGB8:
-	case VIDEO_PIX_FMT_BGGR8:
-	case VIDEO_PIX_FMT_GBRG8:
-	case VIDEO_PIX_FMT_GRBG8:
-	case VIDEO_PIX_FMT_GREY:
-		mpix_print(buffer, size, width, height, fn, mpix_line_y8_to_rgb24_bt709,
-			    video_bits_per_pixel(fourcc), 1);
+	case MPIX_FMT_SRGGB8:
+	case MPIX_FMT_SBGGR8:
+	case MPIX_FMT_SGBRG8:
+	case MPIX_FMT_SGRBG8:
+	case MPIX_FMT_GREY:
+		mpix_print(buffer, size, width, height, fn, mpix_convert_y8_to_rgb24_bt709,
+			   mpix_bits_per_pixel(fourcc), 1);
 		break;
 	default:
-		MPIX_PRINT("Printing %s buffers not supported\n", VIDEO_FOURCC_TO_STR(fourcc));
+		printf("Printing %s buffers not supported\n", MPIX_FOURCC_TO_STR(fourcc));
 	}
 }
 
@@ -173,111 +143,111 @@ void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, uint16_
 			size_t i = h * width * 1 + w * 1;
 
 			if (i >= size) {
-				MPIX_PRINT("\e[m *** early end of buffer at %zu bytes ***\n",
+				printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			MPIX_PRINT(" %02x", raw8[i]);
+			printf(" %02x", raw8[i]);
 		}
-		MPIX_PRINT(" row%u\n", h);
+		printf(" row%u\n", h);
 	}
 }
 
 void mpix_hexdump_rgb24(const uint8_t *rgb24, size_t size, uint16_t width, uint16_t height)
 {
-	MPIX_PRINT(" ");
+	printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		MPIX_PRINT("col%-7u", w);
+		printf("col%-7u", w);
 	}
-	MPIX_PRINT("\n");
+	printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		MPIX_PRINT(" R  G  B  ");
+		printf(" R  G  B  ");
 	}
-	MPIX_PRINT("\n");
+	printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 3 + w * 3;
 
 			if (i + 2 >= size) {
-				MPIX_PRINT("\e[m *** early end of buffer at %zu bytes ***\n",
+				printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			MPIX_PRINT(" %02x %02x %02x ", rgb24[i + 0], rgb24[i + 1], rgb24[i + 2]);
+			printf(" %02x %02x %02x ", rgb24[i + 0], rgb24[i + 1], rgb24[i + 2]);
 		}
-		MPIX_PRINT(" row%u\n", h);
+		printf(" row%u\n", h);
 	}
 }
 
 void mpix_hexdump_rgb565(const uint8_t *rgb565, size_t size, uint16_t width, uint16_t height)
 {
-	MPIX_PRINT(" ");
+	printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		MPIX_PRINT("col%-4u", w);
+		printf("col%-4u", w);
 	}
-	MPIX_PRINT("\n");
+	printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		MPIX_PRINT(" RGB565");
+		printf(" RGB565");
 	}
-	MPIX_PRINT("\n");
+	printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 2 + w * 2;
 
 			if (i + 1 >= size) {
-				MPIX_PRINT("\e[m *** early end of buffer at %zu bytes ***\n",
+				printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			MPIX_PRINT(" %02x %02x ", rgb565[i + 0], rgb565[i + 1]);
+			printf(" %02x %02x ", rgb565[i + 0], rgb565[i + 1]);
 		}
-		MPIX_PRINT(" row%u\n", h);
+		printf(" row%u\n", h);
 	}
 }
 
 void mpix_hexdump_yuyv(const uint8_t *yuyv, size_t size, uint16_t width, uint16_t height)
 {
-	MPIX_PRINT(" ");
+	printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		MPIX_PRINT("col%-3u", w);
+		printf("col%-3u", w);
 		if ((w + 1) % 2 == 0) {
-			MPIX_PRINT(" ");
+			printf(" ");
 		}
 	}
-	MPIX_PRINT("\n");
+	printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		MPIX_PRINT(" %c%u", "YUYV"[w % 2 * 2 + 0], w % 2);
-		MPIX_PRINT(" %c%u", "YUYV"[w % 2 * 2 + 1], w % 2);
+		printf(" %c%u", "YUYV"[w % 2 * 2 + 0], w % 2);
+		printf(" %c%u", "YUYV"[w % 2 * 2 + 1], w % 2);
 		if ((w + 1) % 2 == 0) {
-			MPIX_PRINT(" ");
+			printf(" ");
 		}
 	}
-	MPIX_PRINT("\n");
+	printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 2 + w * 2;
 
 			if (i + 1 >= size) {
-				MPIX_PRINT("\e[m *** early end of buffer at %zu bytes ***\n",
+				printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			MPIX_PRINT(" %02x %02x", yuyv[i], yuyv[i + 1]);
+			printf(" %02x %02x", yuyv[i], yuyv[i + 1]);
 			if ((w + 1) % 2 == 0) {
-				MPIX_PRINT(" ");
+				printf(" ");
 			}
 		}
-		MPIX_PRINT(" row%u\n", h);
+		printf(" row%u\n", h);
 	}
 }
 
@@ -286,7 +256,7 @@ static void mpix_print_hist_scale(size_t size)
 	for (uint16_t i = 0; i < size; i++) {
 		mpix_print_256gray(0, i * 256 / size);
 	}
-	MPIX_PRINT("\e[m\n");
+	printf("\e[m\n");
 }
 
 void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t height)
@@ -296,7 +266,7 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
 	const uint16_t *b8hist = &rgb24hist[size / 3 * 2];
 	uint32_t max = 1;
 
-	__ASSERT(size % 3 == 0, "Each of R, G, B channel should have the same size.");
+	assert(size % 3 == 0 /* Each of R, G, B channel should have the same size */);
 
 	for (size_t i = 0; i < size; i++) {
 		max = rgb24hist[i] > max ? rgb24hist[i] : max;
@@ -304,19 +274,19 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
 
 	for (uint16_t h = height; h > 1; h--) {
 		for (size_t i = 0; i < size / 3; i++) {
-			uint8_t rgb24row0[3];
-			uint8_t rgb24row1[3];
+			uint8_t row0[3];
+			uint8_t row1[3];
 
-			rgb24row0[0] = (r8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			rgb24row0[1] = (g8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			rgb24row0[2] = (b8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			rgb24row1[0] = (r8hist[i] * height / max > h - 1) ? 0xff : 0x00;
-			rgb24row1[1] = (g8hist[i] * height / max > h - 1) ? 0xff : 0x00;
-			rgb24row1[2] = (b8hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			row0[0] = (r8hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			row0[1] = (g8hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			row0[2] = (b8hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			row1[0] = (r8hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			row1[1] = (g8hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			row1[2] = (b8hist[i] * height / max > h - 1) ? 0xff : 0x00;
 
-			mpix_print_256color(rgb24row0, rgb24row1);
+			mpix_print_256color(row0, row1);
 		}
-		MPIX_PRINT("\e[m| - %u\n", h * max / height);
+		printf("\e[m| - %u\n", h * max / height);
 	}
 
 	mpix_print_hist_scale(size / 3);
@@ -332,12 +302,12 @@ void mpix_print_y8hist(const uint16_t *y8hist, size_t size, uint16_t height)
 
 	for (uint16_t h = height; h > 1; h--) {
 		for (size_t i = 0; i < size; i++) {
-			uint8_t gray8row0 = (y8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			uint8_t gray8row1 = (y8hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			uint8_t row0 = (y8hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			uint8_t row1 = (y8hist[i] * height / max > h - 1) ? 0xff : 0x00;
 
-			mpix_print_256gray(gray8row0, gray8row1);
+			mpix_print_256gray(row0, row1);
 		}
-		MPIX_PRINT("\e[m| - %u\n", h * max / height);
+		printf("\e[m| - %u\n", h * max / height);
 	}
 
 	mpix_print_hist_scale(size);

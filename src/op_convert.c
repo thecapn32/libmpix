@@ -1,24 +1,27 @@
-/*
- * Copyright (c) 2025 tinyVision.ai Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+/* SPDX-License-Identifier: Apache-2.0 */
 
-#include <zephyr/logging/log.h>
-#include <mpix/convert.h>
+#include <assert.h>
+#include <stdint.h>
+#include <errno.h>
 
-LOG_MODULE_REGISTER(mpix_convert, CONFIG_MPIX_LOG_LEVEL);
+#include <mpix/utils.h>
+#include <mpix/op_convert.h>
+#include <mpix/genlist.h>
+
+static const struct mpix_op **mpix_convert_op_list;
 
 int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 {
-	const struct mpix_operation *op = NULL;
+	const struct mpix_op *op = NULL;
 
 	if (img->format == new_format) {
 		/* no-op */
 		return 0;
 	}
 
-	STRUCT_SECTION_FOREACH_ALTERNATE(mpix_convert, mpix_operation, tmp) {
+	for (size_t i = 0; mpix_convert_op_list[i] != NULL; i++) {
+		const struct mpix_op *tmp = mpix_convert_op_list[i];
+
 		if (tmp->format_in == img->format && tmp->format_out == new_format) {
 			op = tmp;
 			break;
@@ -26,34 +29,36 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 	}
 
 	if (op == NULL) {
-		LOG_ERR("Conversion operation from %s to %s not found",
-			MPIX_FORMAT_TO_STR(img->format),
-			MPIX_FORMAT_TO_STR(new_format));
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FORMAT_TO_STR(img->format),
+			 MPIX_FORMAT_TO_STR(new_format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_add_uncompressed(img, op);
+	return mpix_image_append_uncompressed(img, op);
 }
 
-void mpix_convert_op(struct mpix_operation *op)
+void mpix_convert_op(struct mpix_op *op)
 {
-	const uint8_t *line_in = mpix_operation_get_input_line(op);
-	uint8_t *line_out = mpix_operation_get_output_line(op);
+	const uint8_t *line_in = mpix_op_get_input_line(op);
+	uint8_t *line_out = mpix_op_get_output_line(op);
 	void (*fn)(const uint8_t *src, uint8_t *dst, uint16_t width) = op->arg0;
 
-	__ASSERT_NO_MSG(fn != NULL);
+	assert(fn != NULL);
 
 	fn(line_in, line_out, op->width);
-	mpix_operation_done(op);
+	mpix_op_done(op);
 }
 
-__weak void mpix_line_rgb24_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb24_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width)
 {
 	memcpy(dst, src, width * 3);
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_rgb24, RGB24, RGB24);
+MPIX_REGISTER_CONVERT_OP(rgb24_rgb24, mpix_convert_rgb24_to_rgb24, RGB24, RGB24);
 
-__weak void mpix_line_rgb24_to_rgb332(const uint8_t *rgb24, uint8_t *rgb332, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb24_to_rgb332(const uint8_t *rgb24, uint8_t *rgb332, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 3, o += 1) {
 		rgb332[o] = 0;
@@ -62,9 +67,10 @@ __weak void mpix_line_rgb24_to_rgb332(const uint8_t *rgb24, uint8_t *rgb332, uin
 		rgb332[o] |= (uint16_t)rgb24[i + 2] >> 6 << (0 + 0 + 0);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_rgb332, RGB24, RGB332);
+MPIX_REGISTER_CONVERT_OP(rgb24_rgb332, mpix_convert_rgb24_to_rgb332, RGB24, RGB332);
 
-__weak void mpix_line_rgb332_to_rgb24(const uint8_t *rgb332, uint8_t *rgb24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb332_to_rgb24(const uint8_t *rgb332, uint8_t *rgb24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 1, o += 3) {
 		rgb24[o + 0] = rgb332[i] >> (0 + 3 + 2) << 5;
@@ -72,7 +78,7 @@ __weak void mpix_line_rgb332_to_rgb24(const uint8_t *rgb332, uint8_t *rgb24, uin
 		rgb24[o + 2] = rgb332[i] >> (0 + 0 + 0) << 6;
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb332_to_rgb24, RGB332, RGB24);
+MPIX_REGISTER_CONVERT_OP(rgb332_rgb24, mpix_convert_rgb332_to_rgb24, RGB332, RGB24);
 
 static inline uint16_t mpix_rgb24_to_rgb565(const uint8_t rgb24[3])
 {
@@ -91,37 +97,41 @@ static inline void mpix_rgb565_to_rgb24(uint16_t rgb565, uint8_t rgb24[3])
 	rgb24[2] = rgb565 >> (0 + 0 + 0) << 3;
 }
 
-__weak void mpix_line_rgb24_to_rgb565be(const uint8_t *rgb24, uint8_t *rgb565be, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb24_to_rgb565be(const uint8_t *rgb24, uint8_t *rgb565be, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 3, o += 2) {
-		*(uint16_t *)&rgb565be[o] = sys_cpu_to_be16(mpix_rgb24_to_rgb565(&rgb24[i]));
+		*(uint16_t *)&rgb565be[o] = mpix_htobe16(mpix_rgb24_to_rgb565(&rgb24[i]));
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_rgb565be, RGB24, RGB565X);
+MPIX_REGISTER_CONVERT_OP(rgb24_rgb565x, mpix_convert_rgb24_to_rgb565be, RGB24, RGB565X);
 
-__weak void mpix_line_rgb24_to_rgb565le(const uint8_t *rgb24, uint8_t *rgb565le, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb24_to_rgb565le(const uint8_t *rgb24, uint8_t *rgb565le, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 3, o += 2) {
-		*(uint16_t *)&rgb565le[o] = sys_cpu_to_le16(mpix_rgb24_to_rgb565(&rgb24[i]));
+		*(uint16_t *)&rgb565le[o] = mpix_htole16(mpix_rgb24_to_rgb565(&rgb24[i]));
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_rgb565le, RGB24, RGB565);
+MPIX_REGISTER_CONVERT_OP(rgb24_rgb565, mpix_convert_rgb24_to_rgb565le, RGB24, RGB565);
 
-__weak void mpix_line_rgb565be_to_rgb24(const uint8_t *rgb565be, uint8_t *rgb24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb565be_to_rgb24(const uint8_t *rgb565be, uint8_t *rgb24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 2, o += 3) {
-		mpix_rgb565_to_rgb24(sys_be16_to_cpu(*(uint16_t *)&rgb565be[i]), &rgb24[o]);
+		mpix_rgb565_to_rgb24(mpix_be16toh(*(uint16_t *)&rgb565be[i]), &rgb24[o]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb565be_to_rgb24, RGB565X, RGB24);
+MPIX_REGISTER_CONVERT_OP(rgb565x_rgb24, mpix_convert_rgb565be_to_rgb24, RGB565X, RGB24);
 
-__weak void mpix_line_rgb565le_to_rgb24(const uint8_t *rgb565le, uint8_t *rgb24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb565le_to_rgb24(const uint8_t *rgb565le, uint8_t *rgb24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 2, o += 3) {
-		mpix_rgb565_to_rgb24(sys_le16_to_cpu(*(uint16_t *)&rgb565le[i]), &rgb24[o]);
+		mpix_rgb565_to_rgb24(mpix_le16toh(*(uint16_t *)&rgb565le[i]), &rgb24[o]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb565le_to_rgb24, RGB565, RGB24);
+MPIX_REGISTER_CONVERT_OP(rgb565_rgb24, mpix_convert_rgb565le_to_rgb24, RGB565, RGB24);
 
 #define Q21(val) ((int32_t)((val) * (1 << 21)))
 
@@ -170,15 +180,16 @@ static inline void mpix_yuv24_to_rgb24_bt709(const uint8_t y, uint8_t u, uint8_t
 
 #undef Q21
 
-__weak void mpix_line_yuv24_to_rgb24_bt709(const uint8_t *yuv24, uint8_t *rgb24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_yuv24_to_rgb24_bt709(const uint8_t *yuv24, uint8_t *rgb24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 3, o += 3) {
 		mpix_yuv24_to_rgb24_bt709(yuv24[i + 0], yuv24[i + 1], yuv24[i + 2], &rgb24[o]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_yuv24_to_rgb24_bt709, YUV24, RGB24);
+MPIX_REGISTER_CONVERT_OP(yuv24_rgb24, mpix_convert_yuv24_to_rgb24_bt709, YUV24, RGB24);
 
-void mpix_line_rgb24_to_yuv24_bt709(const uint8_t *rgb24, uint8_t *yuv24, uint16_t width)
+void mpix_convert_rgb24_to_yuv24_bt709(const uint8_t *rgb24, uint8_t *yuv24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 3, o += 3) {
 		yuv24[o + 0] = mpix_rgb24_to_y8_bt709(&rgb24[i]);
@@ -186,9 +197,10 @@ void mpix_line_rgb24_to_yuv24_bt709(const uint8_t *rgb24, uint8_t *yuv24, uint16
 		yuv24[o + 2] = mpix_rgb24_to_v8_bt709(&rgb24[i]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_yuv24_bt709, RGB24, YUV24);
+MPIX_REGISTER_CONVERT_OP(rgb24_yuv24, mpix_convert_rgb24_to_yuv24_bt709, RGB24, YUV24);
 
-__weak void mpix_line_yuv24_to_yuyv(const uint8_t *yuv24, uint8_t *yuyv, uint16_t width)
+__attribute__((weak))
+void mpix_convert_yuv24_to_yuyv(const uint8_t *yuv24, uint8_t *yuyv, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w + 2 <= width; w += 2, i += 6, o += 4) {
 		/* Pixel 0 */
@@ -199,9 +211,10 @@ __weak void mpix_line_yuv24_to_yuyv(const uint8_t *yuv24, uint8_t *yuyv, uint16_
 		yuyv[o + 3] = yuv24[i + 5];
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_yuv24_to_yuyv, YUV24, YUYV);
+MPIX_REGISTER_CONVERT_OP(yuv24_yuyv, mpix_convert_yuv24_to_yuyv, YUV24, YUYV);
 
-__weak void mpix_line_yuyv_to_yuv24(const uint8_t *yuyv, uint8_t *yuv24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_yuyv_to_yuv24(const uint8_t *yuyv, uint8_t *yuv24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w + 2 <= width; w += 2, i += 4, o += 6) {
 		/* Pixel 0 */
@@ -214,9 +227,10 @@ __weak void mpix_line_yuyv_to_yuv24(const uint8_t *yuyv, uint8_t *yuv24, uint16_
 		yuv24[o + 5] = yuyv[i + 3];
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_yuyv_to_yuv24, YUYV, YUV24);
+MPIX_REGISTER_CONVERT_OP(yuyv_yuv24, mpix_convert_yuyv_to_yuv24, YUYV, YUV24);
 
-__weak void mpix_line_rgb24_to_yuyv_bt709(const uint8_t *rgb24, uint8_t *yuyv, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb24_to_yuyv_bt709(const uint8_t *rgb24, uint8_t *yuyv, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w + 2 <= width; w += 2, i += 6, o += 4) {
 		/* Pixel 0 */
@@ -227,9 +241,10 @@ __weak void mpix_line_rgb24_to_yuyv_bt709(const uint8_t *rgb24, uint8_t *yuyv, u
 		yuyv[o + 3] = mpix_rgb24_to_v8_bt709(&rgb24[i + 3]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_yuyv_bt709, RGB24, YUYV);
+MPIX_REGISTER_CONVERT_OP(rgb24_yuyv, mpix_convert_rgb24_to_yuyv_bt709, RGB24, YUYV);
 
-__weak void mpix_line_yuyv_to_rgb24_bt709(const uint8_t *yuyv, uint8_t *rgb24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_yuyv_to_rgb24_bt709(const uint8_t *yuyv, uint8_t *rgb24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w + 2 <= width; w += 2, i += 4, o += 6) {
 		/* Pixel 0 */
@@ -238,20 +253,26 @@ __weak void mpix_line_yuyv_to_rgb24_bt709(const uint8_t *yuyv, uint8_t *rgb24, u
 		mpix_yuv24_to_rgb24_bt709(yuyv[i + 2], yuyv[i + 1], yuyv[i + 3], &rgb24[o + 3]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_yuyv_to_rgb24_bt709, YUYV, RGB24);
+MPIX_REGISTER_CONVERT_OP(yuyv_rgb24, mpix_convert_yuyv_to_rgb24_bt709, YUYV, RGB24);
 
-__weak void mpix_line_y8_to_rgb24_bt709(const uint8_t *y8, uint8_t *rgb24, uint16_t width)
+__attribute__((weak))
+void mpix_convert_y8_to_rgb24_bt709(const uint8_t *y8, uint8_t *rgb24, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 1, o += 3) {
 		mpix_yuv24_to_rgb24_bt709(y8[i], UINT8_MAX / 2, UINT8_MAX / 2, &rgb24[o]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_y8_to_rgb24_bt709, GREY, RGB24);
+MPIX_REGISTER_CONVERT_OP(grey_rgb24, mpix_convert_y8_to_rgb24_bt709, GREY, RGB24);
 
-__weak void mpix_line_rgb24_to_y8_bt709(const uint8_t *rgb24, uint8_t *y8, uint16_t width)
+__attribute__((weak))
+void mpix_convert_rgb24_to_y8_bt709(const uint8_t *rgb24, uint8_t *y8, uint16_t width)
 {
 	for (size_t i = 0, o = 0, w = 0; w < width; w++, i += 3, o += 1) {
 		y8[o] = mpix_rgb24_to_y8_bt709(&rgb24[i]);
 	}
 }
-MPIX_DEFINE_CONVERT_OPERATION(mpix_line_rgb24_to_y8_bt709, RGB24, GREY);
+MPIX_REGISTER_CONVERT_OP(rgb24_grey, mpix_convert_rgb24_to_y8_bt709, RGB24, GREY);
+
+static const struct mpix_op **mpix_convert_op_list = (const struct mpix_op *[]){
+	MPIX_LIST_CONVERT_OP
+};

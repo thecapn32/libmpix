@@ -1,57 +1,54 @@
-/*
- * Copyright (c) 2025 tinyVision.ai Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+/* SPDX-License-Identifier: Apache-2.0 */
 
-#include <zephyr/sys/slist.h>
-#include <zephyr/logging/log.h>
-#include <mpix/palettize.h>
+#include <assert.h>
+#include <errno.h>
 
-LOG_MODULE_REGISTER(mpix_palettize, CONFIG_MPIX_LOG_LEVEL);
+#include <mpix/genlist.h>
+#include <mpix/image.h>
+#include <mpix/op_palettize.h>
 
-static int mpix_image_add_palette(struct mpix_image *img, const struct mpix_operation *op,
-				   struct mpix_palette *palette)
+static const struct mpix_op **mpix_palettize_op_list;
+
+static int mpix_image_append_palettize(struct mpix_image *img, const struct mpix_op *op,
+				     struct mpix_palette *palette)
 {
-	struct mpix_operation *tail;
 	int ret;
 
-	ret = mpix_image_add_uncompressed(img, op);
+	ret = mpix_image_append_uncompressed(img, op);
 	if (ret != 0) {
 		return ret;
 	}
 
-	tail = SYS_SLIST_PEEK_TAIL_CONTAINER(&img->operations, tail, node);
-	tail->arg1 = palette;
+	img->ops.tail->arg1 = palette;
 
 	return 0;
 }
 
 int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette)
 {
-	const struct mpix_operation *op = NULL;
+	const struct mpix_op *op = NULL;
 
-	STRUCT_SECTION_FOREACH_ALTERNATE(mpix_convert, mpix_operation, tmp) {
-		if (tmp->format_in == img->format &&
-		    tmp->format_out == palette->format) {
+	for (size_t i = 0; mpix_palettize_op_list[i] != NULL; i++) {
+		const struct mpix_op *tmp = mpix_palettize_op_list[i];
+
+		if (tmp->format_in == img->format && tmp->format_out == palette->format) {
 			op = tmp;
 			break;
 		}
 	}
 
 	if (op == NULL) {
-		LOG_ERR("Conversion operation from %s to %s not found",
-			MPIX_FORMAT_TO_STR(img->format),
-			MPIX_FORMAT_TO_STR(palette->format));
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(palette->format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_add_palette(img, op, palette);
+	return mpix_image_append_palettize(img, op, palette);
 }
 
 int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette)
 {
-	const struct mpix_operation *op = NULL;
+	const struct mpix_op *op = NULL;
 	uint32_t new_format = 0;
 	int ret;
 
@@ -61,18 +58,20 @@ int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette)
 	}
 
 	if (palette->size <= 1 << 1) {
-		new_format = MPIX_FORMAT_PALETTE1;
+		new_format = MPIX_FMT_PALETTE1;
 	} else if (palette->size <= 1 << 2) {
-		new_format = MPIX_FORMAT_PALETTE2;
+		new_format = MPIX_FMT_PALETTE2;
 	} else if (palette->size <= 1 << 4) {
-		new_format = MPIX_FORMAT_PALETTE4;
+		new_format = MPIX_FMT_PALETTE4;
 	} else if (palette->size <= 1 << 8) {
-		new_format = MPIX_FORMAT_PALETTE8;
+		new_format = MPIX_FMT_PALETTE8;
 	} else {
-		CODE_UNREACHABLE;
+		__builtin_unreachable();
 	}
 
-	STRUCT_SECTION_FOREACH_ALTERNATE(mpix_convert, mpix_operation, tmp) {
+	for (size_t i = 0; mpix_palettize_op_list[i] != NULL; i++) {
+		const struct mpix_op *tmp = mpix_palettize_op_list[i];
+
 		if (tmp->format_in == img->format && tmp->format_out == new_format) {
 			op = tmp;
 			break;
@@ -80,26 +79,25 @@ int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette)
 	}
 
 	if (op == NULL) {
-		LOG_ERR("Conversion operation from %s to %s not found",
-			MPIX_FORMAT_TO_STR(img->format),
-			MPIX_FORMAT_TO_STR(new_format));
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(new_format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_add_palette(img, op, palette);
+	return mpix_image_append_palettize(img, op, palette);
 }
 
-void mpix_palettize_op(struct mpix_operation *op)
+void mpix_palettize_op(struct mpix_op *op)
 {
-	const uint8_t *line_in = mpix_operation_get_input_line(op);
-	uint8_t *line_out = mpix_operation_get_output_line(op);
+	const uint8_t *line_in = mpix_op_get_input_line(op);
+	uint8_t *line_out = mpix_op_get_output_line(op);
 	void (*fn)(const uint8_t *s, uint8_t *d, uint16_t w, struct mpix_palette *p) = op->arg0;
 	struct mpix_palette *palette = op->arg1;
 
-	__ASSERT_NO_MSG(fn != NULL);
+	assert(fn != NULL);
 
 	fn(line_in, line_out, op->width, palette);
-	mpix_operation_done(op);
+	mpix_op_done(op);
 }
 
 /*
@@ -120,7 +118,7 @@ static inline uint32_t mpix_rgb_square_distance(const uint8_t rgb0[3], const uin
 }
 
 static inline uint8_t mpix_rgb24_to_palette4(const uint8_t rgb[3],
-					      const struct mpix_palette *palette)
+					     const struct mpix_palette *palette)
 {
 	uint8_t best_color[3];
 	uint32_t best_square_distance = UINT32_MAX;
@@ -140,11 +138,12 @@ static inline uint8_t mpix_rgb24_to_palette4(const uint8_t rgb[3],
 	return idx;
 }
 
-__weak void mpix_line_rgb24_to_palette4(const uint8_t *src, uint8_t *dst, uint16_t width,
-					 const struct mpix_palette *palette)
+__attribute__ ((weak))
+void mpix_convert_rgb24_to_palette4(const uint8_t *src, uint8_t *dst, uint16_t width,
+					   const struct mpix_palette *palette)
 {
-	__ASSERT_NO_MSG(width % 2 == 0);
-	__ASSERT_NO_MSG(palette->size == 1 << 4);
+	assert(width % 2 == 0);
+	assert(palette->size == 1 << 4);
 
 	for (uint16_t w = 0; w < width; w += 2, src += 6, dst += 1) {
 		dst[0] = 0;
@@ -152,13 +151,14 @@ __weak void mpix_line_rgb24_to_palette4(const uint8_t *src, uint8_t *dst, uint16
 		dst[0] |= mpix_rgb24_to_palette4(&src[3], palette) << 0;
 	}
 }
-MPIX_DEFINE_PALETTIZE_OPERATION(mpix_line_rgb24_to_palette4, RGB24, PALETTE4);
+MPIX_REGISTER_PALETTIZE_OP(rgb24_palette4, mpix_convert_rgb24_to_palette4, RGB24, PALETTE4);
 
-__weak void mpix_line_palette4_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-					 const struct mpix_palette *palette)
+__attribute__ ((weak))
+void mpix_convert_palette4_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+					   const struct mpix_palette *palette)
 {
-	__ASSERT_NO_MSG(width % 2 == 0);
-	__ASSERT_NO_MSG(palette->size == 1 << 4);
+	assert(width % 2 == 0);
+	assert(palette->size == 1 << 4);
 
 	for (uint16_t w = 0; w < width; w += 2, src += 1, dst += 6) {
 		uint8_t *color0 = &palette->colors[(src[0] >> 4) * 3];
@@ -172,4 +172,8 @@ __weak void mpix_line_palette4_to_rgb24(const uint8_t *src, uint8_t *dst, uint16
 		dst[5] = color1[2];
 	}
 }
-MPIX_DEFINE_DEPALETTIZE_OPERATION(mpix_line_palette4_to_rgb24, PALETTE4, RGB24);
+MPIX_REGISTER_PALETTIZE_OP(palette4_rgb24, mpix_convert_palette4_to_rgb24, PALETTE4, RGB24);
+
+static const struct mpix_op **mpix_palettize_op_list = (const struct mpix_op *[]){
+	MPIX_LIST_PALETTIZE_OP
+};

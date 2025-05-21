@@ -10,8 +10,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/shell/shell.h>
-
 /**
  * @brief Print a buffer using higher quality TRUECOLOR terminal escape codes.
  *
@@ -21,14 +19,14 @@
  * @param height Max number of rows to print
  * @param fourcc Format of the buffer to print
  */
-void mpix_print_buffer_truecolor(const uint8_t *buf, size_t size, uint16_t width,
-				  uint16_t height, uint32_t fourcc);
+void mpix_print_buffer_truecolor(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
+				 uint32_t fourcc);
 /**
  * @brief Print a buffer using higher speed 256COLOR terminal escape codes.
  * @copydetails mpix_print_buffer_truecolor()
  */
-void mpix_print_buffer_256color(const uint8_t *buf, size_t size, uint16_t width,
-				 uint16_t height, uint32_t fourcc);
+void mpix_print_buffer_256color(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
+				uint32_t fourcc);
 
 /**
  * @brief Hexdump a buffer in the RAW8 format
@@ -72,14 +70,5 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
  * @param height Desired height of the chart in pixels.
  */
 void mpix_print_y8hist(const uint16_t *y8hist, size_t size, uint16_t height);
-
-/**
- * @brief Set the shell instance to use when printing via the shell back-end.
- *
- * @see CONFIG_MPIX_PRINT
- *
- * @param sh Shell instance set as a global variable.
- */
-void mpix_print_set_shell(struct shell *sh);
 
 #endif /** @} */

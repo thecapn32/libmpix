@@ -1,22 +1,36 @@
-/*
- * Copyir (c) 2025 tinyVision.ai Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+/* SPDX-License-Identifier: Apache-2.0 */
 
+#include <assert.h>
+#include <errno.h>
 #include <stdint.h>
 
+#include <mpix/genlist.h>
 #include <mpix/image.h>
-#include <mpix/kernel.h>
-#include <zephyr/logging/log.h>
+#include <mpix/op_kernel.h>
 
-LOG_MODULE_REGISTER(mpix_kernel, CONFIG_MPIX_LOG_LEVEL);
+static const struct mpix_op **mpix_kernel_3x3_op_list;
+static const struct mpix_op **mpix_kernel_5x5_op_list;
 
 int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_size)
 {
-	const struct mpix_operation *op = NULL;
+	const struct mpix_op *op = NULL;
+	const struct mpix_op **kernel_op_list;
 
-	STRUCT_SECTION_FOREACH_ALTERNATE(mpix_kernel, mpix_operation, tmp) {
+	switch (kernel_size) {
+	case 3:
+		kernel_op_list = mpix_kernel_3x3_op_list;
+		break;
+	case 5:
+		kernel_op_list = mpix_kernel_5x5_op_list;
+		break;
+	default:
+		MPIX_ERR("Unsupported kernel size %u, only supporting 3 or 5", kernel_size);
+		return mpix_image_error(img, -ENOTSUP);
+	}
+
+	for (size_t i = 0; kernel_op_list[i] != NULL; i++) {
+		const struct mpix_op *tmp = kernel_op_list[i];
+
 		if (tmp->format_in == img->format && tmp->type == kernel_type &&
 		    kernel_size == tmp->window_size) {
 			op = tmp;
@@ -25,13 +39,13 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
 	}
 
 	if (op == NULL) {
-		LOG_ERR("Kernel operation %u of size %ux%u on %s data not found",
-			kernel_type, kernel_size, kernel_size,
-			MPIX_FORMAT_TO_STR(img->format));
+		MPIX_ERR("Kernel operation %u of size %ux%u on %s data not found",
+			 kernel_type, kernel_size, kernel_size,
+			 MPIX_FORMAT_TO_STR(img->format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_add_uncompressed(img, op);
+	return mpix_image_append_uncompressed(img, op);
 }
 
 /* Function that processes a 3x3 or 5x5 pixel block described by line buffers and column indexes */
@@ -57,8 +71,8 @@ typedef void line_5x5_t(const uint8_t *in[5], uint8_t *out, uint16_t width);
  * one output value.
  */
 
-static void mpix_convolve_3x3(const uint8_t *in[3], int i0, int i1, int i2,
-			       uint8_t *out, int o0, uint16_t base, const uint16_t *kernel)
+static void mpix_convolve_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_t *out, int o0,
+			      uint16_t base, const uint16_t *kernel)
 {
 	int16_t result = 0;
 	int k = 0;
@@ -76,7 +90,7 @@ static void mpix_convolve_3x3(const uint8_t *in[3], int i0, int i1, int i2,
 }
 
 static void mpix_convolve_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
-			       uint8_t *out, int o0, uint16_t base, const uint16_t *kernel)
+			      uint8_t *out, int o0, uint16_t base, const uint16_t *kernel)
 {
 	int16_t result = 0;
 	int k = 0;
@@ -129,8 +143,8 @@ static inline uint8_t mpix_median(const uint8_t **in, int *idx, uint8_t size)
 	return (pivot_top + pivot_bot) / 2;
 }
 
-static void mpix_median_3x3(const uint8_t *in[3], int i0, int i1, int i2,
-			     uint8_t *out, int o0, uint16_t base, const uint16_t *unused)
+static void mpix_median_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_t *out, int o0,
+			    uint16_t base, const uint16_t *unused)
 {
 	int idx[] = {base + i0, base + i1, base + i2};
 
@@ -138,7 +152,7 @@ static void mpix_median_3x3(const uint8_t *in[3], int i0, int i1, int i2,
 }
 
 static void mpix_median_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
-			     uint8_t *out, int o0, uint16_t base, const uint16_t *unused)
+			    uint8_t *out, int o0, uint16_t base, const uint16_t *unused)
 {
 	int idx[] = {base + i0, base + i1, base + i2, base + i3, base + i4};
 
@@ -150,9 +164,9 @@ static void mpix_median_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3
  * pixel format.
  */
 
-static void mpix_kernel_rgb24_3x3(const uint8_t *in[3], int i0, int i1, int i2,
-				   uint8_t *out, int o0, uint16_t base, kernel_3x3_t *line_fn,
-				   const uint16_t *kernel)
+static void mpix_kernel_rgb24_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_t *out,
+				  int o0, uint16_t base, kernel_3x3_t *line_fn,
+				  const uint16_t *kernel)
 {
 	i0 *= 3, i1 *= 3, i2 *= 3, o0 *= 3, base *= 3;
 	line_fn(in, i0, i1, i2, out, o0, base + 0, kernel); /* R */
@@ -161,8 +175,8 @@ static void mpix_kernel_rgb24_3x3(const uint8_t *in[3], int i0, int i1, int i2,
 }
 
 static void mpix_kernel_rgb24_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
-				   uint8_t *out, int o0, uint16_t base, kernel_5x5_t *line_fn,
-				   const uint16_t *kernel)
+				  uint8_t *out, int o0, uint16_t base, kernel_5x5_t *line_fn,
+				  const uint16_t *kernel)
 {
 	i0 *= 3, i1 *= 3, i2 *= 3, i3 *= 3, i4 *= 3, o0 *= 3, base *= 3;
 	line_fn(in, i0, i1, i2, i3, i4, out, o0, base + 0, kernel); /* R */
@@ -176,8 +190,8 @@ static void mpix_kernel_rgb24_5x5(const uint8_t *in[5], int i0, int i1, int i2, 
  */
 
 static inline void mpix_kernel_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width,
-					 pixfmt_3x3_t *pixfmt_fn, kernel_3x3_t *line_fn,
-					 const uint16_t *kernel)
+				   pixfmt_3x3_t *pixfmt_fn, kernel_3x3_t *line_fn,
+				   const uint16_t *kernel)
 {
 	uint16_t w = 0;
 
@@ -194,8 +208,8 @@ static inline void mpix_kernel_3x3(const uint8_t *in[3], uint8_t *out, uint16_t 
 }
 
 static inline void mpix_kernel_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width,
-					 pixfmt_5x5_t *pixfmt_fn, kernel_5x5_t *line_fn,
-					 const uint16_t *kernel)
+				   pixfmt_5x5_t *pixfmt_fn, kernel_5x5_t *line_fn,
+				   const uint16_t *kernel)
 {
 	uint16_t w = 0;
 
@@ -218,95 +232,95 @@ static inline void mpix_kernel_5x5(const uint8_t *in[5], uint8_t *out, uint16_t 
  * line by repeating the lines at the edge to fill the gaps.
  */
 
-void mpix_kernel_3x3_op(struct mpix_operation *op)
+void mpix_kernel_3x3_op(struct mpix_op *op)
 {
 	uint16_t prev_line_offset = op->line_offset;
 	line_3x3_t *line_fn = op->arg0;
 	const uint8_t *in[] = {
-		mpix_operation_get_input_line(op),
-		mpix_operation_peek_input_line(op),
-		mpix_operation_peek_input_line(op),
+		mpix_op_get_input_line(op),
+		mpix_op_peek_input_line(op),
+		mpix_op_peek_input_line(op),
 	};
 
-	__ASSERT_NO_MSG(op->width >= 3);
-	__ASSERT_NO_MSG(op->height >= 3);
+	assert(op->width >= 3);
+	assert(op->height >= 3);
 
 	/* Allow overflowing before the top by repeating the first line */
 	if (prev_line_offset == 0) {
 		const uint8_t *top[] = {in[0], in[0], in[1]};
 
-		line_fn(top, mpix_operation_get_output_line(op), op->width);
-		mpix_operation_done(op);
+		line_fn(top, mpix_op_get_output_line(op), op->width);
+		mpix_op_done(op);
 	}
 
 	/* Process one more line */
-	line_fn(in, mpix_operation_get_output_line(op), op->width);
-	mpix_operation_done(op);
+	line_fn(in, mpix_op_get_output_line(op), op->width);
+	mpix_op_done(op);
 
 	/* Allow overflowing after the bottom by repeating the last line */
 	if (prev_line_offset + 3 >= op->height) {
 		const uint8_t *bot[] = {in[1], in[2], in[2]};
 
-		line_fn(bot, mpix_operation_get_output_line(op), op->width);
-		mpix_operation_done(op);
+		line_fn(bot, mpix_op_get_output_line(op), op->width);
+		mpix_op_done(op);
 
 		/* Flush the remaining lines that were used for lookahead context */
-		mpix_operation_get_input_line(op);
-		mpix_operation_get_input_line(op);
+		mpix_op_get_input_line(op);
+		mpix_op_get_input_line(op);
 	}
 }
 
-void mpix_kernel_5x5_op(struct mpix_operation *op)
+void mpix_kernel_5x5_op(struct mpix_op *op)
 {
 	uint16_t prev_line_offset = op->line_offset;
 	line_5x5_t *line_fn = op->arg0;
 	const uint8_t *in[] = {
-		mpix_operation_get_input_line(op),
-		mpix_operation_peek_input_line(op),
-		mpix_operation_peek_input_line(op),
-		mpix_operation_peek_input_line(op),
-		mpix_operation_peek_input_line(op),
+		mpix_op_get_input_line(op),
+		mpix_op_peek_input_line(op),
+		mpix_op_peek_input_line(op),
+		mpix_op_peek_input_line(op),
+		mpix_op_peek_input_line(op),
 	};
 
-	__ASSERT_NO_MSG(op->width >= 5);
-	__ASSERT_NO_MSG(op->height >= 5);
+	assert(op->width >= 5);
+	assert(op->height >= 5);
 
 	/* Allow overflowing before the top by repeating the first line */
 	if (prev_line_offset == 0) {
 		const uint8_t *top[] = {in[0], in[0], in[0], in[1], in[2], in[3]};
 
-		line_fn(&top[0], mpix_operation_get_output_line(op), op->width);
-		mpix_operation_done(op);
+		line_fn(&top[0], mpix_op_get_output_line(op), op->width);
+		mpix_op_done(op);
 
-		line_fn(&top[1], mpix_operation_get_output_line(op), op->width);
-		mpix_operation_done(op);
+		line_fn(&top[1], mpix_op_get_output_line(op), op->width);
+		mpix_op_done(op);
 	}
 
 	/* Process one more line */
-	line_fn(in, mpix_operation_get_output_line(op), op->width);
-	mpix_operation_done(op);
+	line_fn(in, mpix_op_get_output_line(op), op->width);
+	mpix_op_done(op);
 
 	/* Allow overflowing after the bottom by repeating the last line */
 	if (prev_line_offset + 5 >= op->height) {
 		const uint8_t *bot[] = {in[1], in[2], in[3], in[4], in[4], in[4]};
 
-		line_fn(&bot[0], mpix_operation_get_output_line(op), op->width);
-		mpix_operation_done(op);
+		line_fn(&bot[0], mpix_op_get_output_line(op), op->width);
+		mpix_op_done(op);
 
-		line_fn(&bot[1], mpix_operation_get_output_line(op), op->width);
-		mpix_operation_done(op);
+		line_fn(&bot[1], mpix_op_get_output_line(op), op->width);
+		mpix_op_done(op);
 
 		/* Flush the remaining lines that were used for lookahead context */
-		mpix_operation_get_input_line(op);
-		mpix_operation_get_input_line(op);
-		mpix_operation_get_input_line(op);
-		mpix_operation_get_input_line(op);
+		mpix_op_get_input_line(op);
+		mpix_op_get_input_line(op);
+		mpix_op_get_input_line(op);
+		mpix_op_get_input_line(op);
 	}
 }
 
 /*
- * Declaration of convolution kernels, with the line-processing functions declared as __weak to
- * allow them to be replaced with optimized versions
+ * Declaration of convolution kernels, with the line-processing functions declared as weak aliases
+ * to allow them to be replaced with optimized versions
  */
 
 static const int16_t mpix_identity_3x3[] = {
@@ -315,12 +329,13 @@ static const int16_t mpix_identity_3x3[] = {
 	0, 0, 0, 0
 };
 
-__weak void mpix_identity_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_identity_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_3x3(in, out, width, mpix_kernel_rgb24_3x3, mpix_convolve_3x3,
 			 mpix_identity_3x3);
 }
-MPIX_DEFINE_KERNEL_3X3_OPERATION(mpix_identity_rgb24_3x3, MPIX_KERNEL_IDENTITY, RGB24);
+MPIX_REGISTER_KERNEL_3X3_OP(identity_rgb24, mpix_identity_rgb24_3x3, IDENTITY, RGB24);
 
 static const int16_t mpix_identity_5x5[] = {
 	0, 0, 0, 0, 0,
@@ -330,12 +345,13 @@ static const int16_t mpix_identity_5x5[] = {
 	0, 0, 0, 0, 0, 0
 };
 
-__weak void mpix_identity_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_identity_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_5x5(in, out, width, mpix_kernel_rgb24_5x5, mpix_convolve_5x5,
 			 mpix_identity_5x5);
 }
-MPIX_DEFINE_KERNEL_5X5_OPERATION(mpix_identity_rgb24_5x5, MPIX_KERNEL_IDENTITY, RGB24);
+MPIX_REGISTER_KERNEL_5X5_OP(identity_rgb24, mpix_identity_rgb24_5x5, IDENTITY, RGB24);
 
 static const int16_t mpix_edgedetect_3x3[] = {
 	-1, -1, -1,
@@ -343,12 +359,13 @@ static const int16_t mpix_edgedetect_3x3[] = {
 	-1, -1, -1, 0
 };
 
-__weak void mpix_edgedetect_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_edgedetect_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_3x3(in, out, width, mpix_kernel_rgb24_3x3, mpix_convolve_3x3,
-			      mpix_edgedetect_3x3);
+			mpix_edgedetect_3x3);
 }
-MPIX_DEFINE_KERNEL_3X3_OPERATION(mpix_edgedetect_rgb24_3x3, MPIX_KERNEL_EDGE_DETECT, RGB24);
+MPIX_REGISTER_KERNEL_3X3_OP(edge_detect_rgb24, mpix_edgedetect_rgb24_3x3, EDGE_DETECT, RGB24);
 
 static const int16_t mpix_gaussianblur_3x3[] = {
 	1, 2, 1,
@@ -356,12 +373,13 @@ static const int16_t mpix_gaussianblur_3x3[] = {
 	1, 2, 1, 4
 };
 
-__weak void mpix_gaussianblur_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_gaussianblur_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_3x3(in, out, width, mpix_kernel_rgb24_3x3, mpix_convolve_3x3,
-			      mpix_gaussianblur_3x3);
+			mpix_gaussianblur_3x3);
 }
-MPIX_DEFINE_KERNEL_3X3_OPERATION(mpix_gaussianblur_rgb24_3x3, MPIX_KERNEL_GAUSSIAN_BLUR, RGB24);
+MPIX_REGISTER_KERNEL_3X3_OP(gaussian_blur_rgb24, mpix_gaussianblur_rgb24_3x3, GAUSSIAN_BLUR, RGB24);
 
 static const int16_t mpix_gaussianblur_5x5[] = {
 	1,  4,  6,  4, 1,
@@ -371,12 +389,13 @@ static const int16_t mpix_gaussianblur_5x5[] = {
 	1,  4,  6,  4, 1, 8
 };
 
-__weak void mpix_gaussianblur_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_gaussianblur_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_5x5(in, out, width, mpix_kernel_rgb24_5x5, mpix_convolve_5x5,
-			 mpix_gaussianblur_5x5);
+			mpix_gaussianblur_5x5);
 }
-MPIX_DEFINE_KERNEL_5X5_OPERATION(mpix_gaussianblur_rgb24_5x5, MPIX_KERNEL_GAUSSIAN_BLUR, RGB24);
+MPIX_REGISTER_KERNEL_5X5_OP(gaussian_blur_rgb24, mpix_gaussianblur_rgb24_5x5, GAUSSIAN_BLUR, RGB24);
 
 static const int16_t mpix_sharpen_3x3[] = {
 	 0, -1,  0,
@@ -384,12 +403,13 @@ static const int16_t mpix_sharpen_3x3[] = {
 	 0, -1,  0, 0
 };
 
-__weak void mpix_sharpen_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_sharpen_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_3x3(in, out, width, mpix_kernel_rgb24_3x3, mpix_convolve_3x3,
-			      mpix_sharpen_3x3);
+			mpix_sharpen_3x3);
 }
-MPIX_DEFINE_KERNEL_3X3_OPERATION(mpix_sharpen_rgb24_3x3, MPIX_KERNEL_SHARPEN, RGB24);
+MPIX_REGISTER_KERNEL_3X3_OP(sharpen_rgb24, mpix_sharpen_rgb24_3x3, SHARPEN, RGB24);
 
 static const int16_t mpix_unsharp_5x5[] = {
 	-1,  -4,  -6,  -4, -1,
@@ -399,27 +419,35 @@ static const int16_t mpix_unsharp_5x5[] = {
 	-1,  -4,  -6,  -4, -1, 8
 };
 
-__weak void mpix_sharpen_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_sharpen_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
 {
-	mpix_kernel_5x5(in, out, width, mpix_kernel_rgb24_5x5, mpix_convolve_5x5,
-			 mpix_unsharp_5x5);
+	mpix_kernel_5x5(in, out, width, mpix_kernel_rgb24_5x5, mpix_convolve_5x5, mpix_unsharp_5x5);
 }
-MPIX_DEFINE_KERNEL_5X5_OPERATION(mpix_sharpen_rgb24_5x5, MPIX_KERNEL_SHARPEN, RGB24);
+MPIX_REGISTER_KERNEL_5X5_OP(sharpen_rgb24, mpix_sharpen_rgb24_5x5, SHARPEN, RGB24);
 
 /*
- * Declaration of median kernels, with the line-processing functions declared as __weak to
+ * Declaration of median kernels, with the line-processing functions declared as weak aliases to
  * allow them to be replaced with optimized versions
  */
 
-__weak void mpix_median_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_median_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_5x5(in, out, width, mpix_kernel_rgb24_5x5, mpix_median_5x5, NULL);
 }
+MPIX_REGISTER_KERNEL_5X5_OP(denoise_rgb24, mpix_median_rgb24_5x5, DENOISE, RGB24);
 
-MPIX_DEFINE_KERNEL_5X5_OPERATION(mpix_median_rgb24_5x5, MPIX_KERNEL_DENOISE, RGB24);
-
-__weak void mpix_median_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
+__attribute__((weak))
+void mpix_median_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_3x3(in, out, width, mpix_kernel_rgb24_3x3, mpix_median_3x3, NULL);
 }
-MPIX_DEFINE_KERNEL_3X3_OPERATION(mpix_median_rgb24_3x3, MPIX_KERNEL_DENOISE, RGB24);
+MPIX_REGISTER_KERNEL_3X3_OP(denoise_rgb24, mpix_median_rgb24_3x3, DENOISE, RGB24);
+
+static const struct mpix_op **mpix_kernel_5x5_op_list = (const struct mpix_op *[]){
+	MPIX_LIST_KERNEL_5X5_OP
+};
+static const struct mpix_op **mpix_kernel_3x3_op_list = (const struct mpix_op *[]){
+	MPIX_LIST_KERNEL_3X3_OP
+};

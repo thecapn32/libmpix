@@ -7,19 +7,22 @@
 #ifndef MPIX_IMAGE_H
 #define MPIX_IMAGE_H
 
-#include <zephyr/sys/slist.h>
-
-#include <mpix/operation.h>
 #include <mpix/formats.h>
-#include <mpix/palettize.h>
-#include <mpix/kernel.h>
+#include <mpix/op.h>
+#include <mpix/op_kernel.h>
+#include <mpix/op_palettize.h>
 
 /**
  * @brief Represent the image currently being processed
  */
 struct mpix_image {
-	/** List of operations to be performed on this image */
-	sys_slist_t operations;
+	/** Linked list of operations to be performed on this image */
+	struct {
+		/** First element of the list */
+		struct mpix_op *head;
+		/** Last element of of the list */
+		struct mpix_op *tail;
+	} ops;
 	/** Current width of the image */
 	uint16_t width;
 	/** Current height of the image */
@@ -48,16 +51,6 @@ void mpix_image_from_buf(struct mpix_image *img, uint8_t *buf, size_t size,
 			 uint16_t width, uint16_t height, uint32_t format);
 
 /**
- * @brief Initialize an image from a video buffer.
- *
- * @param img Image to initialize.
- * @param vbuf Video buffer that contains the image data to process.
- * @param vfmt Video format describing the buffer.
- */
-void mpix_image_from_vbuf(struct mpix_image *img, struct video_buffer *vbuf,
-			   struct video_format *vfmt);
-
-/**
  * @brief Initialize an image from a memory buffer.
  *
  * @param img Image being processed.
@@ -66,15 +59,6 @@ void mpix_image_from_vbuf(struct mpix_image *img, struct video_buffer *vbuf,
  * @return 0 on success
  */
 int mpix_image_to_buf(struct mpix_image *img, uint8_t *buf, size_t size);
-
-/**
- * @brief Initialize an image from a memory buffer.
- *
- * @param img Image being processed.
- * @param vbuf Video buffer that receives the image data.
- * @return 0 on success
- */
-int mpix_image_to_vbuf(struct mpix_image *img, struct video_buffer *vbuf);
 
 /**
  * @brief Convert an image to a new pixel format.
@@ -188,8 +172,8 @@ void mpix_image_print_256color(struct mpix_image *img);
  * @param threshold Minimum number of bytes the operation needs to run one cycle.
  * @return 0 on success
  */
-int mpix_image_add_operation(struct mpix_image *img, const struct mpix_operation *template,
-			      size_t buffer_size, size_t threshold);
+int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
+			 size_t buffer_size, size_t threshold);
 
 /**
  * @brief Add a operation processing step to an image for uncompressed input data.
@@ -204,7 +188,7 @@ int mpix_image_add_operation(struct mpix_image *img, const struct mpix_operation
  * @param img Image to which add a processing step.
  * @param template Stream processing step to apply to the image.
  */
-int mpix_image_add_uncompressed(struct mpix_image *img, const struct mpix_operation *template);
+int mpix_image_append_uncompressed(struct mpix_image *img, const struct mpix_op *template);
 
 /**
  * @brief Perform all the processing added to the

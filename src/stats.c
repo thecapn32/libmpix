@@ -1,15 +1,12 @@
-/*
- * Copyright (c) 2025 tinyVision.ai Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+/* SPDX-License-Identifier: Apache-2.0 */
 
+#include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 
 #include <mpix/stats.h>
-#include <mpix/convert.h>
+#include <mpix/op_convert.h>
 
 #define MPIX_IDX_R 0
 #define MPIX_IDX_G 1
@@ -149,8 +146,8 @@ void mpix_rgb24frame_to_rgb24hist(const uint8_t *buf, size_t buf_size, uint16_t 
 	uint8_t bit_depth = LOG2(hist_size / 3);
 	uint8_t rgb24[3];
 
-	__ASSERT(hist_size % 3 == 0, "Each of R, G, B channel should have the same size.");
-	__ASSERT(1 << bit_depth == hist_size / 3, "Each channel size should be a power of two.");
+	assert(hist_size % 3 == 0 /* Each of R, G, B channel should have the same size */);
+	assert(1 << bit_depth == hist_size / 3 /* Each channel size should be a power of two */);
 
 	memset(rgb24hist, 0x00, hist_size * sizeof(*rgb24hist));
 
@@ -168,8 +165,8 @@ static inline void mpix_bayerframe_to_rgb24hist(const uint8_t *buf, size_t buf_s
 	uint8_t bit_depth = LOG2(hist_size / 3);
 	uint8_t rgb24[3];
 
-	__ASSERT(hist_size % 3 == 0, "Each of R, G, B channel should have the same size.");
-	__ASSERT(1 << bit_depth == hist_size / 3, "Each channel size should be a power of two.");
+	assert(hist_size % 3 == 0 /* Each of R, G, B channel should have the same size */);
+	assert(1 << bit_depth == hist_size / 3 /* Each channel size should be a power of two */);
 
 	memset(rgb24hist, 0x00, hist_size * sizeof(*rgb24hist));
 
@@ -222,7 +219,7 @@ void mpix_rgb24frame_to_y8hist(const uint8_t *buf, size_t buf_size, uint16_t *y8
 	uint8_t bit_depth = LOG2(hist_size);
 	uint8_t rgb24[3];
 
-	__ASSERT(1 << bit_depth == hist_size, "Histogram channel size should be a power of two.");
+	assert(1 << bit_depth == hist_size /* Histogram channel size should be a power of two */);
 
 	memset(y8hist, 0x00, hist_size * sizeof(*y8hist));
 
@@ -239,7 +236,7 @@ static inline void mpix_bayerframe_to_y8hist(const uint8_t *buf, size_t buf_size
 	uint8_t bit_depth = LOG2(hist_size);
 	uint8_t rgb24[3];
 
-	__ASSERT(1 << bit_depth == hist_size, "Histogram channel size should be a power of two.");
+	assert(1 << bit_depth == hist_size /* Histogram channel size should be a power of two */);
 
 	memset(y8hist, 0x00, hist_size * sizeof(*y8hist));
 
