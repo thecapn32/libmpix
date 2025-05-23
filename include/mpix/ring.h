@@ -1,8 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_ring mpix/ring.h
- * @brief Implementing new types of operations
- * @{
+ * @internal
  */
 #ifndef MPIX_RING_H
 #define MPIX_RING_H
@@ -188,4 +186,4 @@ static inline uint8_t *mpix_ring_peek(struct mpix_ring *ring, size_t size)
 	return data;
 }
 
-#endif /** @} */
+#endif
