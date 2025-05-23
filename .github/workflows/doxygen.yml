@@ -2,7 +2,7 @@ name: Deploy Doxygen site to Pages
 
 on:
   push:
-    branches: ["zephyr"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
