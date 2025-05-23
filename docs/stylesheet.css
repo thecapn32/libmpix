@@ -12,7 +12,8 @@
 body {
 	max-width: 1000px;
 	margin: auto;
-	padding-bottom: 128px;
+	padding-left: calc(5% + 16px);
+	padding-right: calc(5% + 16px);
 }
 
 body, table, div, p, dl, #projectbrief, .sm-dox a, .sm-dox a:hover  {
@@ -37,13 +38,32 @@ body, table, div, p, dl, #projectbrief, .sm-dox a, .sm-dox a:hover  {
 	border-radius: 0px;
 }
 
-div.header, .memitem {
+#doc-content {
+	height: auto !important;
+	padding-bottom: 64px;
+}
+
+div.header, div.memitem {
 	border-top: solid 1px var(--group-header-separator-color);
 	border-bottom: solid 1px var(--group-header-separator-color);
 }
 
+div.memitem, div.contents, h1, h2, h3, h4, h5, h6 {
+	margin-right: 0px;
+	margin-left: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+div.memitem > * {
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
 .sm-dox {
 	background: none;
+	padding-left: 0px;
+	padding-right: 0px;
 }
 
 .sm-dox a, .sm-dox a:focus, .sm-dox a:active, .sm-dox a:hover, .sm-dox a.highlighted {
