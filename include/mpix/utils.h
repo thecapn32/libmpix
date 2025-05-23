@@ -6,13 +6,9 @@
 #ifndef MPIX_UTILS_H
 #define MPIX_UTILS_H
 
+#include <mpix/config.h>
+
 /* Logging utilities */
-
-#define CONFIG_MPIX_LOG_LEVEL 5
-
-#ifndef CONFIG_MPIX_LOG_LEVEL
-#define CONFIG_MPIX_LOG_LEVEL 1
-#endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 1
 #define MPIX_ERR(fmt, ...) printf("ERR: %s: " fmt "\n", __func__, ## __VA_ARGS__)
