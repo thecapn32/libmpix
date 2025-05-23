@@ -1,18 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
+# CMake rules to build libmpix in an executable on a POSIX system such has Linux, BSD, Mac OS...
+
+include(../common.cmake)
+
 file(REAL_PATH ../.. LIBMPIX_DIR)
 
-set(LIBMPIX_SRC
-  ${LIBMPIX_DIR}/src/formats.c
-  ${LIBMPIX_DIR}/src/image.c
-  ${LIBMPIX_DIR}/src/op_bayer.c
-  ${LIBMPIX_DIR}/src/op_convert.c
-  ${LIBMPIX_DIR}/src/op_kernel.c
-  ${LIBMPIX_DIR}/src/op_palettize.c
-  ${LIBMPIX_DIR}/src/op_resize.c
-  ${LIBMPIX_DIR}/src/print.c
-  ${LIBMPIX_DIR}/src/stats.c
+list(TRANSFORM LIBMPIX_SRC PREPEND
+  ${LIBMPIX_DIR}/
+)
 
+list(APPEND LIBMPIX_SRC
   ${LIBMPIX_DIR}/ports/posix/port.c
 )
 
