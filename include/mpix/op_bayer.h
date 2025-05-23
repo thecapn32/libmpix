@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_op_bayer mpix/op_bayer.h
- * @brief Implementing debayer operations
+ * @brief Implementing new debayer operations
  * @{
  */
 #ifndef MPIX_OP_BAYER_H

@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_op_kernel mpix/op_kernel.h
- * @brief Implementing kernel operations
+ * @brief Implementing new kernel operations
  * @{
  */
 #ifndef MPIX_OP_KERNEL_H

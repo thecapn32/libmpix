@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_op_convert mpix/op_convert.h
- * @brief Implementing conversion operations
+ * @brief Implementing new conversion operations
  * @{
  */
 #ifndef MPIX_OP_CONVERT_H
