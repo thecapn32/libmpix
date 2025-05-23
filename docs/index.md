@@ -11,18 +11,22 @@ It provides a C implementation of the classical operations of an imaging pipelin
 ports or the application alike to implement hardware-optimized operations such as
 [ARM Helium](https://www.arm.com/technologies/helium) SIMD instructions.
 
+It is born out of a
+[proposal for the Zephyr RTOS](https://github.com/zephyrproject-rtos/zephyr/issues/86669)
+and is now a stand-alone project with tier-1 support for Zephyr.
+
 Features:
 
 - Simple zero-copy and pipelined engine, with low runtime overhead,
 - Reduces memory overhead (can process 1 MB of data with only 5 kB of RAM)
-- Linux/POSIX support
+- [POSIX support](https://github.com/libmpix/libmpix_example_posix) (Linux/BSD/MacOS),
+  [Zephyr support](https://github.com/libmpix/libmpix_example_zephyr)
 
 Upcoming:
 
-- Hardware acceleration ([SIMD](https://www.arm.com/technologies/helium), 2.5D GPUs)
-- [MicroPython](https://micropython.org/) support
-- [Lua](https://lua.org/) support
-- Native Zephyr RTOS module
+- [SIMD](https://www.arm.com/technologies/helium) acceleration, 2.5D GPUs acceleration
+- [MicroPython](https://micropython.org/) support,
+  [Lua](https://lua.org/) support
 
 C API:
 
@@ -39,5 +43,3 @@ mpix_image_to_buf(&img, buf_out, sizeof(buf_out));
 
 return img.err;
 ```
-
-This is still an early pre-alpha stage, get-started instructions to come.

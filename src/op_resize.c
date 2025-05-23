@@ -16,7 +16,7 @@ int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height)
 	const struct mpix_op *op = NULL;
 	int ret;
 
-	for (size_t i = 0; i < ARRAY_SIZE(mpix_resize_op_list); i++) {
+	for (size_t i = 0; mpix_resize_op_list[i] != NULL; i++) {
 		const struct mpix_op *tmp = mpix_resize_op_list[i];
 
 		if (tmp->format_in == img->format) {

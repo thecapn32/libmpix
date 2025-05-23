@@ -30,7 +30,7 @@ struct mpix_ring {
 	bool full;
 };
 
-static inline bool mpix_ring_init(struct mpix_ring *ring, uint8_t *buf, size_t size)
+static inline void mpix_ring_init(struct mpix_ring *ring, uint8_t *buf, size_t size)
 {
 	memset(ring, 0x00, sizeof(*ring));
 	ring->data = buf;

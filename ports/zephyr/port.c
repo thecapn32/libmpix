@@ -13,3 +13,8 @@ void mpix_port_free(void *mem)
 {
 	return k_heap_free(&mpix_heap, mem);
 }
+
+uint32_t mpix_port_get_uptime_us(void)
+{
+	return k_cycle_get_64() * 1000 * 1000 / sys_clock_hw_cycles_per_sec();
+}
