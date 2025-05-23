@@ -17,7 +17,7 @@
  * @return A local nul-terminated string for this four character code.
  */
 #define MPIX_FOURCC_TO_STR(fourcc)                                                                 \
-	((char[]){                                                                                 \
+	((char[5]){                                                                                 \
 		(char)(((fourcc) >> 0) & 0xFF),                                                    \
 		(char)(((fourcc) >> 8) & 0xFF),                                                    \
 		(char)(((fourcc) >> 16) & 0xFF),                                                   \

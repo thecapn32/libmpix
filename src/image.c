@@ -62,7 +62,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
 
 	if (template->format_in != img->format) {
 		MPIX_ERR("Wrong format for this operation: image has %s, operation uses %s",
-			MPIX_FORMAT_TO_STR(template->format_in), MPIX_FORMAT_TO_STR(img->format));
+			MPIX_FOURCC_TO_STR(template->format_in), MPIX_FOURCC_TO_STR(img->format));
 		return mpix_image_error(img, -EINVAL);
 	}
 
@@ -133,8 +133,8 @@ int mpix_image_process(struct mpix_image *img)
 
 	for (struct mpix_op *op = img->ops.head; op != NULL; op = op->next) {
 		MPIX_DBG("- %s %ux%u to %s, %s, threshold %u",
-			MPIX_FORMAT_TO_STR(op->format_in), op->width, op->height,
-			MPIX_FORMAT_TO_STR(op->format_out), op->name, op->threshold);
+			MPIX_FOURCC_TO_STR(op->format_in), op->width, op->height,
+			MPIX_FOURCC_TO_STR(op->format_out), op->name, op->threshold);
 	}
 
 	mpix_op_run(img->ops.head);

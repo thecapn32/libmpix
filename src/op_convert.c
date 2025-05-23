@@ -30,8 +30,7 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FORMAT_TO_STR(img->format),
-			 MPIX_FORMAT_TO_STR(new_format));
+			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(new_format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

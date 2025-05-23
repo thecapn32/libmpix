@@ -113,13 +113,13 @@ static inline size_t mpix_ring_peekroom(struct mpix_ring *ring)
 		 */
 		return ring->head - ring->peek;
 	}
-	if (mpix_ring_is_full(ring) && ring->tail < ring->peek) {
+	if (mpix_ring_is_full(ring) && ring->tail <= ring->peek) {
 		/* [::::::::::HT:P::]
 		 *               ^^^
 		 */
 		return ring->size - ring->peek;
 	}
-	if (mpix_ring_is_full(ring) && ring->peek < ring->tail) {
+	if (mpix_ring_is_full(ring) && ring->peek < ring->head) {
 		/* [::P:::::::HT::::]
 		 *    ^^^^^^^^
 		 */

@@ -40,8 +40,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
 
 	if (op == NULL) {
 		MPIX_ERR("Kernel operation %u of size %ux%u on %s data not found",
-			 kernel_type, kernel_size, kernel_size,
-			 MPIX_FORMAT_TO_STR(img->format));
+			 kernel_type, kernel_size, kernel_size, MPIX_FOURCC_TO_STR(img->format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

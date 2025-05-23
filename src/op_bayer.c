@@ -25,7 +25,7 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t window_size)
 
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s using %ux%u window not found",
-			 MPIX_FMT_TO_STR(img->format), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
+			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
 			 window_size, window_size);
 		return mpix_image_error(img, -ENOSYS);
 	}

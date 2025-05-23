@@ -8,30 +8,32 @@
 
 /* Logging utilities */
 
+#define CONFIG_MPIX_LOG_LEVEL 5
+
 #ifndef CONFIG_MPIX_LOG_LEVEL
 #define CONFIG_MPIX_LOG_LEVEL 1
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 1
-#define MPIX_ERR(fmt, ...) printf("ERR: %s: " fmt "\n", __func__, # __VA_ARGS__)
+#define MPIX_ERR(fmt, ...) printf("ERR: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_ERR(fmt, ...) 0
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 2
-#define MPIX_WRN(fmt, ...) printf("WRN: %s: " fmt "\n", __func__, # __VA_ARGS__)
+#define MPIX_WRN(fmt, ...) printf("WRN: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_WRN(fmt, ...) 0
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 3
-#define MPIX_INF(fmt, ...) printf("INF: %s: " fmt "\n", __func__, # __VA_ARGS__)
+#define MPIX_INF(fmt, ...) printf("INF: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_INF(fmt, ...) 0
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 4
-#define MPIX_DBG(fmt, ...) printf("DBG: %s: " fmt "\n", __func__, # __VA_ARGS__)
+#define MPIX_DBG(fmt, ...) printf("DBG: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_DBG(fmt, ...) 0
 #endif
