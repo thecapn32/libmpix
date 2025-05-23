@@ -9,7 +9,7 @@ void *mpix_port_alloc(size_t size)
 	return k_heap_alloc(&mpix_heap, size, K_NO_WAIT);
 }
 
-void mpix_port_alloc(void *mem)
+void mpix_port_free(void *mem)
 {
 	return k_heap_free(&mpix_heap, mem);
 }
