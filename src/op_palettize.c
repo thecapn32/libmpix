@@ -38,8 +38,6 @@ int mpix_image_update_palette(struct mpix_image *img, struct mpix_palette *palet
 	const size_t nums_sz = palette->colors_nb * sizeof(*nums);
 	uint8_t rgb[3];
 
-	uint8_t *colors = palette->colors;
-
 	if (palette->format != MPIX_FMT_RGB24) {
 		MPIX_ERR("Only RGB24 supported");
 		return -ENOTSUP;

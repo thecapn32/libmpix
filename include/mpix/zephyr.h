@@ -17,7 +17,7 @@
 static inline void mpix_image_from_vbuf(struct mpix_image *img, struct video_buffer *vbuf,
 					struct video_format *fmt)
 {
-	mpix_image_from_buffer(img, vbuf->buffer, vbuf->size, fmt->width, fmt->height,
+	mpix_image_from_buf(img, vbuf->buffer, vbuf->size, fmt->width, fmt->height,
 			       fmt->pixelformat);
 }
 
@@ -32,7 +32,7 @@ static inline int mpix_image_to_vbuf(struct mpix_image *img, struct video_buffer
 {
 	int ret;
 
-	ret = mpix_image_to_buffer(img, vbuf->buffer, vbuf->size);
+	ret = mpix_image_to_buf(img, vbuf->buffer, vbuf->size);
 	vbuf->bytesused = img->size;
 
 	return ret;
