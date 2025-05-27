@@ -185,7 +185,7 @@ static void mpix_kernel_rgb24_5x5(const uint8_t *in[5], int i0, int i1, int i2, 
 
 /*
  * Portable/default C implementation of line processing functions. They are inlined into
- * line-conversion functions at the bottom of this file declared as __weak.
+ * line-conversion functions at the bottom of this file declared as weak aliases.
  */
 
 static inline void mpix_kernel_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width,

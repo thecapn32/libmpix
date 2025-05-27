@@ -55,6 +55,8 @@
 #define LOG2(x) ((x) < 1 ? -1 : _LOG2(x))
 #endif
 
+uint32_t mpix_lcg_rand_u32(void);
+
 /* Endianness operations */
 
 static inline uint16_t mpix_bswap16(uint16_t i)

@@ -8,7 +8,7 @@
 
 static void mpix_image_free(struct mpix_image *img)
 {
-	for (struct mpix_op *next, *op = img->ops.head; op != NULL; op = next) {
+	for (struct mpix_op *next, *op = img->ops.first; op != NULL; op = next) {
 		next = op->next;
 
 		if (op->is_heap) {
@@ -29,26 +29,17 @@ int mpix_image_error(struct mpix_image *img, int err)
 	return err;
 }
 
-static void *mpix_image_alloc(struct mpix_image *img, size_t size)
+static void mpix_image_append(struct mpix_image *img, struct mpix_op *op)
 {
-	void *mem;
+	if (img->ops.last != NULL) {
+		img->ops.last->next = op;
+	}
 
-	mem = mpix_port_alloc(size);
-	if (mem == NULL) {
-		MPIX_ERR("Out of memory whle allocating %zu bytes", size);
+	if (img->ops.first == NULL) {
+		img->ops.first = op;
 	}
-	return mem;
-}
 
-static void mpix_image_append_tail(struct mpix_image *img, struct mpix_op *op)
-{
-	if (img->ops.tail != NULL) {
-		img->ops.tail->next = op;
-	}
-	if (img->ops.head == NULL) {
-		img->ops.head = op;
-	}
-	img->ops.tail = op;
+	img->ops.last = op;
 }
 
 int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
@@ -66,8 +57,9 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
 		return mpix_image_error(img, -EINVAL);
 	}
 
-	op = mpix_image_alloc(img, sizeof(*op));
+	op = mpix_port_alloc(sizeof(*op));
 	if (op == NULL) {
+		MPIX_ERR("Failed to allocate an operation");
 		return mpix_image_error(img, -ENOMEM);
 	}
 
@@ -80,7 +72,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
 
 	img->format = op->format_out;
 
-	mpix_image_append_tail(img, op);
+	mpix_image_append(img, op);
 
 	return 0;
 }
@@ -106,7 +98,7 @@ int mpix_image_process(struct mpix_image *img)
 		return mpix_image_error(img, -ENOBUFS);
 	}
 
-	op = img->ops.head;
+	op = img->ops.first;
 	if (op == NULL) {
 		MPIX_ERR("No operation to perform on image");
 		return mpix_image_error(img, -ENOSYS);
@@ -123,21 +115,22 @@ int mpix_image_process(struct mpix_image *img)
 
 	for (op = op->next; op != NULL; op = op->next) {
 		if (op->ring.data == NULL) {
-			op->ring.data = mpix_image_alloc(img, op->ring.size);
+			op->ring.data = mpix_port_alloc(op->ring.size);
 			if (op->ring.data == NULL) {
+				MPIX_ERR("Failed to allocate a ring buffer");
 				return mpix_image_error(img, -ENOMEM);
 			}
 			op->is_heap = true;
 		}
 	}
 
-	for (struct mpix_op *op = img->ops.head; op != NULL; op = op->next) {
+	for (struct mpix_op *op = img->ops.first; op != NULL; op = op->next) {
 		MPIX_DBG("- %s %ux%u to %s, %s, threshold %u",
 			MPIX_FOURCC_TO_STR(op->format_in), op->width, op->height,
 			MPIX_FOURCC_TO_STR(op->format_out), op->name, op->threshold);
 	}
 
-	mpix_op_run(img->ops.head);
+	mpix_op_run(img->ops.first);
 	mpix_image_free(img);
 
 	return 0;
@@ -163,8 +156,9 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t size)
 		return -ECANCELED;
 	}
 
-	op = mpix_image_alloc(img, sizeof(struct mpix_op));
+	op = mpix_port_alloc(sizeof(struct mpix_op));
 	if (op == NULL) {
+		MPIX_ERR("Failed to allocate an operation");
 		return mpix_image_error(img, -ENOMEM);
 	}
 
@@ -178,7 +172,7 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t size)
 	op->ring.data = buffer;
 	op->ring.size = size;
 
-	mpix_image_append_tail(img, op);
+	mpix_image_append(img, op);
 
 	ret = mpix_image_process(img);
 

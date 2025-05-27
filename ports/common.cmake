@@ -13,7 +13,9 @@ set(LIBMPIX_SRC
   ${LIBMPIX_DIR}/src/op_palettize.c
   ${LIBMPIX_DIR}/src/op_resize.c
   ${LIBMPIX_DIR}/src/print.c
+  ${LIBMPIX_DIR}/src/sample.c
   ${LIBMPIX_DIR}/src/stats.c
+  ${LIBMPIX_DIR}/src/utils.c
 )
 
 function(libmpix_init target)

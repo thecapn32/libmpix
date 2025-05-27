@@ -19,9 +19,9 @@ struct mpix_image {
 	/** Linked list of operations to be performed on this image */
 	struct {
 		/** First element of the list */
-		struct mpix_op *head;
+		struct mpix_op *first;
 		/** Last element of of the list */
-		struct mpix_op *tail;
+		struct mpix_op *last;
 	} ops;
 	/** Current width of the image */
 	uint16_t width;
@@ -103,6 +103,20 @@ int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette);
  * @param palette The color palette to use for the conversion.
  */
 int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette);
+
+/**
+ * @brief Update the color palette after an input image buffer.
+ *
+ * This is performed on the original input image rather than the current state of the image.
+ * The strategy used is the "naive k-mean", and only a single pass. Repeat the function several
+ * times to improve accuracy.
+ *
+ * @param img Input image sampled to generate the palette.
+ * @param palette The palette that will be updated with colors fitting the image better
+ * @param num_samples Number of samples to take from the input image.
+ */
+int mpix_image_update_palette(struct mpix_image *img, struct mpix_palette *palette,
+			      uint16_t num_samples);
 
 /**
  * @brief Convert an image from a bayer array format to RGB24.

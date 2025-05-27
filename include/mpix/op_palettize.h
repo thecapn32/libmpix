@@ -18,10 +18,17 @@
 struct mpix_palette {
 	/** Array of pixels whose position (in pixel) is the inxdex  */
 	uint8_t *colors;
-	/** Nuber of pixels in the palette */
-	uint16_t size;
-	/** Format of each pixel in the palette */
+	/** Nuber of colors in the palette */
+	uint16_t colors_nb;
+	/** Format of the pixels in the palette */
 	uint32_t format;
+	/** Fields used internally */
+	struct {
+		/** The sum of all colors matching an index, used for update operation */
+		uint32_t *sums;
+		/** The number o colors matching an index, used for update operation */
+		uint16_t *nums;
+	} priv;
 };
 
 /**
