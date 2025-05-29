@@ -21,19 +21,19 @@ static uint8_t mpix_gray8_to_256color(uint8_t gray8)
 
 static void mpix_print_truecolor(const uint8_t row0[3], const uint8_t row1[3])
 {
-	printf("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
+	mpix_port_printf("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
 		row0[0], row0[1], row0[2], row1[0], row1[1], row1[2]);
 }
 
 static void mpix_print_256color(const uint8_t row0[3], const uint8_t row1[3])
 {
-	printf("\e[48;5;%um\e[38;5;%um▄",
+	mpix_port_printf("\e[48;5;%um\e[38;5;%um▄",
 		mpix_rgb24_to_256color(row0), mpix_rgb24_to_256color(row1));
 }
 
 static void mpix_print_256gray(uint8_t row0, uint8_t row1)
 {
-	printf("\e[48;5;%um\e[38;5;%um▄",
+	mpix_port_printf("\e[48;5;%um\e[38;5;%um▄",
 		mpix_gray8_to_256color(row0), mpix_gray8_to_256color(row1));
 }
 
@@ -57,7 +57,7 @@ static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t
 			fn_conv(&src[i + pitch * 1], rgb24b, npix);
 
 			if (i + pitch > size) {
-				printf("\e[m *** early end of buffer at %zu bytes ***\n",
+				mpix_port_printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
@@ -66,7 +66,7 @@ static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t
 				fn_print(&rgb24a[n * 3], &rgb24b[n * 3]);
 			}
 		}
-		printf("\e[m|\n");
+		mpix_port_printf("\e[m|\n");
 
 		/* Skip the second h being printed at the same time */
 		i += pitch;
@@ -110,7 +110,7 @@ static void mpix_print_buffer(const uint8_t *buffer, size_t size, uint16_t width
 			   mpix_bits_per_pixel(fourcc), 1);
 		break;
 	default:
-		printf("Printing %s buffers not supported\n", MPIX_FOURCC_TO_STR(fourcc));
+		mpix_port_printf("Printing %s buffers not supported\n", MPIX_FOURCC_TO_STR(fourcc));
 	}
 }
 
@@ -143,111 +143,111 @@ void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, uint16_
 			size_t i = h * width * 1 + w * 1;
 
 			if (i >= size) {
-				printf("\e[m *** early end of buffer at %zu bytes ***\n",
+				mpix_port_printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			printf(" %02x", raw8[i]);
+			mpix_port_printf(" %02x", raw8[i]);
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
 void mpix_hexdump_rgb24(const uint8_t *rgb24, size_t size, uint16_t width, uint16_t height)
 {
-	printf(" ");
+	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		printf("col%-7u", w);
+		mpix_port_printf("col%-7u", w);
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		printf(" R  G  B  ");
+		mpix_port_printf(" R  G  B  ");
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 3 + w * 3;
 
 			if (i + 2 >= size) {
-				printf("\e[m *** early end of buffer at %zu bytes ***\n",
+				mpix_port_printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			printf(" %02x %02x %02x ", rgb24[i + 0], rgb24[i + 1], rgb24[i + 2]);
+			mpix_port_printf(" %02x %02x %02x ", rgb24[i + 0], rgb24[i + 1], rgb24[i + 2]);
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
 void mpix_hexdump_rgb565(const uint8_t *rgb565, size_t size, uint16_t width, uint16_t height)
 {
-	printf(" ");
+	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		printf("col%-4u", w);
+		mpix_port_printf("col%-4u", w);
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		printf(" RGB565");
+		mpix_port_printf(" RGB565");
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 2 + w * 2;
 
 			if (i + 1 >= size) {
-				printf("\e[m *** early end of buffer at %zu bytes ***\n",
+				mpix_port_printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			printf(" %02x %02x ", rgb565[i + 0], rgb565[i + 1]);
+			mpix_port_printf(" %02x %02x ", rgb565[i + 0], rgb565[i + 1]);
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
 void mpix_hexdump_yuyv(const uint8_t *yuyv, size_t size, uint16_t width, uint16_t height)
 {
-	printf(" ");
+	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		printf("col%-3u", w);
+		mpix_port_printf("col%-3u", w);
 		if ((w + 1) % 2 == 0) {
-			printf(" ");
+			mpix_port_printf(" ");
 		}
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		printf(" %c%u", "YUYV"[w % 2 * 2 + 0], w % 2);
-		printf(" %c%u", "YUYV"[w % 2 * 2 + 1], w % 2);
+		mpix_port_printf(" %c%u", "YUYV"[w % 2 * 2 + 0], w % 2);
+		mpix_port_printf(" %c%u", "YUYV"[w % 2 * 2 + 1], w % 2);
 		if ((w + 1) % 2 == 0) {
-			printf(" ");
+			mpix_port_printf(" ");
 		}
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 2 + w * 2;
 
 			if (i + 1 >= size) {
-				printf("\e[m *** early end of buffer at %zu bytes ***\n",
+				mpix_port_printf("\e[m *** early end of buffer at %zu bytes ***\n",
 					    size);
 				return;
 			}
 
-			printf(" %02x %02x", yuyv[i], yuyv[i + 1]);
+			mpix_port_printf(" %02x %02x", yuyv[i], yuyv[i + 1]);
 			if ((w + 1) % 2 == 0) {
-				printf(" ");
+				mpix_port_printf(" ");
 			}
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
@@ -256,7 +256,7 @@ static void mpix_print_hist_scale(size_t size)
 	for (uint16_t i = 0; i < size; i++) {
 		mpix_print_256gray(0, i * 256 / size);
 	}
-	printf("\e[m\n");
+	mpix_port_printf("\e[m\n");
 }
 
 void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t height)
@@ -286,7 +286,7 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
 
 			mpix_print_256color(row0, row1);
 		}
-		printf("\e[m| - %u\n", h * max / height);
+		mpix_port_printf("\e[m| - %u\n", h * max / height);
 	}
 
 	mpix_print_hist_scale(size / 3);
@@ -307,7 +307,7 @@ void mpix_print_y8hist(const uint16_t *y8hist, size_t size, uint16_t height)
 
 			mpix_print_256gray(row0, row1);
 		}
-		printf("\e[m| - %u\n", h * max / height);
+		mpix_port_printf("\e[m| - %u\n", h * max / height);
 	}
 
 	mpix_print_hist_scale(size);

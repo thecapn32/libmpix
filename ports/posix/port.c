@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#include <stdargs.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -21,4 +23,13 @@ void *mpix_port_alloc(size_t size)
 void mpix_port_free(void *mem)
 {
 	free(mem);
+}
+
+void mpix_port_printf(char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
 }

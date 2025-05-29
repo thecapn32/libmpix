@@ -39,4 +39,14 @@ void *mpix_port_alloc(size_t size);
  */
 void mpix_port_free(void *mem);
 
+/**
+ * @brief Print debug information to the console
+ *
+ * This will be used to log debug messages according to the log level, as well as print image
+ * previews in the terminal.
+ *
+ * @param mem Pointer to the buffer to free.
+ */
+void mpix_port_printf(char *fmt, ...);
+
 #endif /** @} */
