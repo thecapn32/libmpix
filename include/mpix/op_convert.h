@@ -13,21 +13,32 @@
 #include <mpix/image.h>
 
 /**
+ * @brief Conversion operation
+ * @private
+ */
+struct mpix_convert_op {
+	/** Fields common to all operations. */
+	struct mpix_base_op base;
+	/** Line conversion function repeated over the entire image */
+	void (*convert_fn)(const uint8_t *src, uint8_t *dst, uint16_t width);
+};
+
+/**
  * @brief Define a new format conversion operation.
  *
  * @param id Short identifier to differentiate operations of the same type.
  * @param fn Function converting one input line.
- * @param fmt_in The input format for that operation.
- * @param fmt_out The Output format for that operation.
+ * @param format_in The input format for that operation.
+ * @param format_out The Output format for that operation.
  */
-#define MPIX_REGISTER_CONVERT_OP(id, fn, fmt_in, fmt_out)                                          \
-	const struct mpix_op mpix_convert_op_##id = {                                              \
-		.name = ("convert_" #id),                                                          \
-		.format_in = (MPIX_FMT_##fmt_in),                                                  \
-		.format_out = (MPIX_FMT_##fmt_out),                                                \
-		.window_size = 1,                                                                  \
-		.run = (mpix_convert_op),                                                          \
-		.arg0 = (fn),                                                                      \
+#define MPIX_REGISTER_CONVERT_OP(id, fn, format_in, format_out)                                    \
+	const struct mpix_convert_op mpix_convert_op_##id = {                                      \
+		.base.name = ("convert_" #id),                                                     \
+		.base.format_src = (MPIX_FMT_##format_in),                                         \
+		.base.format_dst = (MPIX_FMT_##format_out),                                        \
+		.base.window_size = 1,                                                             \
+		.base.run = (mpix_convert_op),                                                     \
+		.convert_fn = (fn),                                                                \
 	}
 
 /**
@@ -129,6 +140,6 @@ void mpix_convert_rgb24_to_y8_bt709(const uint8_t *src, uint8_t *dst, uint16_t w
  *
  * @param op Current operation in progress.
  */
-void mpix_op_convert(struct mpix_op *op);
+void mpix_op_convert(struct mpix_base_op *op);
 
 #endif /** @} */

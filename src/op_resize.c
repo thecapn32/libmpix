@@ -9,28 +9,20 @@
 #include <mpix/image.h>
 #include <mpix/op_resize.h>
 
-static const struct mpix_op **mpix_resize_op_list;
+static const struct mpix_resize_op **mpix_resize_op_list;
 
 int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height)
 {
-	const struct mpix_op *op = NULL;
+	const struct mpix_resize_op *op = NULL;
 	int ret;
 
-	for (size_t i = 0; mpix_resize_op_list[i] != NULL; i++) {
-		const struct mpix_op *tmp = mpix_resize_op_list[i];
-
-		if (tmp->format_in == img->format) {
-			op = tmp;
-			break;
-		}
-	}
-
+	op = mpix_op_by_format(mpix_resize_op_list, img->format, img->format);
 	if (op == NULL) {
 		MPIX_ERR("Resize operation for %s not found", MPIX_FOURCC_TO_STR(img->format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	ret = mpix_image_append_uncompressed(img, op);
+	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
 	img->width = width;
 	img->height = height;
 	return ret;
@@ -64,7 +56,7 @@ static inline void mpix_resize_frame(const uint8_t *src_buf, size_t src_width, s
 
 __attribute__((weak))
 void mpix_resize_frame_raw24(const uint8_t *src_buf, size_t src_width, size_t src_height,
-				    uint8_t *dst_buf, size_t dst_width, size_t dst_height)
+			     uint8_t *dst_buf, size_t dst_width, size_t dst_height)
 {
 	mpix_resize_frame(src_buf, src_width, src_height, dst_buf, dst_width, dst_height, 24);
 }
@@ -83,44 +75,43 @@ void mpix_resize_frame_raw8(const uint8_t *src_buf, size_t src_width, size_t src
 	mpix_resize_frame(src_buf, src_width, src_height, dst_buf, dst_width, dst_height, 8);
 }
 
-static inline void mpix_resize_op(struct mpix_op *op, uint8_t bits_per_pixel)
+static inline void mpix_resize_op(struct mpix_base_op *base, uint8_t bits_per_pixel)
 {
-	struct mpix_op *next = op->next;
-	uint16_t prev_offset = (op->line_offset + 1) * next->height / op->height;
-	const uint8_t *line_in = mpix_op_get_input_line(op);
-	uint16_t next_offset = (op->line_offset + 1) * next->height / op->height;
+	struct mpix_base_op *next = base->next;
+	uint16_t prev_offset = (base->line_offset + 1) * next->height / base->height;
+	const uint8_t *line_in = mpix_op_get_input_line(base);
+	uint16_t next_offset = (base->line_offset + 1) * next->height / base->height;
 
 	for (uint16_t i = 0; prev_offset + i < next_offset; i++) {
-		mpix_resize_line(line_in, op->width, mpix_op_get_output_line(op), next->width,
+		mpix_resize_line(line_in, base->width, mpix_op_get_output_line(base), next->width,
 				 bits_per_pixel);
-		mpix_op_done(op);
+		mpix_op_done(base);
 	}
 }
 
 __attribute__((weak))
-void mpix_resize_op_raw24(struct mpix_op *op)
+void mpix_resize_op_raw24(struct mpix_base_op *base)
 {
-	mpix_resize_op(op, 24);
+	mpix_resize_op(base, 24);
 }
 MPIX_REGISTER_RESIZE_OP(rgb24, mpix_resize_op_raw24, RGB24);
 MPIX_REGISTER_RESIZE_OP(yuv24, mpix_resize_op_raw24, YUV24);
 
 __attribute__((weak))
-void mpix_resize_op_raw16(struct mpix_op *op)
+void mpix_resize_op_raw16(struct mpix_base_op *base)
 {
-	mpix_resize_op(op, 16);
+	mpix_resize_op(base, 16);
 }
 MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, RGB565);
 MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, RGB565X);
 
 __attribute__((weak))
-void mpix_resize_op_raw8(struct mpix_op *op)
+void mpix_resize_op_raw8(struct mpix_base_op *base)
 {
-	mpix_resize_op(op, 8);
+	mpix_resize_op(base, 8);
 }
 MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, GREY);
 MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, RGB332);
 
-static const struct mpix_op **mpix_resize_op_list = (const struct mpix_op *[]){
-	MPIX_LIST_RESIZE_OP
-};
+static const struct mpix_resize_op **mpix_resize_op_list =
+	(const struct mpix_resize_op *[]){MPIX_LIST_RESIZE_OP};

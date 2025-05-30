@@ -8,7 +8,7 @@
 
 static void mpix_image_free(struct mpix_image *img)
 {
-	for (struct mpix_op *next, *op = img->ops.first; op != NULL; op = next) {
+	for (struct mpix_base_op *next, *op = img->ops.first; op != NULL; op = next) {
 		next = op->next;
 
 		if (op->is_heap) {
@@ -29,7 +29,7 @@ int mpix_image_error(struct mpix_image *img, int err)
 	return err;
 }
 
-static void mpix_image_append(struct mpix_image *img, struct mpix_op *op)
+static void mpix_image_append(struct mpix_image *img, struct mpix_base_op *op)
 {
 	if (img->ops.last != NULL) {
 		img->ops.last->next = op;
@@ -42,52 +42,53 @@ static void mpix_image_append(struct mpix_image *img, struct mpix_op *op)
 	img->ops.last = op;
 }
 
-int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
-			 size_t buffer_size, size_t threshold)
+int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *template,
+			 size_t op_sz, size_t buffer_sz, size_t threshold)
 {
-	struct mpix_op *op;
+	struct mpix_base_op *op;
 
 	if (img->err) {
 		return -ECANCELED;
 	}
 
-	if (template->format_in != img->format) {
+	if (template->format_src != img->format) {
 		MPIX_ERR("Wrong format for this operation: image has %s, operation uses %s",
-			MPIX_FOURCC_TO_STR(template->format_in), MPIX_FOURCC_TO_STR(img->format));
+			MPIX_FOURCC_TO_STR(template->format_src), MPIX_FOURCC_TO_STR(img->format));
 		return mpix_image_error(img, -EINVAL);
 	}
 
-	op = mpix_port_alloc(sizeof(*op));
+	op = mpix_port_alloc(op_sz);
 	if (op == NULL) {
 		MPIX_ERR("Failed to allocate an operation");
 		return mpix_image_error(img, -ENOMEM);
 	}
 
-	memcpy(op, template, sizeof(*op));
+	memcpy(op, template, op_sz);
 	op->threshold = threshold;
 	op->width = img->width;
 	op->height = img->height;
 	op->ring.data = NULL; /* allocated later */
-	op->ring.size = buffer_size;
+	op->ring.size = buffer_sz;
 
-	img->format = op->format_out;
+	img->format = op->format_dst;
 
 	mpix_image_append(img, op);
 
 	return 0;
 }
 
-int mpix_image_append_uncompressed(struct mpix_image *img, const struct mpix_op *template)
+int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_base_op *op,
+				      size_t op_sz)
 {
 	size_t pitch = img->width * mpix_bits_per_pixel(img->format) / BITS_PER_BYTE;
-	size_t size = template->window_size * pitch;
+	size_t buf_sz = op->window_size * pitch;
 
-	return mpix_image_append_op(img, template, size, size);
+	return mpix_image_append_op(img, op, op_sz, buf_sz, buf_sz);
 }
 
 int mpix_image_process(struct mpix_image *img)
 {
-	struct mpix_op *op;
+	struct mpix_base_op *op;
 
 	if (img->err) {
 		return -ECANCELED;
@@ -124,10 +125,10 @@ int mpix_image_process(struct mpix_image *img)
 		}
 	}
 
-	for (struct mpix_op *op = img->ops.first; op != NULL; op = op->next) {
+	for (struct mpix_base_op *op = img->ops.first; op != NULL; op = op->next) {
 		MPIX_DBG("- %s %ux%u to %s, %s, threshold %u",
-			MPIX_FOURCC_TO_STR(op->format_in), op->width, op->height,
-			MPIX_FOURCC_TO_STR(op->format_out), op->name, op->threshold);
+			MPIX_FOURCC_TO_STR(op->format_src), op->width, op->height,
+			MPIX_FOURCC_TO_STR(op->format_dst), op->name, op->threshold);
 	}
 
 	mpix_op_run(img->ops.first);
@@ -136,27 +137,27 @@ int mpix_image_process(struct mpix_image *img)
 	return 0;
 }
 
-void mpix_image_from_buf(struct mpix_image *img, uint8_t *buffer, size_t size,
+void mpix_image_from_buf(struct mpix_image *img, uint8_t *buffer, size_t sz,
 			     uint16_t width, uint16_t height, uint32_t format)
 {
 	memset(img, 0x00, sizeof(*img));
 	img->buffer = buffer;
-	img->size = size;
+	img->size = sz;
 	img->width = width;
 	img->height = height;
 	img->format = format;
 }
 
-int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t size)
+int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
 {
-	struct mpix_op *op;
+	struct mpix_base_op *op;
 	int ret;
 
 	if (img->err) {
 		return -ECANCELED;
 	}
 
-	op = mpix_port_alloc(sizeof(struct mpix_op));
+	op = mpix_port_alloc(sizeof(struct mpix_base_op));
 	if (op == NULL) {
 		MPIX_ERR("Failed to allocate an operation");
 		return mpix_image_error(img, -ENOMEM);
@@ -164,20 +165,20 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t size)
 
 	memset(op, 0x00, sizeof(*op));
 	op->name = __func__;
-	op->threshold = size;
-	op->format_in = img->format;
-	op->format_out = img->format;
+	op->threshold = sz;
+	op->format_src = img->format;
+	op->format_dst = img->format;
 	op->width = img->width;
 	op->height = img->height;
 	op->ring.data = buffer;
-	op->ring.size = size;
+	op->ring.size = sz;
 
 	mpix_image_append(img, op);
 
 	ret = mpix_image_process(img);
 
 	img->buffer = buffer;
-	img->size = size;
+	img->size = sz;
 
 	return ret;
 }

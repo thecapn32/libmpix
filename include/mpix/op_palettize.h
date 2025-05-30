@@ -16,19 +16,20 @@
  * @brief Color palette as a list of pixels in the described format.
  */
 struct mpix_palette {
-	/** Array of pixels whose position (in pixel) is the inxdex  */
+	/** Color value where the position in the array (in pixel number) is the color inxdex. */
 	uint8_t *colors;
-	/** Nuber of colors in the palette */
-	uint16_t colors_nb;
-	/** Format of the pixels in the palette */
+	/** Format of the indexed colors, defining the palette size. */
 	uint32_t format;
-	/** Fields used internally */
-	struct {
-		/** The sum of all colors matching an index, used for update operation */
-		uint32_t *sums;
-		/** The number o colors matching an index, used for update operation */
-		uint16_t *nums;
-	} priv;
+};
+
+/** @internal */
+struct mpix_palette_op {
+	/** Fields common to all operations. */
+	struct mpix_base_op base;
+	/** Line conversion function repeated over the entire image */
+	void (*palette_fn)(const uint8_t *s, uint8_t *d, uint16_t w, const struct mpix_palette *p);
+	/** Color palette to use for the conversion */
+	struct mpix_palette *palette;
 };
 
 /**
@@ -36,17 +37,17 @@ struct mpix_palette {
  *
  * @param id Short identifier to differentiate operations of the same category.
  * @param fn Function converting one input line.
- * @param fmt_in The input format for that operation.
- * @param fmt_out The Output format for that operation.
+ * @param format_in The input format for that operation.
+ * @param format_out The Output format for that operation.
  */
-#define MPIX_REGISTER_PALETTIZE_OP(id, fn, fmt_in, fmt_out)                                        \
-	const struct mpix_op mpix_palettize_op_##id = {                                            \
-		.name = ("palettize_" #id),                                                        \
-		.format_in = (MPIX_FMT_##fmt_in),                                                  \
-		.format_out = (MPIX_FMT_##fmt_out),                                                \
-		.window_size = 1,                                                                  \
-		.run = mpix_palettize_op,                                                          \
-		.arg0 = (fn),                                                                      \
+#define MPIX_REGISTER_PALETTE_OP(id, fn, format_in, format_out)                                    \
+	const struct mpix_palette_op mpix_palette_op_##id = {                                      \
+		.base.name = ("palettize_" #id),                                                   \
+		.base.format_src = (MPIX_FMT_##format_in),                                         \
+		.base.format_dst = (MPIX_FMT_##format_out),                                        \
+		.base.window_size = 1,                                                             \
+		.base.run = mpix_palettize_op,                                                     \
+		.palette_fn = (fn),                                                                \
 	}
 
 /**
@@ -115,6 +116,6 @@ void mpix_convert_palette1_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t w
  *
  * @param op Current operation in progress.
  */
-void mpix_palettize_op(struct mpix_op *op);
+void mpix_palettize_op(struct mpix_base_op *op);
 
 #endif /** @} */

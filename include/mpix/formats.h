@@ -203,7 +203,6 @@ uint8_t mpix_bits_per_pixel_cb(uint32_t fourcc);
 
 /**
  * 1-bit color palette pixel format, 2 colors in total like a bitmap.
- *
  * 8 pixels shown below:
  *
  * @code{.unparsed}
@@ -215,36 +214,81 @@ uint8_t mpix_bits_per_pixel_cb(uint32_t fourcc);
 
 /**
  * 2-bit color palette pixel format, 4 colors in total.
- *
- * 4 pixels shown below:
+ * 8 pixels shown below:
  *
  * @code{.unparsed}
- *   0  1  2  3
- * | Pp|Pp|Pp|Pp | ...
+ *   0  1  2  3    4  5  6  7
+ * | Pp|Pp|Pp|Pp | Pp|Pp|Pp|Pp | ...
  * @endcode
  */
 #define MPIX_FMT_PALETTE2 MPIX_FOURCC('P', 'L', 'T', '2')
 
 /**
- * 4-bit color palette pixel format, 16 colors in total.
- *
- * 2 pixels shown below:
+ * 3-bit color palette pixel format, 8 colors in total.
+ * Padded by 1 bit to fit a 4 bit packing.
+ * 8 pixels shown below:
  *
  * @code{.unparsed}
- *   0    1
- * | Pppp|Pppp | ...
+ *    0    1      2    3      4    5      6    7
+ * | -Ppp|-Ppp | -Ppp|-Ppp | -Ppp|-Ppp | -Ppp|-Ppp | ...
+ * @endcode
+ */
+#define MPIX_FMT_PALETTE3 MPIX_FOURCC('P', 'L', 'T', '3')
+
+/**
+ * 4-bit color palette pixel format, 16 colors in total.
+ * 8 pixels shown below:
+ *
+ * @code{.unparsed}
+ *   0    1      2    3       4    5      6    7
+ * | Pppp|Pppp | Pppp|Pppp  | Pppp|Pppp | Pppp|Pppp | ...
  * @endcode
  */
 #define MPIX_FMT_PALETTE4 MPIX_FOURCC('P', 'L', 'T', '4')
 
 /**
- * 8-bit color palette pixel format, 256 colors in total.
- *
- * 1 pixel shown below:
+ * 5-bit color palette pixel format, 32 colors in total.
+ * Padded by 3 bit to fit a 8 bit packing.
+ * 8 pixels shown below:
  *
  * @code{.unparsed}
- *   0
- * | Pppppppp | ...
+ *      0          1          2          3          4          5          6          7
+ * | ---Ppppp | ---Ppppp | ---Ppppp | ---Ppppp | ---Ppppp | ---Ppppp | ---Ppppp | ---Ppppp | ...
+ * @endcode
+ */
+#define MPIX_FMT_PALETTE5 MPIX_FOURCC('P', 'L', 'T', '5')
+
+/**
+ * 6-bit color palette pixel format, 64 colors in total.
+ * Padded by 2 bit to fit a 8 bit packing.
+ * 8 pixels shown below:
+ *
+ * @code{.unparsed}
+ *     0          1          2          3          4          5          6          7
+ * | --Pppppp | --Pppppp | --Pppppp | --Pppppp | --Pppppp | --Pppppp | --Pppppp | --Pppppp | ...
+ * @endcode
+ */
+#define MPIX_FMT_PALETTE6 MPIX_FOURCC('P', 'L', 'T', '6')
+
+/**
+ * 7-bit color palette pixel format, 128 colors in total.
+ * Padded by 1 bit to fit a 8 bit packing.
+ * 8 pixels shown below:
+ *
+ * @code{.unparsed}
+ *    0          1          2          3          4          5          6          7
+ * | -Ppppppp | -Ppppppp | -Ppppppp | -Ppppppp | -Ppppppp | -Ppppppp | -Ppppppp | -Ppppppp | ...
+ * @endcode
+ */
+#define MPIX_FMT_PALETTE7 MPIX_FOURCC('P', 'L', 'T', '7')
+
+/**
+ * 8-bit color palette pixel format, 256 colors in total.
+ * 8 pixels shown below:
+ *
+ * @code{.unparsed}
+ *   0          1          2          3          4          5          6          7
+ * | Pppppppp | Pppppppp | Pppppppp | Pppppppp | Pppppppp | Pppppppp | Pppppppp | Pppppppp | ...
  * @endcode
  */
 #define MPIX_FMT_PALETTE8 MPIX_FOURCC('P', 'L', 'T', '8')
@@ -263,6 +307,12 @@ uint8_t mpix_bits_per_pixel_cb(uint32_t fourcc);
  * Multiple JPEG frames can be sent back-to-back to make an MJPEG stream.
  */
 #define MPIX_FMT_JPEG MPIX_FOURCC('J', 'P', 'E', 'G')
+
+/**
+ * Compressed frame using the QOI format.
+ * Multiple QOI frames can be sent back-to-back to make an QOIF stream.
+ */
+#define MPIX_FMT_QOI MPIX_FOURCC('Q', 'O', 'I', 'F')
 
 /** @} */
 
@@ -301,13 +351,18 @@ static inline uint8_t mpix_bits_per_pixel(uint32_t fourcc)
 		return 1;
 	case MPIX_FMT_PALETTE2:
 		return 2;
+	case MPIX_FMT_PALETTE3:
 	case MPIX_FMT_PALETTE4:
 		return 4;
+	case MPIX_FMT_PALETTE5:
+	case MPIX_FMT_PALETTE6:
+	case MPIX_FMT_PALETTE7:
 	case MPIX_FMT_PALETTE8:
 		return 8;
 
 	/* Compressed formats */
 	case MPIX_FMT_JPEG:
+	case MPIX_FMT_QOI:
 		return 0;
 	default:
 		return mpix_bits_per_pixel_cb(fourcc);

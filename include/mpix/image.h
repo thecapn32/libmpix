@@ -19,9 +19,9 @@ struct mpix_image {
 	/** Linked list of operations to be performed on this image */
 	struct {
 		/** First element of the list */
-		struct mpix_op *first;
+		struct mpix_base_op *first;
 		/** Last element of of the list */
-		struct mpix_op *last;
+		struct mpix_base_op *last;
 	} ops;
 	/** Current width of the image */
 	uint16_t width;
@@ -115,8 +115,8 @@ int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette)
  * @param palette The palette that will be updated with colors fitting the image better
  * @param num_samples Number of samples to take from the input image.
  */
-int mpix_image_update_palette(struct mpix_image *img, struct mpix_palette *palette,
-			      uint16_t num_samples);
+int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *palette,
+				uint16_t num_samples);
 
 /**
  * @brief Convert an image from a bayer array format to RGB24.
@@ -128,9 +128,23 @@ int mpix_image_update_palette(struct mpix_image *img, struct mpix_palette *palet
  *       this does not allow to select the window size.
  *
  * @param img Image to convert.
- * @param window_size The window size for convnerting, usually 2 (faster) or 3 (higher quality).
+ * @param window_size The window size for the conversion, usually 2 (faster) or 3 (higher quality).
  */
 int mpix_image_debayer(struct mpix_image *img, uint32_t window_size);
+
+/**
+ * @brief Convert an image from a bayer array format to RGB24.
+ *
+ * An operation is added to convert the image to RGB24 using the specified window size, such
+ * as 2x2 or 3x3.
+ *
+ * @note It is also possible to use @ref mpix_image_convert to convert from bayer to RGB24 but
+ *       this does not allow to select the window size.
+ *
+ * @param img Image to convert.
+ * @param max_sz Maximum QOI image size, too big wastes spaces, too small causes truncation.
+ */
+int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz);
 
 /**
  * @brief Resize an image.
@@ -152,9 +166,9 @@ int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height);
  *
  * @param img Image to convert.
  * @param kernel_type The type of kernel to apply as defined in <mpix/kernel.h>
- * @param kernel_size The size of the kernel operaiton, usually 3 or 5.
+ * @param kernel_sz The size of the kernel operaiton, usually 3 or 5.
  */
-int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_size);
+int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_sz);
 
 /**
  * @brief Print an image using higher quality TRUECOLOR terminal escape codes.
@@ -182,12 +196,13 @@ void mpix_image_print_256color(struct mpix_image *img);
  *
  * @param img Image to which add a processing step.
  * @param template Stream processing step to apply to the image.
- * @param buffer_size Size of the input buffer to allocate for this operation.
+ * @param op_sz Size of the operation struct to allocate.
+ * @param buf_sz Size of the input buffer to allocate for this operation.
  * @param threshold Minimum number of bytes the operation needs to run one cycle.
  * @return 0 on success
  */
-int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
-			 size_t buffer_size, size_t threshold);
+int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *template,
+			 size_t op_sz, size_t buf_sz, size_t threshold);
 
 /**
  * @brief Add a operation processing step to an image for uncompressed input data.
@@ -201,8 +216,10 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_op *template,
  *
  * @param img Image to which add a processing step.
  * @param template Stream processing step to apply to the image.
+ * @param op_sz Size of the operation struct to allocate.
  */
-int mpix_image_append_uncompressed(struct mpix_image *img, const struct mpix_op *template);
+int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_base_op *op,
+				      size_t op_sz);
 
 /**
  * @brief Perform all the processing added to the

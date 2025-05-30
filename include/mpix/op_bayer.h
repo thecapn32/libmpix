@@ -12,21 +12,27 @@
 
 #include <mpix/op.h>
 
+/** @internal */
+struct mpix_bayer_op {
+	/** Fields common to all operations. */
+	struct mpix_base_op base;
+};
+
 /**
  * @brief Define a new bayer format conversion operation.
  *
  * @param id Short identifier to differentiate operations of the same type.
  * @param fn Function performing the operation.
- * @param fmt_in The input format for that operation.
+ * @param format_in The input format for that operation.
  * @param win_sz The number of line of context needed for that debayer operation.
  */
-#define MPIX_REGISTER_BAYER_OP(id, fn, fmt_in, win_sz)                                             \
-	const struct mpix_op mpix_bayer_op_##id = {                                                \
-		.name = ("bayer_" #id),                                                            \
-		.format_in = (MPIX_FMT_##fmt_in),                                                  \
-		.format_out = MPIX_FMT_RGB24,                                                      \
-		.window_size = (win_sz),                                                           \
-		.run = (fn),                                                                       \
+#define MPIX_REGISTER_BAYER_OP(id, fn, format_in, win_sz)                                          \
+	const struct mpix_bayer_op mpix_bayer_op_##id = {                                          \
+		.base.name = ("bayer_" #id),                                                       \
+		.base.format_src = (MPIX_FMT_##format_in),                                         \
+		.base.format_dst = MPIX_FMT_RGB24,                                                 \
+		.base.window_size = (win_sz),                                                      \
+		.base.run = (fn),                                                                  \
 	}
 
 /**

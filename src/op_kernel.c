@@ -8,13 +8,13 @@
 #include <mpix/image.h>
 #include <mpix/op_kernel.h>
 
-static const struct mpix_op **mpix_kernel_3x3_op_list;
-static const struct mpix_op **mpix_kernel_5x5_op_list;
+static const struct mpix_kernel_op **mpix_kernel_3x3_op_list;
+static const struct mpix_kernel_op **mpix_kernel_5x5_op_list;
 
 int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_size)
 {
-	const struct mpix_op *op = NULL;
-	const struct mpix_op **kernel_op_list;
+	const struct mpix_kernel_op *op = NULL;
+	const struct mpix_kernel_op **kernel_op_list;
 
 	switch (kernel_size) {
 	case 3:
@@ -29,10 +29,11 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
 	}
 
 	for (size_t i = 0; kernel_op_list[i] != NULL; i++) {
-		const struct mpix_op *tmp = kernel_op_list[i];
+		const struct mpix_kernel_op *tmp = kernel_op_list[i];
 
-		if (tmp->format_in == img->format && tmp->type == kernel_type &&
-		    kernel_size == tmp->window_size) {
+		if (tmp->base.format_src == img->format &&
+		    tmp->base.window_size == kernel_size &&
+		    tmp->type == kernel_type) {
 			op = tmp;
 			break;
 		}
@@ -44,7 +45,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_append_uncompressed(img, op);
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
 }
 
 /* Function that processes a 3x3 or 5x5 pixel block described by line buffers and column indexes */
@@ -54,10 +55,10 @@ typedef void kernel_5x5_t(const uint8_t *in[3], int i0, int i1, int i2, int i3, 
 			  uint8_t *out, int o0, uint16_t base, const uint16_t *kernel);
 
 /* Function that repeats a 3x3 or 5x5 block operation to each channel of a pixel format */
-typedef void pixfmt_3x3_t(const uint8_t *in[3], int i0, int i1, int i2,
+typedef void pixformat_3x3_t(const uint8_t *in[3], int i0, int i1, int i2,
 			  uint8_t *out, int o0, uint16_t base, kernel_3x3_t *line_fn,
 			  const uint16_t *kernel);
-typedef void pixfmt_5x5_t(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
+typedef void pixformat_5x5_t(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
 			  uint8_t *out, int o0, uint16_t base, kernel_5x5_t *line_fn,
 			  const uint16_t *kernel);
 
@@ -189,41 +190,41 @@ static void mpix_kernel_rgb24_5x5(const uint8_t *in[5], int i0, int i1, int i2, 
  */
 
 static inline void mpix_kernel_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width,
-				   pixfmt_3x3_t *pixfmt_fn, kernel_3x3_t *line_fn,
+				   pixformat_3x3_t *pixformat_fn, kernel_3x3_t *line_fn,
 				   const uint16_t *kernel)
 {
 	uint16_t w = 0;
 
 	/* Edge case on first two columns */
-	pixfmt_fn(in, 0, 0, 1, out, 0, w + 0, line_fn, kernel);
+	pixformat_fn(in, 0, 0, 1, out, 0, w + 0, line_fn, kernel);
 
 	/* process the entire line except the first two and last two columns (edge cases) */
 	for (w = 0; w + 3 <= width; w++) {
-		pixfmt_fn(in, 0, 1, 2, out, 1, w, line_fn, kernel);
+		pixformat_fn(in, 0, 1, 2, out, 1, w, line_fn, kernel);
 	}
 
 	/* Edge case on last two columns */
-	pixfmt_fn(in, 0, 1, 1, out, 1, w, line_fn, kernel);
+	pixformat_fn(in, 0, 1, 1, out, 1, w, line_fn, kernel);
 }
 
 static inline void mpix_kernel_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width,
-				   pixfmt_5x5_t *pixfmt_fn, kernel_5x5_t *line_fn,
+				   pixformat_5x5_t *pixformat_fn, kernel_5x5_t *line_fn,
 				   const uint16_t *kernel)
 {
 	uint16_t w = 0;
 
 	/* Edge case on first two columns, repeat the left column to fill the blank */
-	pixfmt_fn(in, 0, 0, 0, 1, 2, out, 0, w, line_fn, kernel);
-	pixfmt_fn(in, 0, 0, 1, 2, 3, out, 1, w, line_fn, kernel);
+	pixformat_fn(in, 0, 0, 0, 1, 2, out, 0, w, line_fn, kernel);
+	pixformat_fn(in, 0, 0, 1, 2, 3, out, 1, w, line_fn, kernel);
 
 	/* process the entire line except the first two and last two columns (edge cases) */
 	for (w = 0; w + 5 <= width; w++) {
-		pixfmt_fn(in, 0, 1, 2, 3, 4, out, 2, w, line_fn, kernel);
+		pixformat_fn(in, 0, 1, 2, 3, 4, out, 2, w, line_fn, kernel);
 	}
 
 	/* Edge case on last two columns, repeat the right column to fill the blank */
-	pixfmt_fn(in, 0, 1, 2, 3, 3, out, 2, w, line_fn, kernel);
-	pixfmt_fn(in, 1, 2, 3, 3, 3, out, 3, w, line_fn, kernel);
+	pixformat_fn(in, 0, 1, 2, 3, 3, out, 2, w, line_fn, kernel);
+	pixformat_fn(in, 1, 2, 3, 3, 3, out, 3, w, line_fn, kernel);
 }
 
 /*
@@ -231,89 +232,89 @@ static inline void mpix_kernel_5x5(const uint8_t *in[5], uint8_t *out, uint16_t 
  * line by repeating the lines at the edge to fill the gaps.
  */
 
-void mpix_kernel_3x3_op(struct mpix_op *op)
+void mpix_kernel_3x3_op(struct mpix_base_op *base)
 {
-	uint16_t prev_line_offset = op->line_offset;
-	line_3x3_t *line_fn = op->arg0;
-	const uint8_t *in[] = {
-		mpix_op_get_input_line(op),
-		mpix_op_peek_input_line(op),
-		mpix_op_peek_input_line(op),
+	struct mpix_kernel_op *op = (void *)base;
+	uint16_t prev_line_offset = base->line_offset;
+	const uint8_t *src[] = {
+		mpix_op_get_input_line(base),
+		mpix_op_peek_input_line(base),
+		mpix_op_peek_input_line(base),
 	};
 
-	assert(op->width >= 3);
-	assert(op->height >= 3);
+	assert(base->width >= 3);
+	assert(base->height >= 3);
 
 	/* Allow overflowing before the top by repeating the first line */
 	if (prev_line_offset == 0) {
-		const uint8_t *top[] = {in[0], in[0], in[1]};
+		const uint8_t *top[] = {src[0], src[0], src[1]};
 
-		line_fn(top, mpix_op_get_output_line(op), op->width);
-		mpix_op_done(op);
+		op->kernel_fn(top, mpix_op_get_output_line(base), base->width);
+		mpix_op_done(base);
 	}
 
 	/* Process one more line */
-	line_fn(in, mpix_op_get_output_line(op), op->width);
-	mpix_op_done(op);
+	op->kernel_fn(src, mpix_op_get_output_line(base), base->width);
+	mpix_op_done(base);
 
 	/* Allow overflowing after the bottom by repeating the last line */
-	if (prev_line_offset + 3 >= op->height) {
-		const uint8_t *bot[] = {in[1], in[2], in[2]};
+	if (prev_line_offset + 3 >= base->height) {
+		const uint8_t *bot[] = {src[1], src[2], src[2]};
 
-		line_fn(bot, mpix_op_get_output_line(op), op->width);
-		mpix_op_done(op);
+		op->kernel_fn(bot, mpix_op_get_output_line(base), base->width);
+		mpix_op_done(base);
 
 		/* Flush the remaining lines that were used for lookahead context */
-		mpix_op_get_input_line(op);
-		mpix_op_get_input_line(op);
+		mpix_op_get_input_line(base);
+		mpix_op_get_input_line(base);
 	}
 }
 
-void mpix_kernel_5x5_op(struct mpix_op *op)
+void mpix_kernel_5x5_op(struct mpix_base_op *base)
 {
-	uint16_t prev_line_offset = op->line_offset;
-	line_5x5_t *line_fn = op->arg0;
-	const uint8_t *in[] = {
-		mpix_op_get_input_line(op),
-		mpix_op_peek_input_line(op),
-		mpix_op_peek_input_line(op),
-		mpix_op_peek_input_line(op),
-		mpix_op_peek_input_line(op),
+	struct mpix_kernel_op *op = (void *)base;
+	uint16_t prev_line_offset = base->line_offset;
+	const uint8_t *src[] = {
+		mpix_op_get_input_line(base),
+		mpix_op_peek_input_line(base),
+		mpix_op_peek_input_line(base),
+		mpix_op_peek_input_line(base),
+		mpix_op_peek_input_line(base),
 	};
 
-	assert(op->width >= 5);
-	assert(op->height >= 5);
+	assert(base->width >= 5);
+	assert(base->height >= 5);
 
 	/* Allow overflowing before the top by repeating the first line */
 	if (prev_line_offset == 0) {
-		const uint8_t *top[] = {in[0], in[0], in[0], in[1], in[2], in[3]};
+		const uint8_t *top[] = {src[0], src[0], src[0], src[1], src[2], src[3]};
 
-		line_fn(&top[0], mpix_op_get_output_line(op), op->width);
-		mpix_op_done(op);
+		op->kernel_fn(&top[0], mpix_op_get_output_line(base), base->width);
+		mpix_op_done(base);
 
-		line_fn(&top[1], mpix_op_get_output_line(op), op->width);
-		mpix_op_done(op);
+		op->kernel_fn(&top[1], mpix_op_get_output_line(base), base->width);
+		mpix_op_done(base);
 	}
 
 	/* Process one more line */
-	line_fn(in, mpix_op_get_output_line(op), op->width);
-	mpix_op_done(op);
+	op->kernel_fn(src, mpix_op_get_output_line(base), base->width);
+	mpix_op_done(base);
 
 	/* Allow overflowing after the bottom by repeating the last line */
-	if (prev_line_offset + 5 >= op->height) {
-		const uint8_t *bot[] = {in[1], in[2], in[3], in[4], in[4], in[4]};
+	if (prev_line_offset + 5 >= base->height) {
+		const uint8_t *bot[] = {src[1], src[2], src[3], src[4], src[4], src[4]};
 
-		line_fn(&bot[0], mpix_op_get_output_line(op), op->width);
-		mpix_op_done(op);
+		op->kernel_fn(&bot[0], mpix_op_get_output_line(base), base->width);
+		mpix_op_done(base);
 
-		line_fn(&bot[1], mpix_op_get_output_line(op), op->width);
-		mpix_op_done(op);
+		op->kernel_fn(&bot[1], mpix_op_get_output_line(base), base->width);
+		mpix_op_done(base);
 
 		/* Flush the remaining lines that were used for lookahead context */
-		mpix_op_get_input_line(op);
-		mpix_op_get_input_line(op);
-		mpix_op_get_input_line(op);
-		mpix_op_get_input_line(op);
+		mpix_op_get_input_line(base);
+		mpix_op_get_input_line(base);
+		mpix_op_get_input_line(base);
+		mpix_op_get_input_line(base);
 	}
 }
 
@@ -444,9 +445,8 @@ void mpix_median_rgb24_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width)
 }
 MPIX_REGISTER_KERNEL_3X3_OP(denoise_rgb24, mpix_median_rgb24_3x3, DENOISE, RGB24);
 
-static const struct mpix_op **mpix_kernel_5x5_op_list = (const struct mpix_op *[]){
-	MPIX_LIST_KERNEL_5X5_OP
-};
-static const struct mpix_op **mpix_kernel_3x3_op_list = (const struct mpix_op *[]){
-	MPIX_LIST_KERNEL_3X3_OP
-};
+static const struct mpix_kernel_op **mpix_kernel_5x5_op_list =
+	(const struct mpix_kernel_op *[]){MPIX_LIST_KERNEL_5X5_OP};
+
+static const struct mpix_kernel_op **mpix_kernel_3x3_op_list =
+	(const struct mpix_kernel_op *[]){MPIX_LIST_KERNEL_3X3_OP};

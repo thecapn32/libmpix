@@ -11,6 +11,12 @@
 
 #include <mpix/op.h>
 
+/** @internal */
+struct mpix_resize_op {
+	/** Fields common to all operations. */
+	struct mpix_base_op base;
+};
+
 /**
  * @brief Define a format conversion operation.
  *
@@ -21,12 +27,12 @@
  * @param fmt The pixel format of the data resized.
  */
 #define MPIX_REGISTER_RESIZE_OP(id, fn, fmt)                                                       \
-	const struct mpix_op mpix_resize_op_##id = {                                               \
-		.name = ("resize_" #id),                                                           \
-		.format_in = (MPIX_FMT_##fmt),                                                     \
-		.format_out = (MPIX_FMT_##fmt),                                                    \
-		.window_size = 1,                                                                  \
-		.run = (fn),                                                                       \
+	const struct mpix_resize_op mpix_resize_op_##id = {                                        \
+		.base.name = ("resize_" #id),                                                      \
+		.base.format_src = (MPIX_FMT_##fmt),                                                  \
+		.base.format_dst = (MPIX_FMT_##fmt),                                                  \
+		.base.window_size = 1,                                                             \
+		.base.run = (fn),                                                                  \
 	}
 
 /**

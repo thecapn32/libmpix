@@ -10,6 +10,7 @@ set(LIBMPIX_SRC
   ${LIBMPIX_DIR}/src/op_bayer.c
   ${LIBMPIX_DIR}/src/op_convert.c
   ${LIBMPIX_DIR}/src/op_kernel.c
+  ${LIBMPIX_DIR}/src/op_qoi.c
   ${LIBMPIX_DIR}/src/op_palettize.c
   ${LIBMPIX_DIR}/src/op_resize.c
   ${LIBMPIX_DIR}/src/print.c

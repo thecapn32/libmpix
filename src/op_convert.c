@@ -8,11 +8,11 @@
 #include <mpix/op_convert.h>
 #include <mpix/genlist.h>
 
-static const struct mpix_op **mpix_convert_op_list;
+static const struct mpix_convert_op **mpix_convert_op_list;
 
 int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 {
-	const struct mpix_op *op = NULL;
+	const struct mpix_convert_op *op = NULL;
 
 	if (img->format == new_format) {
 		/* no-op */
@@ -20,9 +20,9 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 	}
 
 	for (size_t i = 0; mpix_convert_op_list[i] != NULL; i++) {
-		const struct mpix_op *tmp = mpix_convert_op_list[i];
+		const struct mpix_convert_op *tmp = mpix_convert_op_list[i];
 
-		if (tmp->format_in == img->format && tmp->format_out == new_format) {
+		if (tmp->base.format_src == img->format && tmp->base.format_dst == new_format) {
 			op = tmp;
 			break;
 		}
@@ -34,19 +34,17 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_append_uncompressed(img, op);
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
 }
 
-void mpix_convert_op(struct mpix_op *op)
+void mpix_convert_op(struct mpix_base_op *base)
 {
-	const uint8_t *line_in = mpix_op_get_input_line(op);
-	uint8_t *line_out = mpix_op_get_output_line(op);
-	void (*fn)(const uint8_t *src, uint8_t *dst, uint16_t width) = op->arg0;
+	struct mpix_convert_op *op;
+	const uint8_t *line_in = mpix_op_get_input_line(base);
+	uint8_t *line_out = mpix_op_get_output_line(base);
 
-	assert(fn != NULL);
-
-	fn(line_in, line_out, op->width);
-	mpix_op_done(op);
+	op->convert_fn(line_in, line_out, base->width);
+	mpix_op_done(base);
 }
 
 __attribute__((weak))
@@ -272,6 +270,5 @@ void mpix_convert_rgb24_to_y8_bt709(const uint8_t *rgb24, uint8_t *y8, uint16_t 
 }
 MPIX_REGISTER_CONVERT_OP(rgb24_grey, mpix_convert_rgb24_to_y8_bt709, RGB24, GREY);
 
-static const struct mpix_op **mpix_convert_op_list = (const struct mpix_op *[]){
-	MPIX_LIST_CONVERT_OP
-};
+static const struct mpix_convert_op **mpix_convert_op_list =
+	(const struct mpix_convert_op *[]){MPIX_LIST_CONVERT_OP};

@@ -28,6 +28,16 @@ enum mpix_kernel_type {
 	MPIX_KERNEL_DENOISE,
 };
 
+/** @internal */
+struct mpix_kernel_op {
+	/** Fields common to all operations. */
+	struct mpix_base_op base;
+	/** Type of kernel operation */
+	enum mpix_kernel_type type;
+	/**  */
+	void (*kernel_fn)(const uint8_t *src[], uint8_t *dst, uint16_t w);
+};
+
 /**
  * @brief Define a new 5x5 kernel conversion operation.
  *
@@ -37,13 +47,13 @@ enum mpix_kernel_type {
  * @param fmt The input format for that operation.
  */
 #define MPIX_REGISTER_KERNEL_5X5_OP(id, fn, t, fmt)                                                \
-	const struct mpix_op mpix_kernel_5x5_op_##id = {                                           \
-		.name = ("kernel_5x5_" #id),                                                       \
-		.format_in = (MPIX_FMT_##fmt),                                                     \
-		.format_out = (MPIX_FMT_##fmt),                                                    \
-		.window_size = 5,                                                                  \
-		.run = mpix_kernel_5x5_op,                                                         \
-		.arg0 = (fn),                                                                      \
+	const struct mpix_kernel_op mpix_kernel_5x5_op_##id = {                                    \
+		.base.name = ("kernel_5x5_" #id),                                                  \
+		.base.format_src = (MPIX_FMT_##fmt),                                               \
+		.base.format_dst = (MPIX_FMT_##fmt),                                               \
+		.base.window_size = 5,                                                             \
+		.base.run = mpix_kernel_5x5_op,                                                    \
+		.kernel_fn = (fn),                                                                 \
 		.type = (MPIX_KERNEL_##t),                                                         \
 	}
 
@@ -56,13 +66,13 @@ enum mpix_kernel_type {
  * @param fmt The input format for that operation.
  */
 #define MPIX_REGISTER_KERNEL_3X3_OP(id, fn, t, fmt)                                                \
-	const struct mpix_op mpix_kernel_3x3_op_##id = {                                           \
-		.name = ("kernel_3x3_" #id),                                                       \
-		.format_in = (MPIX_FMT_##fmt),                                                     \
-		.format_out = (MPIX_FMT_##fmt),                                                    \
-		.window_size = 3,                                                                  \
-		.run = mpix_kernel_3x3_op,                                                         \
-		.arg0 = (fn),                                                                      \
+	const struct mpix_kernel_op mpix_kernel_3x3_op_##id = {                                    \
+		.base.name = ("kernel_3x3_" #id),                                                  \
+		.base.format_src = (MPIX_FMT_##fmt),                                                  \
+		.base.format_dst = (MPIX_FMT_##fmt),                                                  \
+		.base.window_size = 3,                                                             \
+		.base.run = mpix_kernel_3x3_op,                                                    \
+		.kernel_fn = (fn),                                                                 \
 		.type = (MPIX_KERNEL_##t),                                                         \
 	}
 
@@ -120,12 +130,12 @@ void mpix_median_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width);
  *
  * @param op Current operation in progress.
  */
-void mpix_kernel_5x5_op(struct mpix_op *op);
+void mpix_kernel_5x5_op(struct mpix_base_op *op);
 
 /**
  * @brief Helper to turn a 3x3 kernel conversion function into an operation.
  * @copydetails mpix_kernel_5x5_op()
  */
-void mpix_kernel_3x3_op(struct mpix_op *op);
+void mpix_kernel_3x3_op(struct mpix_base_op *op);
 
 #endif /** @} */
