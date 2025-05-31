@@ -49,6 +49,10 @@
 #define CLAMP(n, min, max) ((n) < (min) ? (min) : (n) > (max) ? (max) : (n))
 #endif
 
+#ifndef IN_RANGE
+#define IN_RANGE(n, min, max) ((n) >= (min) && (n) <= (max))
+#endif
+
 #ifndef LOG2
 #define _LOG2D(x) (32 - __builtin_clz(x) - 1)
 #define _LOG2Q(x) (64 - __builtin_clzll(x) - 1)

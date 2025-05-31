@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 #include <assert.h>
+#include <string.h>
 #include <errno.h>
 
 #include <mpix/genlist.h>
@@ -31,10 +32,18 @@ static int mpix_image_append_palette_op(struct mpix_image *img, const struct mpi
 	return 0;
 }
 
+uint8_t mpix_palette_depth(const struct mpix_palette *palette)
+{
+	assert(memcmp(MPIX_FOURCC_TO_STR(palette->format), "PLT", 3) == 0);
+	assert(IN_RANGE(MPIX_FOURCC_TO_STR(palette->format)[3], '1', '8'));
+
+	return MPIX_FOURCC_TO_STR(palette->format)[3] - '0';
+}
+
 int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *palette,
 				uint16_t num_samples)
 {
-	size_t colors_nb = 1u << mpix_bits_per_pixel(palette->format);
+	size_t colors_nb = 1u << mpix_palette_depth(palette);
 	uint32_t *sums;
 	const size_t sums_sz = colors_nb * sizeof(*sums) * 3;
 	uint16_t *nums;
@@ -162,7 +171,7 @@ static inline uint32_t mpix_rgb_square_distance(const uint8_t rgb0[3], const uin
 static inline uint8_t mpix_rgb24_to_palette(const uint8_t rgb[3],
 					    const struct mpix_palette *palette)
 {
-	size_t colors_nb = 1u << mpix_bits_per_pixel(palette->format);
+	size_t colors_nb = 1u << mpix_palette_depth(palette);
 	uint8_t best_color[3];
 	uint32_t best_square_distance = UINT32_MAX;
 	uint8_t idx = 0;
@@ -182,17 +191,85 @@ static inline uint8_t mpix_rgb24_to_palette(const uint8_t rgb[3],
 }
 
 __attribute__ ((weak))
+void mpix_convert_rgb24_to_palette1(const uint8_t *src, uint8_t *dst, uint16_t width,
+				    const struct mpix_palette *palette)
+{
+	assert(width % 8 == 0);
+
+	for (uint16_t w = 0; w + 8 <= width; w += 8, src += 8 * 3, dst += 1) {
+		*dst = mpix_rgb24_to_palette(&src[0], palette) << 7;
+		*dst |= mpix_rgb24_to_palette(&src[3], palette) << 6;
+		*dst |= mpix_rgb24_to_palette(&src[6], palette) << 5;
+		*dst |= mpix_rgb24_to_palette(&src[9], palette) << 4;
+		*dst |= mpix_rgb24_to_palette(&src[12], palette) << 3;
+		*dst |= mpix_rgb24_to_palette(&src[15], palette) << 2;
+		*dst |= mpix_rgb24_to_palette(&src[18], palette) << 1;
+		*dst |= mpix_rgb24_to_palette(&src[21], palette) << 0;
+	}
+}
+MPIX_REGISTER_PALETTE_OP(rgb24_palette1, mpix_convert_rgb24_to_palette1, RGB24, PALETTE1);
+
+__attribute__ ((weak))
+void mpix_convert_palette1_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+				    const struct mpix_palette *palette)
+{
+	assert(width % 8 == 0);
+
+	for (uint16_t w = 0; w + 8 <= width; w += 8, src += 1, dst += 8 * 3) {
+		memcpy(&dst[0], &palette->colors[((*src >> 7) & 0x1) * 3], 3);
+		memcpy(&dst[3], &palette->colors[((*src >> 6) & 0x1) * 3], 3);
+		memcpy(&dst[6], &palette->colors[((*src >> 5) & 0x1) * 3], 3);
+		memcpy(&dst[9], &palette->colors[((*src >> 4) & 0x1) * 3], 3);
+		memcpy(&dst[12], &palette->colors[((*src >> 3) & 0x1) * 3], 3);
+		memcpy(&dst[15], &palette->colors[((*src >> 2) & 0x1) * 3], 3);
+		memcpy(&dst[18], &palette->colors[((*src >> 1) & 0x1) * 3], 3);
+		memcpy(&dst[21], &palette->colors[((*src >> 0) & 0x1) * 3], 3);
+	}
+}
+MPIX_REGISTER_PALETTE_OP(palette1_rgb24, mpix_convert_palette1_to_rgb24, PALETTE1, RGB24);
+
+__attribute__ ((weak))
+void mpix_convert_rgb24_to_palette2(const uint8_t *src, uint8_t *dst, uint16_t width,
+				    const struct mpix_palette *palette)
+{
+	assert(width % 4 == 0);
+
+	for (uint16_t w = 0; w + 4 <= width; w += 4, src += 4 * 3, dst += 1) {
+		*dst = mpix_rgb24_to_palette(&src[0], palette) << 6;
+		*dst |= mpix_rgb24_to_palette(&src[3], palette) << 4;
+		*dst |= mpix_rgb24_to_palette(&src[6], palette) << 2;
+		*dst |= mpix_rgb24_to_palette(&src[9], palette) << 0;
+	}
+}
+MPIX_REGISTER_PALETTE_OP(rgb24_palette2, mpix_convert_rgb24_to_palette2, RGB24, PALETTE2);
+
+__attribute__ ((weak))
+void mpix_convert_palette2_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+				    const struct mpix_palette *palette)
+{
+	assert(width % 4 == 0);
+
+	for (uint16_t w = 0; w + 4 <= width; w += 4, src += 1, dst += 4 * 3) {
+		memcpy(&dst[0], &palette->colors[((*src >> 6) & 0x3) * 3], 3);
+		memcpy(&dst[3], &palette->colors[((*src >> 4) & 0x3) * 3], 3);
+		memcpy(&dst[6], &palette->colors[((*src >> 2) & 0x3) * 3], 3);
+		memcpy(&dst[9], &palette->colors[((*src >> 0) & 0x3) * 3], 3);
+	}
+}
+MPIX_REGISTER_PALETTE_OP(palette2_rgb24, mpix_convert_palette2_to_rgb24, PALETTE2, RGB24);
+
+__attribute__ ((weak))
 void mpix_convert_rgb24_to_palette4(const uint8_t *src, uint8_t *dst, uint16_t width,
 				    const struct mpix_palette *palette)
 {
 	assert(width % 2 == 0);
 
-	for (uint16_t w = 0; w < width; w += 2, src += 6, dst += 1) {
-		dst[0] = 0;
-		dst[0] |= mpix_rgb24_to_palette(&src[0], palette) << 4;
-		dst[0] |= mpix_rgb24_to_palette(&src[3], palette) << 0;
+	for (uint16_t w = 0; w + 2 <= width; w += 2, src += 2 * 3, dst += 1) {
+		*dst = mpix_rgb24_to_palette(&src[0], palette) << 4;
+		*dst |= mpix_rgb24_to_palette(&src[3], palette) << 0;
 	}
 }
+MPIX_REGISTER_PALETTE_OP(rgb24_palette3, mpix_convert_rgb24_to_palette4, RGB24, PALETTE3);
 MPIX_REGISTER_PALETTE_OP(rgb24_palette4, mpix_convert_rgb24_to_palette4, RGB24, PALETTE4);
 
 __attribute__ ((weak))
@@ -201,19 +278,39 @@ void mpix_convert_palette4_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t w
 {
 	assert(width % 2 == 0);
 
-	for (uint16_t w = 0; w < width; w += 2, src += 1, dst += 6) {
-		uint8_t *color0 = &palette->colors[(src[0] >> 4) * 3];
-		uint8_t *color1 = &palette->colors[(src[0] & 0xf) * 3];
-
-		dst[0] = color0[0];
-		dst[1] = color0[1];
-		dst[2] = color0[2];
-		dst[3] = color1[0];
-		dst[4] = color1[1];
-		dst[5] = color1[2];
+	for (uint16_t w = 0; w + 2 <= width; w += 2, src += 1, dst += 2 * 3) {
+		memcpy(&dst[0], &palette->colors[((*src >> 4) & 0xf) * 3], 3);
+		memcpy(&dst[3], &palette->colors[((*src >> 0) & 0xf) * 3], 3);
 	}
 }
+MPIX_REGISTER_PALETTE_OP(palette3_rgb24, mpix_convert_palette4_to_rgb24, PALETTE3, RGB24);
 MPIX_REGISTER_PALETTE_OP(palette4_rgb24, mpix_convert_palette4_to_rgb24, PALETTE4, RGB24);
+
+__attribute__ ((weak))
+void mpix_convert_rgb24_to_palette8(const uint8_t *src, uint8_t *dst, uint16_t width,
+				    const struct mpix_palette *palette)
+{
+	for (uint16_t w = 0; w < width; w += 1, src += 3, dst += 1) {
+		*dst = mpix_rgb24_to_palette(src, palette);
+	}
+}
+MPIX_REGISTER_PALETTE_OP(rgb24_palette5, mpix_convert_rgb24_to_palette8, RGB24, PALETTE5);
+MPIX_REGISTER_PALETTE_OP(rgb24_palette6, mpix_convert_rgb24_to_palette8, RGB24, PALETTE6);
+MPIX_REGISTER_PALETTE_OP(rgb24_palette7, mpix_convert_rgb24_to_palette8, RGB24, PALETTE7);
+MPIX_REGISTER_PALETTE_OP(rgb24_palette8, mpix_convert_rgb24_to_palette8, RGB24, PALETTE8);
+
+__attribute__ ((weak))
+void mpix_convert_palette8_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+				    const struct mpix_palette *palette)
+{
+	for (uint16_t w = 0; w < width; w += 1, src += 1, dst += 3) {
+		memcpy(dst, &palette->colors[*src * 3], 3);
+	}
+}
+MPIX_REGISTER_PALETTE_OP(palette5_rgb24, mpix_convert_palette8_to_rgb24, PALETTE5, RGB24);
+MPIX_REGISTER_PALETTE_OP(palette6_rgb24, mpix_convert_palette8_to_rgb24, PALETTE6, RGB24);
+MPIX_REGISTER_PALETTE_OP(palette7_rgb24, mpix_convert_palette8_to_rgb24, PALETTE7, RGB24);
+MPIX_REGISTER_PALETTE_OP(palette8_rgb24, mpix_convert_palette8_to_rgb24, PALETTE8, RGB24);
 
 static const struct mpix_palette_op **mpix_palette_op_list =
 	(const struct mpix_palette_op *[]){MPIX_LIST_PALETTE_OP};
