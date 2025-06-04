@@ -12,8 +12,9 @@
 body {
 	max-width: 1000px;
 	margin: auto;
-	padding-left: calc(5% + 16px);
-	padding-right: calc(5% + 16px);
+	margin-bottom: 128px;
+	padding-left: 5%;
+	padding-right: 5%;
 }
 
 body, table, div, p, dl, #projectbrief, .sm-dox a, .sm-dox a:hover  {
