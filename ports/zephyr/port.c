@@ -5,6 +5,8 @@
 
 #include <zephyr/kernel.h>
 
+#include <mpix/port.h>
+
 K_HEAP_DEFINE(mpix_heap, CONFIG_MPIX_HEAP_SIZE);
 
 void *mpix_port_alloc(size_t size)
