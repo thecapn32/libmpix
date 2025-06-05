@@ -39,7 +39,7 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 
 void mpix_convert_op(struct mpix_base_op *base)
 {
-	struct mpix_convert_op *op;
+	struct mpix_convert_op *op = (void *)base;
 	const uint8_t *line_in = mpix_op_get_input_line(base);
 	uint8_t *line_out = mpix_op_get_output_line(base);
 

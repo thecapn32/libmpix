@@ -19,7 +19,6 @@ int mpix_image_qoi_depalettize(struct mpix_image *img, size_t max_sz, struct mpi
 	struct mpix_qoi_palette_op *new;
 	uint8_t bpp = mpix_bits_per_pixel(img->format);
 	size_t pitch = img->width * bpp / BITS_PER_BYTE;
-	uint8_t *alpha;
 	int ret;
 
 	/* TODO: check that the image format is PALETTE# */
@@ -77,6 +76,7 @@ void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 		uint8_t idx1 = (buf_in[w / 2] & 0x0f) >> 0;
 
 		o += mpix_qoi_encode(idx0, buf_out + o, sz_out - o);
+		o += mpix_qoi_encode(idx1, buf_out + o, sz_out - o);
 	}
 
 	mpix_op_done(base);
@@ -101,7 +101,8 @@ void mpix_qoi_depalettize_op(struct mpix_base_op *base)
 		uint8_t idx0 = (buf_in[w / 2] & 0xf0) >> 4;
 		uint8_t idx1 = (buf_in[w / 2] & 0x0f) >> 0;
 
-		o += mpix_qoi_encode(idx0, buf_out + o, sz_out - o);
+		o += mpix_qoi_decode(idx0, buf_out + o, sz_out - o);
+		o += mpix_qoi_decode(idx1, buf_out + o, sz_out - o);
 	}
 
 	mpix_op_done(base);
