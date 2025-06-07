@@ -4,7 +4,7 @@
 Using libmpix in a project
 --------------------------
 
-The **libmpix** is meant as a portable library, and various platforms are supported out of the box,
+**libmpix** is meant as a portable library, and various platforms are supported out of the box,
 with an example repo for each:
 
 - [Zephyr example repo](https://github.com/libmpix/libmpix_example_zephyr)
