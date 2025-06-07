@@ -5,6 +5,7 @@ SHOW_FILES		= NO
 SHOW_NAMESPACES		= NO
 INPUT			= . ../include
 IMAGE_PATH		= img
+PROJECT_LOGO		= img/libmpmix_logo_light_background.png
 RECURSIVE		= YES
 SEARCH_INCLUDES		= YES
 USE_MDFILE_AS_MAINPAGE	= index.md

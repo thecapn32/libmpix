@@ -34,6 +34,11 @@ body, table, div, p, dl, #projectbrief, .sm-dox a, .sm-dox a:hover  {
 	display: inline-block;
 }
 
+#projectlogo img {
+	width: 512px;
+	max-width: 100%;
+}
+
 #MSearchBox {
 	box-shadow: none;
 	border-radius: 0px;
