@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <mpix/utils.h>
+
 /**
  * @brief Ring buffer of pixels
  *
@@ -64,8 +66,11 @@ static inline size_t mpix_ring_headroom(struct mpix_ring *ring)
 		 *             ^^^^^
 		 */
 		return ring->size - ring->head;
+	} else {
+		/* [::::::::::HT::::]
+		 */
+		return 0;
 	}
-	return 0;
 }
 
 static inline size_t mpix_ring_tailroom(struct mpix_ring *ring)
@@ -86,14 +91,19 @@ static inline size_t mpix_ring_tailroom(struct mpix_ring *ring)
 		/* [::::::::::HT::::]
 		 *             ^^^^^
 		 */
+		assert(ring->head == ring->tail);
 		return ring->size - ring->tail;
+	} else {
+		/* [          TH    ]
+		 */
+		assert(ring->head == ring->tail);
+		return 0;
 	}
-	return 0;
 }
 
 static inline size_t mpix_ring_peekroom(struct mpix_ring *ring)
 {
-	if (ring->head < ring->tail && ring->tail < ring->peek) {
+	if (ring->head < ring->tail && ring->tail <= ring->peek) {
 		/* [::::H      T:P::]
 		 *               ^^^
 		 */
@@ -105,7 +115,7 @@ static inline size_t mpix_ring_peekroom(struct mpix_ring *ring)
 		 */
 		return ring->head - ring->peek;
 	}
-	if (ring->tail < ring->peek && ring->peek < ring->head) {
+	if (ring->tail <= ring->peek && ring->peek < ring->head) {
 		/* [    T:P::::H    ]
 		 *        ^^^^^
 		 */
@@ -115,12 +125,14 @@ static inline size_t mpix_ring_peekroom(struct mpix_ring *ring)
 		/* [::::::::::HT:P::]
 		 *               ^^^
 		 */
+		assert(ring->head == ring->tail);
 		return ring->size - ring->peek;
 	}
-	if (mpix_ring_is_full(ring) && ring->peek < ring->head) {
+	if (mpix_ring_is_full(ring) && ring->peek <= ring->head) {
 		/* [::P:::::::HT::::]
 		 *    ^^^^^^^^
 		 */
+		assert(ring->head == ring->tail);
 		return ring->head - ring->peek;
 	}
 	return 0;
@@ -144,9 +156,14 @@ static inline size_t mpix_ring_total_used(struct mpix_ring *ring)
 		/* [::::::::::HT::::]
 		 *  ^^^^^^^^^^^^^^^^
 		 */
+		assert(ring->head == ring->tail);
 		return ring->size;
+	} else {
+		/* [          TH    ]
+		 */
+		assert(ring->head == ring->tail);
+		return 0;
 	}
-	return 0;
 }
 
 static inline uint8_t *mpix_ring_write(struct mpix_ring *ring, size_t size)
@@ -184,6 +201,13 @@ static inline uint8_t *mpix_ring_peek(struct mpix_ring *ring, size_t size)
 	}
 	ring->peek = (ring->peek + size) % ring->size;
 	return data;
+}
+
+static inline void mpix_ring_dump(struct mpix_ring *ring)
+{
+	MPIX_INF("ring %s full, size %u, head %u (#%u), tail %u (#%u), peek %u (#%u)",
+		ring->full ? "is" : "not", ring->size, mpix_ring_headroom(ring), ring->head,
+		mpix_ring_tailroom(ring), ring->tail, mpix_ring_peekroom(ring), ring->peek);
 }
 
 #endif

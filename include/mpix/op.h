@@ -124,7 +124,7 @@ static inline uint8_t *mpix_op_get_output_bytes(struct mpix_base_op *op, size_t 
 {
 	uint8_t *data;
 
-	assert(op->next != NULL /* Missing  operation at the end, cannot get output buffer */);
+	assert(op->next != NULL /* Missing operation at the end, cannot get output buffer */);
 
 	data = mpix_ring_write(&op->next->ring, sz);
 	assert(data != NULL /* Asked for more output bytes than available in the buffer */);
@@ -162,7 +162,7 @@ static inline uint8_t *mpix_op_peek_input_bytes(struct mpix_base_op *op, size_t 
  */
 static inline uint8_t *mpix_op_get_output_line(struct mpix_base_op *op)
 {
-	return mpix_op_get_output_bytes(op, mpix_op_pitch(op->next) * 1);
+	return mpix_op_get_output_bytes(op, mpix_op_pitch(op->next));
 }
 
 /**
@@ -188,7 +188,7 @@ static inline const uint8_t *mpix_op_get_input_line(struct mpix_base_op *op)
  */
 static inline uint8_t *mpix_op_peek_input_line(struct mpix_base_op *op)
 {
-	return mpix_op_peek_input_bytes(op, mpix_op_pitch(op->next) * 1);
+	return mpix_op_peek_input_bytes(op, mpix_op_pitch(op));
 }
 
 /**
