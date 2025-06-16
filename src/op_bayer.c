@@ -255,8 +255,8 @@ void mpix_convert_rggb8_to_rgb24_2x2(const uint8_t *src0, const uint8_t *src1, u
 		mpix_rggb8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
 		mpix_grbg8_to_rgb24_2x2(src0[1], src0[2], src1[1], src1[2], &dst[3]);
 	}
-	mpix_rggb8_to_rgb24_2x2(src0[-1], src0[-2], src1[-1], src1[-2], &dst[-6]);
-	mpix_grbg8_to_rgb24_2x2(src0[-2], src0[-1], src1[-2], src1[-1], &dst[-3]);
+	mpix_rggb8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
+	mpix_grbg8_to_rgb24_2x2(src0[1], src0[-1], src1[1], src1[-1], &dst[3]);
 }
 
 __attribute__((weak))
@@ -269,8 +269,8 @@ void mpix_convert_bggr8_to_rgb24_2x2(const uint8_t *src0, const uint8_t *src1, u
 		mpix_bggr8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
 		mpix_gbrg8_to_rgb24_2x2(src0[1], src0[2], src1[1], src1[2], &dst[3]);
 	}
-	mpix_bggr8_to_rgb24_2x2(src0[-1], src0[-2], src1[-1], src1[-2], &dst[-6]);
-	mpix_gbrg8_to_rgb24_2x2(src0[-2], src0[-1], src1[-2], src1[-1], &dst[-3]);
+	mpix_bggr8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
+	mpix_gbrg8_to_rgb24_2x2(src0[1], src0[-1], src1[1], src1[-1], &dst[3]);
 }
 
 __attribute__((weak))
@@ -283,8 +283,8 @@ void mpix_convert_gbrg8_to_rgb24_2x2(const uint8_t *src0, const uint8_t *src1, u
 		mpix_gbrg8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
 		mpix_bggr8_to_rgb24_2x2(src0[1], src0[2], src1[1], src1[2], &dst[3]);
 	}
-	mpix_gbrg8_to_rgb24_2x2(src0[-1], src0[-2], src1[-1], src1[-2], &dst[-6]);
-	mpix_bggr8_to_rgb24_2x2(src0[-2], src0[-1], src1[-2], src1[-1], &dst[-3]);
+	mpix_gbrg8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
+	mpix_bggr8_to_rgb24_2x2(src0[1], src0[-1], src1[1], src1[-1], &dst[3]);
 }
 
 __attribute__((weak))
@@ -297,8 +297,8 @@ void mpix_convert_grbg8_to_rgb24_2x2(const uint8_t *src0, const uint8_t *src1, u
 		mpix_grbg8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
 		mpix_rggb8_to_rgb24_2x2(src0[1], src0[2], src1[1], src1[2], &dst[3]);
 	}
-	mpix_grbg8_to_rgb24_2x2(src0[-1], src0[-2], src1[-1], src1[-2], &dst[-6]);
-	mpix_rggb8_to_rgb24_2x2(src0[-2], src0[-1], src1[-2], src1[-1], &dst[-3]);
+	mpix_grbg8_to_rgb24_2x2(src0[0], src0[1], src1[0], src1[1], &dst[0]);
+	mpix_rggb8_to_rgb24_2x2(src0[1], src0[-1], src1[1], src1[-1], &dst[3]);
 }
 
 typedef void fn_2x2_t(const uint8_t *i0, const uint8_t *i1, uint8_t *o0, uint16_t width);
