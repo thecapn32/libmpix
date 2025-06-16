@@ -175,6 +175,7 @@ static inline uint8_t *mpix_op_get_output_line(struct mpix_base_op *op)
  */
 static inline const uint8_t *mpix_op_get_input_line(struct mpix_base_op *op)
 {
+	op->line_offset++;
 	return mpix_op_get_input_bytes(op, mpix_op_pitch(op));
 }
 
