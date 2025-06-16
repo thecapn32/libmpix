@@ -83,7 +83,8 @@ void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 }
 MPIX_REGISTER_QOI_CONVERT_OP(encode_rgb24, mpix_qoi_encode_rgb24_op, RGB24, QOI);
 
-static inline size_t mpix_qoi_depalettize()
+static inline size_t mpix_qoi_depalettize(struct mpix_palette_op *op, uint8_t idx,
+					  uint8_t *buf, size_t sz)
 {
 	MPIX_INF("");
 
@@ -92,6 +93,7 @@ static inline size_t mpix_qoi_depalettize()
 
 void mpix_qoi_depalettize_op(struct mpix_base_op *base)
 {
+	struct mpix_palette_op *op = (void *)base;
 	const uint8_t *buf_in = mpix_op_get_input_line(base);
 	size_t sz_out = 0;
 	uint8_t *buf_out = mpix_op_peek_output(base, &sz_out);
@@ -101,8 +103,8 @@ void mpix_qoi_depalettize_op(struct mpix_base_op *base)
 		uint8_t idx0 = (buf_in[w / 2] & 0xf0) >> 4;
 		uint8_t idx1 = (buf_in[w / 2] & 0x0f) >> 0;
 
-		o += mpix_qoi_decode(idx0, buf_out + o, sz_out - o);
-		o += mpix_qoi_decode(idx1, buf_out + o, sz_out - o);
+		o += mpix_qoi_depalettize(op, idx0, buf_out + o, sz_out - o);
+		o += mpix_qoi_depalettize(op, idx1, buf_out + o, sz_out - o);
 	}
 
 	mpix_op_done(base);
