@@ -155,17 +155,17 @@ typedef void fn_3x3_t(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2, u
 static inline void mpix_op_bayer_to_rgb24_3x3(struct mpix_base_op *base,
 					      fn_3x3_t *fn0, fn_3x3_t *fn1)
 {
-	uint16_t prev_convert_offset = base->line_offset;
+	uint16_t prev_line_offset = base->line_offset;
 	const uint8_t *i0 = mpix_op_get_input_line(base);
 	const uint8_t *i1 = mpix_op_peek_input_line(base);
 	const uint8_t *i2 = mpix_op_peek_input_line(base);
 
-	if (prev_convert_offset == 0) {
+	if (prev_line_offset == 0) {
 		fn1(i1, i0, i1, mpix_op_get_output_line(base), base->width);
 		mpix_op_done(base);
 	}
 
-	if (prev_convert_offset % 2 == 0) {
+	if (prev_line_offset % 2 == 0) {
 		fn0(i0, i1, i2, mpix_op_get_output_line(base), base->width);
 		mpix_op_done(base);
 	} else {
@@ -221,7 +221,7 @@ static inline void mpix_rggb8_to_rgb24_2x2(uint8_t r0, uint8_t g0, uint8_t g1, u
 	dst[2] = b0;
 }
 
-static inline void mpix_gbrg8_to_rgb24_2x2(uint8_t g1, uint8_t b0, uint8_t r0, uint8_t g0,
+static inline void mpix_gbrg8_to_rgb24_2x2(uint8_t g0, uint8_t b0, uint8_t r0, uint8_t g1,
 					   uint8_t dst[3])
 {
 	dst[0] = r0;
@@ -237,7 +237,7 @@ static inline void mpix_bggr8_to_rgb24_2x2(uint8_t b0, uint8_t g0, uint8_t g1, u
 	dst[2] = b0;
 }
 
-static inline void mpix_grbg8_to_rgb24_2x2(uint8_t g1, uint8_t r0, uint8_t b0, uint8_t g0,
+static inline void mpix_grbg8_to_rgb24_2x2(uint8_t g0, uint8_t r0, uint8_t b0, uint8_t g1,
 					   uint8_t dst[3])
 {
 	dst[0] = r0;
@@ -306,11 +306,11 @@ typedef void fn_2x2_t(const uint8_t *i0, const uint8_t *i1, uint8_t *o0, uint16_
 static inline void mpix_op_bayer_to_rgb24_2x2(struct mpix_base_op *base,
 					      fn_2x2_t *fn0, fn_2x2_t *fn1)
 {
-	uint16_t prev_convert_offset = base->line_offset;
+	uint16_t prev_line_offset = base->line_offset;
 	const uint8_t *i0 = mpix_op_get_input_line(base);
 	const uint8_t *i1 = mpix_op_peek_input_line(base);
 
-	if (prev_convert_offset % 2 == 0) {
+	if (prev_line_offset % 2 == 0) {
 		fn0(i0, i1, mpix_op_get_output_line(base), base->width);
 		mpix_op_done(base);
 	} else {
@@ -319,7 +319,7 @@ static inline void mpix_op_bayer_to_rgb24_2x2(struct mpix_base_op *base,
 	}
 
 	if (base->line_offset + 1 == base->height) {
-		fn0(i0, i1, mpix_op_get_output_line(base), base->width);
+		fn0(i1, i0, mpix_op_get_output_line(base), base->width);
 		mpix_op_done(base);
 
 		/* Skip the two lines of lookahead context, now that the conversion is complete */
