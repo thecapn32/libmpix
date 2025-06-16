@@ -29,6 +29,26 @@ void mpix_print_buffer_256color(const uint8_t *buf, size_t size, uint16_t width,
 				uint32_t fourcc);
 
 /**
+ * @brief Print two pixels using TRUECOLOR terminal escape sequences
+ *
+ * No newline character is printed at the end.
+ *
+ * @param row0 The pixel to print at the top.
+ * @param row1 The pixel to print at the bottom.
+ */
+void mpix_print_truecolor(const uint8_t row0[3], const uint8_t row1[3]);
+/**
+ * @brief Print two pixels using 256COLOR terminal escape sequences
+ * @copydetails mpix_print_truecolor()
+ */
+void mpix_print_256color(const uint8_t row0[3], const uint8_t row1[3]);
+/**
+ * @brief Print two grayscale pixels using terminal escape sequences
+ * @copydetails mpix_print_truecolor()
+ */
+void mpix_print_256gray(uint8_t row0, uint8_t row1);
+
+/**
  * @brief Hexdump a buffer in the RAW8 format
  *
  * @param buf Input buffer to display in the terminal.
@@ -56,11 +76,14 @@ void mpix_hexdump_yuyv(const uint8_t *buf, size_t size, uint16_t width, uint16_t
 /**
  * @brief Printing RGB histograms to the terminal.
  *
- * @param rgb24hist Buffer storing 3 histograms one after the other, for the R, G, B channels.
+ * @param r_hist Buckets for the red channel.
+ * @param g_hist Buckets for the green channel.
+ * @param b_hist Buckets for the blue channel.
  * @param size Total number of buckets in total contained within @p rgb24hist all channels included.
  * @param height Desired height of the chart in pixels.
  */
-void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t height);
+void mpix_print_rgb_hist(const uint16_t *r_hist, const uint16_t *g_hist, const uint16_t *b_hist,
+			 size_t size, uint16_t height);
 
 /**
  * @brief Printing Y histograms to the terminal.
@@ -69,6 +92,6 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
  * @param size Total number of buckets in total contained within @p hist.
  * @param height Desired height of the chart in pixels.
  */
-void mpix_print_y8hist(const uint16_t *y8hist, size_t size, uint16_t height);
+void mpix_print_y_hist(const uint16_t *y8hist, size_t size, uint16_t height);
 
 #endif /** @} */

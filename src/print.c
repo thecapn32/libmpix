@@ -19,19 +19,19 @@ static uint8_t mpix_gray8_to_256color(uint8_t gray8)
 	return 232 + gray8 * 24 / 256;
 }
 
-static void mpix_print_truecolor(const uint8_t row0[3], const uint8_t row1[3])
+void mpix_print_truecolor(const uint8_t row0[3], const uint8_t row1[3])
 {
 	mpix_port_printf("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
 		row0[0], row0[1], row0[2], row1[0], row1[1], row1[2]);
 }
 
-static void mpix_print_256color(const uint8_t row0[3], const uint8_t row1[3])
+void mpix_print_256color(const uint8_t row0[3], const uint8_t row1[3])
 {
 	mpix_port_printf("\e[48;5;%um\e[38;5;%um▄",
 		mpix_rgb24_to_256color(row0), mpix_rgb24_to_256color(row1));
 }
 
-static void mpix_print_256gray(uint8_t row0, uint8_t row1)
+void mpix_print_256gray(uint8_t row0, uint8_t row1)
 {
 	mpix_port_printf("\e[48;5;%um\e[38;5;%um▄",
 		mpix_gray8_to_256color(row0), mpix_gray8_to_256color(row1));
@@ -259,17 +259,15 @@ static void mpix_print_hist_scale(size_t size)
 	mpix_port_printf("\e[m\n");
 }
 
-void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t height)
+void mpix_print_rgb_hist(const uint16_t *r_hist, const uint16_t *g_hist, const uint16_t *b_hist,
+			 size_t size, uint16_t height)
 {
-	const uint16_t *r8hist = &rgb24hist[size / 3 * 0];
-	const uint16_t *g8hist = &rgb24hist[size / 3 * 1];
-	const uint16_t *b8hist = &rgb24hist[size / 3 * 2];
 	uint32_t max = 1;
 
-	assert(size % 3 == 0 /* Each of R, G, B channel should have the same size */);
-
 	for (size_t i = 0; i < size; i++) {
-		max = rgb24hist[i] > max ? rgb24hist[i] : max;
+		max = r_hist[i] > max ? r_hist[i] : max;
+		max = g_hist[i] > max ? g_hist[i] : max;
+		max = b_hist[i] > max ? b_hist[i] : max;
 	}
 
 	for (uint16_t h = height; h > 1; h--) {
@@ -277,12 +275,12 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
 			uint8_t row0[3];
 			uint8_t row1[3];
 
-			row0[0] = (r8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			row0[1] = (g8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			row0[2] = (b8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			row1[0] = (r8hist[i] * height / max > h - 1) ? 0xff : 0x00;
-			row1[1] = (g8hist[i] * height / max > h - 1) ? 0xff : 0x00;
-			row1[2] = (b8hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			row0[0] = (r_hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			row0[1] = (g_hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			row0[2] = (b_hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			row1[0] = (r_hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			row1[1] = (g_hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			row1[2] = (b_hist[i] * height / max > h - 1) ? 0xff : 0x00;
 
 			mpix_print_256color(row0, row1);
 		}
@@ -292,18 +290,18 @@ void mpix_print_rgb24hist(const uint16_t *rgb24hist, size_t size, uint16_t heigh
 	mpix_print_hist_scale(size / 3);
 }
 
-void mpix_print_y8hist(const uint16_t *y8hist, size_t size, uint16_t height)
+void mpix_print_y_hist(const uint16_t *y_hist, size_t size, uint16_t height)
 {
 	uint32_t max = 1;
 
 	for (size_t i = 0; i < size; i++) {
-		max = y8hist[i] > max ? y8hist[i] : max;
+		max = y_hist[i] > max ? y_hist[i] : max;
 	}
 
 	for (uint16_t h = height; h > 1; h--) {
 		for (size_t i = 0; i < size; i++) {
-			uint8_t row0 = (y8hist[i] * height / max > h - 0) ? 0xff : 0x00;
-			uint8_t row1 = (y8hist[i] * height / max > h - 1) ? 0xff : 0x00;
+			uint8_t row0 = (y_hist[i] * height / max > h - 0) ? 0xff : 0x00;
+			uint8_t row1 = (y_hist[i] * height / max > h - 1) ? 0xff : 0x00;
 
 			mpix_print_256gray(row0, row1);
 		}

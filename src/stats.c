@@ -5,75 +5,63 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <mpix/op_convert.h>
-#include <mpix/sample.h>
+#include <mpix/image.h>
 #include <mpix/stats.h>
+#include <mpix/sample.h>
+#include <mpix/print.h>
+#include <mpix/op_convert.h>
 
-/* Channel average statistics */
+/* Arbitrary value estimated good enough for most cases */
+#define MPIX_STATS_DEFAULT_NVALS 1000
 
-void mpix_stats_rgb_avg(const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc,
-			uint8_t avg[3], uint16_t nval)
+static inline void mpix_stats_add_sample(struct mpix_stats *stats, uint8_t rgb[3])
 {
-	uint32_t sums[3] = {0, 0, 0};
+	/* Histogram statistics: use BT.601 like libcamera, reduce precision to fit hist[64] */
+	stats->histogram[mpix_rgb24_get_luma_bt709(rgb) >> 2]++;
 
-	for (uint16_t n = 0; n < nval; n++) {
-		uint8_t rgb[3];
-
-		mpix_sample_random_rgb(buf, width, height, fourcc, rgb);
-
-		sums[0] += rgb[0];
-		sums[1] += rgb[1];
-		sums[2] += rgb[2];
-	}
-
-	avg[0] = sums[0] / nval;
-	avg[1] = sums[1] / nval;
-	avg[2] = sums[2] / nval;
+	/* RGB statistics */
+	stats->sum_r += rgb[0];
+	stats->sum_g += rgb[1];
+	stats->sum_b += rgb[2];
 }
 
-/* RGB24 histogram statistics */
-
-void mpix_stats_rgb_hist(const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc,
-			 uint16_t *hist, size_t hist_size, uint16_t nval)
+void mpix_stats_from_buf(struct mpix_stats *stats,
+			 const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc)
 {
-	uint8_t bit_depth = LOG2(hist_size / 3);
+	uint8_t nvals = stats->nvals > 0 ? stats->nvals : MPIX_STATS_DEFAULT_NVALS;
 
-	assert(hist_size % 3 == 0 /* Each of R, G, B channel should have the same size */);
-	assert(1 << bit_depth == hist_size / 3 /* Each channel size should be a power of two */);
+	memset(stats, 0x00, sizeof(*stats));
 
-	memset(hist, 0x00, hist_size * sizeof(*hist));
+	stats->nvals = nvals;
 
-	for (uint16_t n = 0; n < nval; n++) {
+	for (uint16_t i = 0; i < nvals; i++) {
 		uint8_t rgb[3];
 
 		mpix_sample_random_rgb(buf, width, height, fourcc, rgb);
-
-		hist[(rgb[0] >> (BITS_PER_BYTE - bit_depth)) * 3 + 0]++;
-		hist[(rgb[1] >> (BITS_PER_BYTE - bit_depth)) * 3 + 1]++;
-		hist[(rgb[2] >> (BITS_PER_BYTE - bit_depth)) * 3 + 2]++;
+		mpix_stats_add_sample(stats, rgb);
 	}
 }
 
-/* Y8 histogram statistics
- * Use BT.709 (sRGB) as an arbitrary choice, instead of BT.601 like libcamera
- */
-
-void mpix_stats_luma_hist(const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc,
-			  uint16_t *hist, size_t hist_size, uint16_t nval)
+void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats)
 {
-	uint8_t bit_depth = LOG2(hist_size);
+	mpix_stats_from_buf(stats, img->buffer, img->width, img->height, img->format);
+}
 
-	assert(1 << bit_depth == hist_size /* Size should be a power of two */);
+void mpix_stats_print(struct mpix_stats *stats)
+{
+	uint8_t rgb[3];
 
-	memset(hist, 0x00, hist_size * sizeof(*hist));
+	mpix_port_printf("Y Histogram:\n");
+	mpix_print_y_hist(stats->histogram, ARRAY_SIZE(stats->histogram), 10);
 
-	for (uint16_t n = 0; n < nval; n++) {
-		uint8_t rgb[3];
-		uint8_t luma;
+	mpix_port_printf("Channel Average:\n");
+	rgb[0] = stats->sum_r / stats->nvals;
+	rgb[1] = stats->sum_g / stats->nvals;
+	rgb[2] = stats->sum_b / stats->nvals;
+	mpix_port_printf("#%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
+	mpix_print_truecolor(rgb, rgb);
+	mpix_print_truecolor(rgb, rgb);
+	mpix_port_printf("\x1b[m\n"); /* Reset to normal color */
 
-		mpix_sample_random_rgb(buf, width, height, fourcc, rgb);
-		luma = mpix_rgb24_get_luma_bt709(rgb);
-
-		hist[luma >> (BITS_PER_BYTE - bit_depth)]++;
-	}
+	mpix_port_printf("%u values sampled\n", stats->nvals);
 }

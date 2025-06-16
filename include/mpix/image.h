@@ -8,12 +8,18 @@
 #define MPIX_IMAGE_H
 
 #include <mpix/formats.h>
+#include <mpix/stats.h>
 #include <mpix/op.h>
 #include <mpix/op_kernel.h>
 #include <mpix/op_palettize.h>
 
 /**
  * @brief Represent the image currently being processed
+ *
+ * When adding operations to an image, the buffer is not converted yet.
+ *
+ * The struct fields are meant to reflect the buffer after it got converted, so after adding
+ * operations, there might be a mismatch between the data format of the buffer and the .
  */
 struct mpix_image {
 	/** Linked list of operations to be performed on this image */
@@ -59,6 +65,19 @@ void mpix_image_from_buf(struct mpix_image *img, uint8_t *buf, size_t size,
  * @return 0 on success
  */
 int mpix_image_to_buf(struct mpix_image *img, uint8_t *buf, size_t size);
+
+/**
+ * @brief Collect statistics from an image.
+ *
+ * The image buffer is used to collect statistics into a @p stats structure.
+ *
+ * If the @p stats field @c nval is non-zero, this number of pixels will be collected randomly
+ * from the image to generate statistics such as histogram and .
+ *
+ * @param img Image to convert.
+ * @param new_format A four-character-code (FOURCC) as defined by @c <zephyr/drivers/video.h>.
+ */
+void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats);
 
 /**
  * @brief Convert an image to a new pixel format.
