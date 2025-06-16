@@ -47,6 +47,6 @@ void mpix_port_free(void *mem);
  *
  * @param mem Pointer to the buffer to free.
  */
-void mpix_port_printf(char *fmt, ...);
+void mpix_port_printf(const char *fmt, ...);
 
 #endif /** @} */

@@ -58,10 +58,9 @@ void mpix_stats_print(struct mpix_stats *stats)
 	rgb[0] = stats->sum_r / stats->nvals;
 	rgb[1] = stats->sum_g / stats->nvals;
 	rgb[2] = stats->sum_b / stats->nvals;
-	mpix_port_printf("#%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
+	mpix_port_printf(" #%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
 	mpix_print_truecolor(rgb, rgb);
 	mpix_print_truecolor(rgb, rgb);
-	mpix_port_printf("\x1b[m\n"); /* Reset to normal color */
-
-	mpix_port_printf("%u values sampled\n", stats->nvals);
+	mpix_port_printf("\x1b[m"); /* Reset to normal color */
+	mpix_port_printf(" for %u values sampled\n", stats->nvals);
 }
