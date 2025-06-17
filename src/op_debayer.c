@@ -5,16 +5,16 @@
 
 #include <mpix/genlist.h>
 #include <mpix/image.h>
-#include <mpix/op_bayer.h>
+#include <mpix/op_debayer.h>
 
-static const struct mpix_bayer_op **mpix_bayer_op_list;
+static const struct mpix_debayer_op **mpix_debayer_op_list;
 
 int mpix_image_debayer(struct mpix_image *img, uint32_t win_sz)
 {
-	const struct mpix_bayer_op *op = NULL;
+	const struct mpix_debayer_op *op = NULL;
 
-	for (size_t i = 0; mpix_bayer_op_list[i] != NULL; i++) {
-		const struct mpix_bayer_op *tmp = mpix_bayer_op_list[i];
+	for (size_t i = 0; mpix_debayer_op_list[i] != NULL; i++) {
+		const struct mpix_debayer_op *tmp = mpix_debayer_op_list[i];
 
 		if (tmp->base.format_src == img->format &&
 		    tmp->base.format_dst == MPIX_FMT_RGB24 &&
@@ -152,7 +152,7 @@ void mpix_convert_gbrg8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const
 typedef void fn_3x3_t(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2, uint8_t *o0,
 		      uint16_t width);
 
-static inline void mpix_op_bayer_to_rgb24_3x3(struct mpix_base_op *base,
+static inline void mpix_op_debayer_to_rgb24_3x3(struct mpix_base_op *base,
 					      fn_3x3_t *fn0, fn_3x3_t *fn1)
 {
 	uint16_t prev_line_offset = base->line_offset;
@@ -185,31 +185,31 @@ static inline void mpix_op_bayer_to_rgb24_3x3(struct mpix_base_op *base,
 
 static void mpix_op_srggb8_to_rgb24_3x3(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_3x3(base, &mpix_convert_rggb8_to_rgb24_3x3,
+	mpix_op_debayer_to_rgb24_3x3(base, &mpix_convert_rggb8_to_rgb24_3x3,
 				   &mpix_convert_gbrg8_to_rgb24_3x3);
 }
-MPIX_REGISTER_BAYER_OP(srggb8_3x3, mpix_op_srggb8_to_rgb24_3x3, SRGGB8, 3);
+MPIX_REGISTER_DEBAYER_OP(srggb8_3x3, mpix_op_srggb8_to_rgb24_3x3, SRGGB8, 3);
 
 static void mpix_op_sgbrg8_to_rgb24_3x3(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_3x3(base, &mpix_convert_gbrg8_to_rgb24_3x3,
+	mpix_op_debayer_to_rgb24_3x3(base, &mpix_convert_gbrg8_to_rgb24_3x3,
 				   &mpix_convert_rggb8_to_rgb24_3x3);
 }
-MPIX_REGISTER_BAYER_OP(sgbrg8_3x3, mpix_op_sgbrg8_to_rgb24_3x3, SGBRG8, 3);
+MPIX_REGISTER_DEBAYER_OP(sgbrg8_3x3, mpix_op_sgbrg8_to_rgb24_3x3, SGBRG8, 3);
 
 static void mpix_op_sbggr8_to_rgb24_3x3(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_3x3(base, &mpix_convert_bggr8_to_rgb24_3x3,
+	mpix_op_debayer_to_rgb24_3x3(base, &mpix_convert_bggr8_to_rgb24_3x3,
 				   &mpix_convert_grbg8_to_rgb24_3x3);
 }
-MPIX_REGISTER_BAYER_OP(sbggr8_3x3, mpix_op_sbggr8_to_rgb24_3x3, SBGGR8, 3);
+MPIX_REGISTER_DEBAYER_OP(sbggr8_3x3, mpix_op_sbggr8_to_rgb24_3x3, SBGGR8, 3);
 
 static void mpix_op_sgrbg8_to_rgb24_3x3(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_3x3(base, &mpix_convert_grbg8_to_rgb24_3x3,
+	mpix_op_debayer_to_rgb24_3x3(base, &mpix_convert_grbg8_to_rgb24_3x3,
 				   &mpix_convert_bggr8_to_rgb24_3x3);
 }
-MPIX_REGISTER_BAYER_OP(sgrbg8_3x3, mpix_op_sgrbg8_to_rgb24_3x3, SGRBG8, 3);
+MPIX_REGISTER_DEBAYER_OP(sgrbg8_3x3, mpix_op_sgrbg8_to_rgb24_3x3, SGRBG8, 3);
 
 /* 2x2 debayer */
 
@@ -303,7 +303,7 @@ void mpix_convert_grbg8_to_rgb24_2x2(const uint8_t *src0, const uint8_t *src1, u
 
 typedef void fn_2x2_t(const uint8_t *i0, const uint8_t *i1, uint8_t *o0, uint16_t width);
 
-static inline void mpix_op_bayer_to_rgb24_2x2(struct mpix_base_op *base,
+static inline void mpix_op_debayer_to_rgb24_2x2(struct mpix_base_op *base,
 					      fn_2x2_t *fn0, fn_2x2_t *fn1)
 {
 	uint16_t prev_line_offset = base->line_offset;
@@ -329,35 +329,35 @@ static inline void mpix_op_bayer_to_rgb24_2x2(struct mpix_base_op *base,
 
 static void mpix_op_srggb8_to_rgb24_2x2(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_2x2(base, &mpix_convert_rggb8_to_rgb24_2x2,
+	mpix_op_debayer_to_rgb24_2x2(base, &mpix_convert_rggb8_to_rgb24_2x2,
 					 &mpix_convert_gbrg8_to_rgb24_2x2);
 }
-MPIX_REGISTER_BAYER_OP(srggb8_2x2, mpix_op_srggb8_to_rgb24_2x2, SRGGB8, 2);
+MPIX_REGISTER_DEBAYER_OP(srggb8_2x2, mpix_op_srggb8_to_rgb24_2x2, SRGGB8, 2);
 
 static void mpix_op_sgbrg8_to_rgb24_2x2(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_2x2(base, &mpix_convert_gbrg8_to_rgb24_2x2,
+	mpix_op_debayer_to_rgb24_2x2(base, &mpix_convert_gbrg8_to_rgb24_2x2,
 					 &mpix_convert_rggb8_to_rgb24_2x2);
 }
-MPIX_REGISTER_BAYER_OP(sgbrg8_2x2, mpix_op_sgbrg8_to_rgb24_2x2, SGBRG8, 2);
+MPIX_REGISTER_DEBAYER_OP(sgbrg8_2x2, mpix_op_sgbrg8_to_rgb24_2x2, SGBRG8, 2);
 
 static void mpix_op_sbggr8_to_rgb24_2x2(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_2x2(base, &mpix_convert_bggr8_to_rgb24_2x2,
+	mpix_op_debayer_to_rgb24_2x2(base, &mpix_convert_bggr8_to_rgb24_2x2,
 					 &mpix_convert_grbg8_to_rgb24_2x2);
 }
-MPIX_REGISTER_BAYER_OP(sbggr8_2x2, mpix_op_sbggr8_to_rgb24_2x2, SBGGR8, 2);
+MPIX_REGISTER_DEBAYER_OP(sbggr8_2x2, mpix_op_sbggr8_to_rgb24_2x2, SBGGR8, 2);
 
 static void mpix_op_sgrbg8_to_rgb24_2x2(struct mpix_base_op *base)
 {
-	mpix_op_bayer_to_rgb24_2x2(base, &mpix_convert_grbg8_to_rgb24_2x2,
+	mpix_op_debayer_to_rgb24_2x2(base, &mpix_convert_grbg8_to_rgb24_2x2,
 					 &mpix_convert_bggr8_to_rgb24_2x2);
 }
-MPIX_REGISTER_BAYER_OP(sgrbg8_2x2, mpix_op_sgrbg8_to_rgb24_2x2, SGRBG8, 2);
+MPIX_REGISTER_DEBAYER_OP(sgrbg8_2x2, mpix_op_sgrbg8_to_rgb24_2x2, SGRBG8, 2);
 
 /* 1x1 debayer */
 
-static void mpix_op_bayer_to_rgb24_1x1(struct mpix_base_op *base)
+static void mpix_op_debayer_to_rgb24_1x1(struct mpix_base_op *base)
 {
 	const uint8_t *src = mpix_op_get_input_line(base);
 	uint8_t *dst = mpix_op_get_output_line(base);
@@ -368,12 +368,12 @@ static void mpix_op_bayer_to_rgb24_1x1(struct mpix_base_op *base)
 
 	mpix_op_done(base);
 }
-MPIX_REGISTER_BAYER_OP(srggb8_1x1, mpix_op_bayer_to_rgb24_1x1, SRGGB8, 1);
-MPIX_REGISTER_BAYER_OP(sbggr8_1x1, mpix_op_bayer_to_rgb24_1x1, SBGGR8, 1);
-MPIX_REGISTER_BAYER_OP(sgbrg8_1x1, mpix_op_bayer_to_rgb24_1x1, SGBRG8, 1);
-MPIX_REGISTER_BAYER_OP(sgrbg8_1x1, mpix_op_bayer_to_rgb24_1x1, SGRBG8, 1);
+MPIX_REGISTER_DEBAYER_OP(srggb8_1x1, mpix_op_debayer_to_rgb24_1x1, SRGGB8, 1);
+MPIX_REGISTER_DEBAYER_OP(sbggr8_1x1, mpix_op_debayer_to_rgb24_1x1, SBGGR8, 1);
+MPIX_REGISTER_DEBAYER_OP(sgbrg8_1x1, mpix_op_debayer_to_rgb24_1x1, SGBRG8, 1);
+MPIX_REGISTER_DEBAYER_OP(sgrbg8_1x1, mpix_op_debayer_to_rgb24_1x1, SGRBG8, 1);
 
 /* end */
 
-static const struct mpix_bayer_op **mpix_bayer_op_list =
-	(const struct mpix_bayer_op *[]){MPIX_LIST_BAYER_OP};
+static const struct mpix_debayer_op **mpix_debayer_op_list =
+	(const struct mpix_debayer_op *[]){MPIX_LIST_DEBAYER_OP};

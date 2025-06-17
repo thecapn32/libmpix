@@ -1,11 +1,11 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_bayer mpix/op_bayer.h
+ * @defgroup mpix_op_debayer mpix/op_debayer.h
  * @brief Implementing new debayer operations
  * @{
  */
-#ifndef MPIX_OP_BAYER_H
-#define MPIX_OP_BAYER_H
+#ifndef MPIX_OP_DEBAYER_H
+#define MPIX_OP_DEBAYER_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@
 #include <mpix/op.h>
 
 /** @internal */
-struct mpix_bayer_op {
+struct mpix_debayer_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
 };
@@ -26,8 +26,8 @@ struct mpix_bayer_op {
  * @param format_in The input format for that operation.
  * @param win_sz The number of line of context needed for that debayer operation.
  */
-#define MPIX_REGISTER_BAYER_OP(id, fn, format_in, win_sz)                                          \
-	const struct mpix_bayer_op mpix_bayer_op_##id = {                                          \
+#define MPIX_REGISTER_DEBAYER_OP(id, fn, format_in, win_sz)                                        \
+	const struct mpix_debayer_op mpix_debayer_op_##id = {                                      \
 		.base.name = ("bayer_" #id),                                                       \
 		.base.format_src = (MPIX_FMT_##format_in),                                         \
 		.base.format_dst = MPIX_FMT_RGB24,                                                 \
@@ -44,25 +44,25 @@ struct mpix_bayer_op {
  * @param rgb24 Buffer of the output row in RGB24 format (3 bytes per pixel).
  * @param width Width of the lines in number of pixels.
  */
-void mpix_convert_rggb8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
+void mpix_debayer_rggb8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
 				     uint8_t *rgb24, uint16_t width);
 /**
  * @brief Convert a line from GRBG8 to RGB24 with 3x3 method
- * @copydetails mpix_convert_rggb8_to_rgb24_3x3()
+ * @copydetails mpix_debayer_rggb8_to_rgb24_3x3()
  */
-void mpix_convert_grbg8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
+void mpix_debayer_grbg8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
 				     uint8_t *rgb24, uint16_t width);
 /**
  * @brief Convert a line from BGGR8 to RGB24 with 3x3 method
- * @copydetails mpix_convert_rggb8_to_rgb24_3x3()
+ * @copydetails mpix_debayer_rggb8_to_rgb24_3x3()
  */
-void mpix_convert_bggr8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
+void mpix_debayer_bggr8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
 				     uint8_t *rgb24, uint16_t width);
 /**
  * @brief Convert a line from GBRG8 to RGB24 with 3x3 method
- * @copydetails mpix_convert_rggb8_to_rgb24_3x3()
+ * @copydetails mpix_debayer_rggb8_to_rgb24_3x3()
  */
-void mpix_convert_gbrg8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
+void mpix_debayer_gbrg8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const uint8_t *i2,
 				     uint8_t *rgb24, uint16_t width);
 
 /**
@@ -73,25 +73,25 @@ void mpix_convert_gbrg8_to_rgb24_3x3(const uint8_t *i0, const uint8_t *i1, const
  * @param rgb24 Buffer of the output row in RGB24 format (3 bytes per pixel).
  * @param width Width of the lines in number of pixels.
  */
-void mpix_convert_rggb8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
+void mpix_debayer_rggb8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
 				     uint16_t width);
 /**
  * @brief Convert a line from GBRG8 to RGB24 with 2x2 method
- * @copydetails mpix_convert_rggb8_to_rgb24_2x2()
+ * @copydetails mpix_debayer_rggb8_to_rgb24_2x2()
  */
-void mpix_convert_gbrg8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
+void mpix_debayer_gbrg8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
 				     uint16_t width);
 /**
  * @brief Convert a line from BGGR8 to RGB24 with 2x2 method
- * @copydetails mpix_convert_rggb8_to_rgb24_2x2()
+ * @copydetails mpix_debayer_rggb8_to_rgb24_2x2()
  */
-void mpix_convert_bggr8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
+void mpix_debayer_bggr8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
 				     uint16_t width);
 /**
  * @brief Convert a line from GRBG8 to RGB24 with 2x2 method
- * @copydetails mpix_convert_rggb8_to_rgb24_2x2()
+ * @copydetails mpix_debayer_rggb8_to_rgb24_2x2()
  */
-void mpix_convert_grbg8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
+void mpix_debayer_grbg8_to_rgb24_2x2(const uint8_t *i0, const uint8_t *i1, uint8_t *rgb24,
 				     uint16_t width);
 
 #endif /** @} */
