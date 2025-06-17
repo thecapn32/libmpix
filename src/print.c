@@ -292,7 +292,7 @@ void mpix_print_rgb_hist(const uint16_t *r_hist, const uint16_t *g_hist, const u
 
 void mpix_print_y_hist(const uint16_t *y_hist, size_t size, uint16_t height)
 {
-	static const char *const bar_chars[] = {"▁", "▂", "▃", "▄", "▅", "▆", "▇"};
+	static const char *const bar_chars[] = {" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
 	uint32_t max = 1;
 
 	for (size_t i = 0; i < size; i++) {
@@ -303,13 +303,7 @@ void mpix_print_y_hist(const uint16_t *y_hist, size_t size, uint16_t height)
 		for (size_t i = 0; i < size; i++) {
 			uint16_t bar_height = height * 8 * y_hist[i] / max;
 
-			if (h > bar_height) {
-				mpix_port_printf(" ");
-			} else if (h <= bar_height - 8) {
-				mpix_port_printf("█");
-			} else {
-				mpix_port_printf(bar_chars[bar_height - h]);
-			}
+			mpix_port_printf(bar_chars[CLAMP(1 + bar_height - h, 0, 8)]);
 		}
 		mpix_port_printf("| - %u\n", h * max / height);
 	}
