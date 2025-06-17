@@ -49,18 +49,30 @@ void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats)
 
 void mpix_stats_print(struct mpix_stats *stats)
 {
-	uint8_t rgb[3];
+	uint8_t rgb[3] = {
+		stats->sum_r / stats->nvals,
+		stats->sum_g / stats->nvals,
+		stats->sum_b / stats->nvals,
+	};
 
-	mpix_port_printf("Y Histogram:\n");
+	mpix_port_printf("Average #%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
+	mpix_print_truecolor(rgb, rgb);
+	mpix_port_printf(" \x1b[m for %u values sampled\n", stats->nvals);
 	mpix_print_y_hist(stats->histogram, ARRAY_SIZE(stats->histogram), 10);
+}
 
-	mpix_port_printf("Channel Average:\n");
-	rgb[0] = stats->sum_r / stats->nvals;
-	rgb[1] = stats->sum_g / stats->nvals;
-	rgb[2] = stats->sum_b / stats->nvals;
-	mpix_port_printf(" #%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
-	mpix_print_truecolor(rgb, rgb);
-	mpix_print_truecolor(rgb, rgb);
-	mpix_port_printf("\x1b[m"); /* Reset to normal color */
-	mpix_port_printf(" for %u values sampled\n", stats->nvals);
+uint8_t mpix_stats_get_y_mean(struct mpix_stats *stats)
+{
+	uint32_t nvals = 0;
+
+	for (int i = 0; i < ARRAY_SIZE(stats->histogram); i++) {
+		nvals += stats->histogram[i];
+
+		if (nvals >= stats->nvals / 2) {
+			return i * 256 / ARRAY_SIZE(stats->histogram);
+		}
+	}
+
+	assert(0 /* The histogram is expected to contain all values */);
+	return 0;
 }

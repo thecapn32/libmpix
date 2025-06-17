@@ -41,4 +41,21 @@ struct mpix_stats {
 void mpix_stats_from_buf(struct mpix_stats *stats,
 			 const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc);
 
+/**
+ * @brief Print a representation of the statistics in the console for debug purpose.
+ *
+ * @param stats The statistics to print out.
+ */
+void mpix_stats_print(struct mpix_stats *stats);
+
+/**
+ * @brief Get the mean value from a histogram.
+ *
+ * The result is the mean expressed as grayscale pixel value: range 0 to 255.
+ *
+ * @param stats Statistics collected from the image
+ * @return The mean pixel value.
+ */
+uint8_t mpix_stats_get_y_mean(struct mpix_stats *stats);
+
 #endif /** @} */
