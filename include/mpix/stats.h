@@ -15,14 +15,16 @@
  */
 struct mpix_stats {
 	/** Storage for the values. One buffer per channel. Maximum number of channels is 3. */
-	uint16_t histogram[64];
-	/** Sum of red channel values */
+	uint16_t y_histogram[64];
+	/** Average value for each histogram bin. */
+	uint8_t y_histogram_vals[64];
+	/** Sum of red channel values. */
 	uint32_t sum_r;
-	/** Sum of green channel values */
+	/** Sum of green channel values. */
 	uint32_t sum_g;
-	/** Sum of blue channel values */
+	/** Sum of blue channel values. */
 	uint32_t sum_b;
-	/** Number of values collected for statistics so far */
+	/** Number of values collected for statistics so far. */
 	uint16_t nvals;
 };
 
