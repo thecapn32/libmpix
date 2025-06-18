@@ -98,14 +98,12 @@ void mpix_ipa_do_blc(struct mpix_ipa *ipa, struct mpix_stats *stats)
  */
 void mpix_ipa_do_awb(struct mpix_ipa *ipa, struct mpix_stats *stats)
 {
-	int32_t r = MAX(1, stats->rgb_average[0]);
-	int32_t g = MAX(1, stats->rgb_average[1]);
-	int32_t b = MAX(1, stats->rgb_average[2]);
-	int32_t red_level = g / r;
-	int32_t blue_level = g / b;
+	int r = MAX(1, stats->rgb_average[0]);
+	int g = MAX(1, stats->rgb_average[1]);
+	int b = MAX(1, stats->rgb_average[2]);
 
-	ipa->isp.red_level = CLAMP(red_level, 0x00, 0xff);
-	ipa->isp.blue_level = CLAMP(blue_level, 0x00, 0xff);
+	ipa->isp.red_level = CLAMP(g / r, 0x00, 0xff);
+	ipa->isp.blue_level = CLAMP(g / b, 0x00, 0xff);
 
 	/* Update the statistics so that they reflect the change of white balance */
 	mpix_isp_white_balance_rgb24(stats->rgb_average, stats->rgb_average, 1, &ipa->isp);
