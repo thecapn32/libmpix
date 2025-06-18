@@ -35,7 +35,7 @@ void mpix_port_printf(const char *fmt, ...)
 	va_end(ap);
 }
 
-int mpix_port_init_exposure(void *dev, struct mpix_ctrl *ctrl)
+int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max)
 {
 	struct video_ctrl_query cq = {.id = VIDEO_CID_EXPOSURE};
 	int ret;
@@ -45,9 +45,8 @@ int mpix_port_init_exposure(void *dev, struct mpix_ctrl *ctrl)
 		return ret;
 	}
 
-	ctrl->val = cq.range.def;
-	ctrl->min = cq.range.min;
-	ctrl->max = cq.range.max;
+	*def = cq.range.def;
+	*max = cq.range.max;
 
 	return 0;
 }

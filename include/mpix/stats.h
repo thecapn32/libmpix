@@ -18,13 +18,9 @@ struct mpix_stats {
 	uint16_t y_histogram[64];
 	/** Average value for each histogram bin. */
 	uint8_t y_histogram_vals[64];
-	/** Sum of red channel values. */
-	uint32_t sum_r;
-	/** Sum of green channel values. */
-	uint32_t sum_g;
-	/** Sum of blue channel values. */
-	uint32_t sum_b;
-	/** Number of values collected for statistics so far. */
+	/** Average pixel value */
+	uint8_t rgb_average[3];
+	/** Number of values collected for building these statistics. */
 	uint16_t nvals;
 };
 

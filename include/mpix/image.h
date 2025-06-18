@@ -8,10 +8,11 @@
 #define MPIX_IMAGE_H
 
 #include <mpix/formats.h>
-#include <mpix/stats.h>
 #include <mpix/op.h>
+#include <mpix/op_isp.h>
 #include <mpix/op_kernel.h>
 #include <mpix/op_palettize.h>
+#include <mpix/stats.h>
 
 /**
  * @brief Represent the image currently being processed
@@ -184,10 +185,22 @@ int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height);
  * entire image to apply a desired effect on an image.
  *
  * @param img Image to convert.
- * @param kernel_type The type of kernel to apply as defined in <mpix/kernel.h>
+ * @param kernel_type The type of kernel to apply as defined in @ref mpix_op_kernel
  * @param kernel_sz The size of the kernel operaiton, usually 3 or 5.
  */
 int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_sz);
+
+/**
+ * @brief Apply an Image Signal Processing (ISP) operation to an image.
+ *
+ * Kernel operations are working on small blocks of typically 3x3 or 5x5 pixels, repeated over the
+ * entire image to apply a desired effect on an image.
+ *
+ * @param img Image to convert.
+ * @param type The type of ISP to apply as defined in @ref mpix_op_isp
+ * @param isp The ISP context, that controls the state of the processing.
+ */
+int mpix_image_signal_processing(struct mpix_image *img, uint32_t type, struct mpix_isp *isp);
 
 /**
  * @brief Print an image using higher quality TRUECOLOR terminal escape codes.

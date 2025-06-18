@@ -17,7 +17,7 @@
 static inline void mpix_sample_random_raw24(const uint8_t *buf, uint16_t width, uint16_t height,
 					    uint8_t rgb[3])
 {
-	uint32_t i = mpix_lcg_rand_u32() % (width * height) * 3;
+	uint32_t i = (mpix_lcg_rand_u32() % (width * height)) * 3;
 
 	memcpy(rgb, &buf[i], 3);
 }
@@ -43,42 +43,42 @@ static inline void mpix_sample_random_rgb565le(const uint8_t *buf, uint16_t widt
 static inline void mpix_sample_random_bayer(const uint8_t *buf, uint16_t width, uint16_t height,
 					    uint8_t rgb[3], int i0, int i1, int i2, int i3)
 {
-	uint32_t w = mpix_lcg_rand_u32() % width / 2 * 2;
-	uint32_t h = mpix_lcg_rand_u32() % height / 2 * 2;
+	uint32_t w = (mpix_lcg_rand_u32() % width) & ~1U;
+	uint32_t h = (mpix_lcg_rand_u32() % height) & ~1U;
 
-	rgb[i0] = buf[h + 0];
-	rgb[i1] = buf[h + 1];
-	rgb[i2] = buf[h * width + w + 0];
-	rgb[i3] = buf[h * width + w + 1];
+	rgb[i0] = buf[(h + 0) * width + (w + 0)];
+	rgb[i1] = buf[(h + 0) * width + (w + 1)];
+	rgb[i2] = buf[(h + 1) * width + (w + 0)];
+	rgb[i3] = buf[(h + 1) * width + (w + 1)];
 }
 
 int mpix_sample_random_rgb(const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc,
-			   uint8_t *dst)
+			   uint8_t *rgb)
 {
 	switch (fourcc) {
 	case MPIX_FMT_RGB24:
-		mpix_sample_random_raw24(buf, width, height, dst);
+		mpix_sample_random_raw24(buf, width, height, rgb);
 		break;
 	case MPIX_FMT_RGB565:
-		mpix_sample_random_rgb565le(buf, width, height, dst);
+		mpix_sample_random_rgb565le(buf, width, height, rgb);
 		break;
 	case MPIX_FMT_YUYV:
-		mpix_sample_random_yuyv(buf, width, height, dst);
+		mpix_sample_random_yuyv(buf, width, height, rgb);
 		break;
 	case MPIX_FMT_SRGGB8:
-		mpix_sample_random_bayer(buf, width, height, dst,
+		mpix_sample_random_bayer(buf, width, height, rgb,
 					 MPIX_IDX_R, MPIX_IDX_G, MPIX_IDX_G, MPIX_IDX_B);
 		break;
 	case MPIX_FMT_SBGGR8:
-		mpix_sample_random_bayer(buf, width, height, dst,
+		mpix_sample_random_bayer(buf, width, height, rgb,
 					 MPIX_IDX_B, MPIX_IDX_G, MPIX_IDX_G, MPIX_IDX_R);
 		break;
 	case MPIX_FMT_SGBRG8:
-		mpix_sample_random_bayer(buf, width, height, dst,
+		mpix_sample_random_bayer(buf, width, height, rgb,
 					 MPIX_IDX_G, MPIX_IDX_B, MPIX_IDX_R, MPIX_IDX_G);
 		break;
 	case MPIX_FMT_SGRBG8:
-		mpix_sample_random_bayer(buf, width, height, dst,
+		mpix_sample_random_bayer(buf, width, height, rgb,
 					 MPIX_IDX_G, MPIX_IDX_R, MPIX_IDX_B, MPIX_IDX_G);
 		break;
 	default:

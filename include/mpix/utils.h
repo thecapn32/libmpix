@@ -49,6 +49,14 @@
 #define CLAMP(n, min, max) ((n) < (min) ? (min) : (n) > (max) ? (max) : (n))
 #endif
 
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 #ifndef IN_RANGE
 #define IN_RANGE(n, min, max) ((n) >= (min) && (n) <= (max))
 #endif

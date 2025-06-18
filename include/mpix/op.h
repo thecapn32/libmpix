@@ -4,8 +4,8 @@
  * @brief Implementing new types of operations
  * @{
  */
-#ifndef MPIX_OPERATION_H
-#define MPIX_OPERATION_H
+#ifndef MPIX_OP_H
+#define MPIX_OP_H
 
 #include <assert.h>
 #include <stdbool.h>

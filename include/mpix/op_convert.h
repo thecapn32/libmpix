@@ -132,14 +132,7 @@ void mpix_convert_y8_to_rgb24_bt709(const uint8_t *src, uint8_t *dst, uint16_t w
  */
 void mpix_convert_rgb24_to_y8_bt709(const uint8_t *src, uint8_t *dst, uint16_t width);
 
-/**
- * @brief Helper to turn a format conversion function into an operation.
- *
- * The line conversion function is to be provided in @c op->arg0.
- * It processes on the input line to convert it to the destination format.
- *
- * @param op Current operation in progress.
- */
-void mpix_op_convert(struct mpix_base_op *op);
+/** @internal */
+void mpix_convert_op(struct mpix_base_op *base);
 
 #endif /** @} */

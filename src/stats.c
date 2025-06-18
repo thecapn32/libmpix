@@ -14,39 +14,44 @@
 /* Arbitrary value estimated good enough for most cases */
 #define MPIX_STATS_DEFAULT_NVALS 1000
 
-static inline void mpix_stats_add_sample(struct mpix_stats *stats, uint8_t rgb[3])
-{
-	/* Histogram statistics: use BT.601 like libcamera, reduce precision to fit hist[64] */
-	stats->y_histogram[mpix_rgb24_get_luma_bt709(rgb) >> 2]++;
-
-	/* RGB statistics */
-	stats->sum_r += rgb[0];
-	stats->sum_g += rgb[1];
-	stats->sum_b += rgb[2];
-}
-
 void mpix_stats_from_buf(struct mpix_stats *stats,
 			 const uint8_t *buf, uint16_t width, uint16_t height, uint32_t fourcc)
 {
-	uint8_t nvals = stats->nvals > 0 ? stats->nvals : MPIX_STATS_DEFAULT_NVALS;
+	uint32_t rgb_sum[3] = {0};
+	uint16_t nvals;
 
+	/* Reset the statistics to initial values */
+	nvals = stats->nvals > 0 ? stats->nvals : MPIX_STATS_DEFAULT_NVALS;
 	memset(stats, 0x00, sizeof(*stats));
-
 	stats->nvals = nvals;
 
+	/* Accumulate the statistics from the pixels */
 	for (uint16_t i = 0; i < nvals; i++) {
-		uint8_t rgb[3];
+		uint8_t rgb_value[3];
 
-		mpix_sample_random_rgb(buf, width, height, fourcc, rgb);
-		mpix_stats_add_sample(stats, rgb);
+		mpix_sample_random_rgb(buf, width, height, fourcc, rgb_value);
+
+		/* Histogram statistics: use BT.601 like libcamera, reduce precision to fit hist[64] */
+		stats->y_histogram[mpix_rgb24_get_luma_bt709(rgb_value) >> 2]++;
+
+		/* RGB statistics */
+		rgb_sum[0] += rgb_value[0];
+		rgb_sum[1] += rgb_value[1];
+		rgb_sum[2] += rgb_value[2];
 	}
 
+	/* Completion for Y histogram */
 	for (size_t i = 0; i < ARRAY_SIZE(stats->y_histogram_vals); i++) {
 		const uint8_t step = 256 / ARRAY_SIZE(stats->y_histogram_vals);
 
 		/* Initialize to the middle value of each range */
 		stats->y_histogram_vals[i] = i * step + step / 2;
 	}
+
+	/* Completion for RGB averages */
+	stats->rgb_average[0] = rgb_sum[0] / nvals;
+	stats->rgb_average[1] = rgb_sum[1] / nvals;
+	stats->rgb_average[2] = rgb_sum[2] / nvals;
 }
 
 void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats)
@@ -56,11 +61,7 @@ void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats)
 
 void mpix_stats_print(struct mpix_stats *stats)
 {
-	uint8_t rgb[3] = {
-		stats->sum_r / stats->nvals,
-		stats->sum_g / stats->nvals,
-		stats->sum_b / stats->nvals,
-	};
+	uint8_t *rgb = stats->rgb_average;
 
 	mpix_port_printf("Average #%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
 	mpix_print_truecolor(rgb, rgb);

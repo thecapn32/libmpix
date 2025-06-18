@@ -11,31 +11,18 @@
 #include <stddef.h>
 
 #include <mpix/stats.h>
-
-struct mpix_ctrl {
-	/** Minimum value a control should set */
-	int32_t min;
-	/** Maximum value a control should set */
-	int32_t max;
-	/** Current value that needs to be synchronized to the sensor */
-	int32_t val;
-};
+#include <mpix/op_isp.h>
 
 struct mpix_ipa {
 	/** Pointer to user-provided data that represents a video device */
 	void *dev;
-	/** Exposure level to be sent to the image sensor */
-	struct mpix_ctrl exposure;
-	/** Black level value that is to be removed to every pixel */
-	struct mpix_ctrl black_level;
-	/** Gamma level to be applied to the pixels */
-	struct mpix_ctrl gamma;
+	/** Current sensor exposure value */
+	int32_t exposure_level;
+	/** Maximum sensor exposure value */
+	int32_t exposure_max;
+	/** The ISP controls */
+	struct mpix_isp isp;
 };
-
-/**
- * @brief Run auto-exposure algorithm to update the exposure control value.
- */
-void mpix_ipa_do_aec(struct mpix_ipa *ipa, struct mpix_stats *stats);
 
 /**
  * @brief Configure the video device to use for sending controls such as exposure.
@@ -50,5 +37,25 @@ int mpix_ipa_init(struct mpix_ipa *ipa, void *dev);
  * @param ipa The collection of all controls to propagate to the source device.
  */
 int mpix_ipa_update_controls(struct mpix_ipa *ipa);
+
+/**
+ * @brief Run auto-exposure algorithm to update the exposure control value.
+ *
+ * The effect will be visible on the next frame only.
+ *
+ * @param ipa The current Image Processing Algorithm (IPA) context.
+ * @param stats The statistics used to control the exposure.
+ */
+void mpix_ipa_do_aec(struct mpix_ipa *ipa, struct mpix_stats *stats);
+
+/**
+ * @brief Run black level correction algorithm to update the black level.
+ *
+ * The effect will be visible on the same frame.
+ *
+ * @param ipa The current Image Processing Algorithm (IPA) context.
+ * @param stats The statistics used to control the black level, with values updated to match.
+ */
+void mpix_ipa_do_blc(struct mpix_ipa *ipa, struct mpix_stats *stats);
 
 #endif /** @} */
