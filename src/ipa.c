@@ -108,6 +108,6 @@ void mpix_ipa_do_awb(struct mpix_ipa *ipa, struct mpix_stats *stats)
 	/* Update the statistics so that they reflect the change of white balance */
 	mpix_isp_white_balance_rgb24(stats->rgb_average, stats->rgb_average, 1, &ipa->isp);
 
-	MPIX_INF("New red level: %u", ipa->isp.red_level);
-	MPIX_INF("New blue level: %u", ipa->isp.blue_level);
+	MPIX_DBG("New red level: %u", ipa->isp.red_level);
+	MPIX_DBG("New blue level: %u", ipa->isp.blue_level);
 }

@@ -13,12 +13,6 @@
 #include <mpix/op.h>
 
 /** @internal */
-struct mpix_qoi_convert_op {
-	/** Fields common to all operations. */
-	struct mpix_base_op base;
-};
-
-/** @internal */
 struct mpix_qoi_palette_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
@@ -26,6 +20,18 @@ struct mpix_qoi_palette_op {
 	struct mpix_palette *palette;
 	/** Table of alpha values to compensate the hash function */
 	uint8_t alpha[1u << 8];
+};
+
+/** @internal */
+struct mpix_qoi_convert_op {
+	/** Fields common to all operations. */
+	struct mpix_base_op base;
+	/** Array of previously seen pixels */
+	uint8_t qoi_cache[64 * 3];
+	/** The last seend pixel value just before the new pixel to encode */
+	uint8_t qoi_prev[3];
+	/** Size of the ongoing run */
+	uint8_t qoi_run_length;
 };
 
 /**
