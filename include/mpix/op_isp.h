@@ -15,9 +15,9 @@
 struct mpix_isp {
 	/** Offset removed to every pixel, 0 for no correction, 255 for dark image */
 	uint8_t black_level;
-	/** Red value correction level, 0 for unchanged, 255 for max red */
+	/** Red value correction level, 0 for red x1, 255 for red x2 */
 	uint8_t red_level;
-	/** Blue value correction level, 0 for unchanged, 255 for max blue */
+	/** Blue value correction level, 0 for blue x1, 255 for blue x2 */
 	uint8_t blue_level;
 	/** Gamma level to be applied to the pixels */
 	uint8_t gamma_level;
@@ -29,6 +29,8 @@ struct mpix_isp {
 enum mpix_isp_type {
 	/** Correct the black level applied to every pixel */
 	MPIX_ISP_BLACK_LEVEL,
+	/** Apply controlled gain to every red and blue pixel (green unchanged) */
+	MPIX_ISP_WHITE_BALANCE,
 };
 
 /** @internal */
@@ -68,7 +70,7 @@ struct mpix_isp_op {
  * @param src Input buffers to convert.
  * @param dst Output line buffer receiving the conversion result.
  * @param width Width of the input and output lines in pixels.
- * @param isp ISP context holding the current black level value.
+ * @param isp ISP context holding the current correction values.
  */
 void mpix_isp_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t size,
 			       struct mpix_isp *isp);
@@ -78,6 +80,12 @@ void mpix_isp_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t size,
  */
 void mpix_isp_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_t size,
 			        struct mpix_isp *isp);
+/**
+ * @brief Correct the white balance of an input line in RGB24 pixel format.
+ * @copydetails mpix_isp_black_level_raw8
+ */
+void mpix_isp_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+				  struct mpix_isp *isp);
 
 /** @internal */
 void mpix_isp_op(struct mpix_base_op *base);

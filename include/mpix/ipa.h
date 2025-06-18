@@ -41,21 +41,25 @@ int mpix_ipa_update_controls(struct mpix_ipa *ipa);
 /**
  * @brief Run auto-exposure algorithm to update the exposure control value.
  *
- * The effect will be visible on the next frame only.
- *
  * @param ipa The current Image Processing Algorithm (IPA) context.
  * @param stats The statistics used to control the exposure.
  */
 void mpix_ipa_do_aec(struct mpix_ipa *ipa, struct mpix_stats *stats);
 
 /**
- * @brief Run black level correction algorithm to update the black level.
- *
- * The effect will be visible on the same frame.
+ * @brief Run Black Level Correction (BLC) algorithm to update the black level.
  *
  * @param ipa The current Image Processing Algorithm (IPA) context.
- * @param stats The statistics used to control the black level, with values updated to match.
+ * @param stats The statistics used to control the black level and then updated.
  */
 void mpix_ipa_do_blc(struct mpix_ipa *ipa, struct mpix_stats *stats);
+
+/**
+ * @brief Run Auto White Balance algorithm to update the color balance.
+ *
+ * @param ipa The current Image Processing Algorithm (IPA) context.
+ * @param stats The statistics used to control the white balance and then updated.
+ */
+void mpix_ipa_do_awb(struct mpix_ipa *ipa, struct mpix_stats *stats);
 
 #endif /** @} */

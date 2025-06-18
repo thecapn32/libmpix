@@ -84,8 +84,32 @@ void mpix_ipa_do_blc(struct mpix_ipa *ipa, struct mpix_stats *stats)
 	/* Update the statistics so that they reflect the change of black level */
 	mpix_isp_black_level_raw8(stats->y_histogram_vals, stats->y_histogram_vals,
 				  sizeof(stats->y_histogram_vals), &ipa->isp);
-	mpix_isp_black_level_raw8(stats->rgb_average, stats->rgb_average,
-				  sizeof(stats->rgb_average), &ipa->isp);
+	mpix_isp_black_level_rgb24(stats->rgb_average, stats->rgb_average, 1, &ipa->isp);
 
-	MPIX_DBG("New black level value: %u", ipa->isp.black_level);
+	MPIX_DBG("New black level: %u", ipa->isp.black_level);
+}
+
+/*
+ * Simple Gray World strategy for Auto White Balance (AWB).
+ *
+ * The gain values are shifted from the range [x0, x1] to the range [x1, x2].
+ * This means that images are always expected to be more green than blue or red, which is
+ * assumed to be the case for all image sensors encountered by this library.
+ */
+void mpix_ipa_do_awb(struct mpix_ipa *ipa, struct mpix_stats *stats)
+{
+	int32_t r = MAX(1, stats->rgb_average[0]);
+	int32_t g = MAX(1, stats->rgb_average[1]);
+	int32_t b = MAX(1, stats->rgb_average[2]);
+	int32_t red_level = g / r;
+	int32_t blue_level = g / b;
+
+	ipa->isp.red_level = CLAMP(red_level, 0x00, 0xff);
+	ipa->isp.blue_level = CLAMP(blue_level, 0x00, 0xff);
+
+	/* Update the statistics so that they reflect the change of white balance */
+	mpix_isp_white_balance_rgb24(stats->rgb_average, stats->rgb_average, 1, &ipa->isp);
+
+	MPIX_INF("New red level: %u", ipa->isp.red_level);
+	MPIX_INF("New blue level: %u", ipa->isp.blue_level);
 }

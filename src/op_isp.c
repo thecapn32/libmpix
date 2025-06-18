@@ -81,5 +81,19 @@ void mpix_isp_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width
 }
 MPIX_REGISTER_ISP_OP(isp_blc, mpix_isp_black_level_rgb24, BLACK_LEVEL, RGB24);
 
+void mpix_isp_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+				  struct mpix_isp *isp)
+{
+	uint16_t red_level = isp->red_level;
+	uint16_t blue_level = isp->blue_level;
+
+	for (size_t w = 0; w < width; w++, src += 3, dst += 3) {
+		dst[0] = CLAMP(src[0] * (256 + red_level) / 256, 0x00, 0xff);
+		dst[1] = src[1];
+		dst[2] = CLAMP(src[2] * (256 + blue_level) / 256, 0x00, 0xff);
+	}
+}
+MPIX_REGISTER_ISP_OP(isp_awb_rgb24, mpix_isp_white_balance_rgb24, WHITE_BALANCE, RGB24);
+
 static const struct mpix_isp_op **mpix_isp_op_list =
 	(const struct mpix_isp_op *[]){MPIX_LIST_ISP_OP};
