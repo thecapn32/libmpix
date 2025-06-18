@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/video.h>
+#include <zephyr/drivers/video-controls.h>
 
 #include <mpix/port.h>
 
@@ -31,4 +33,27 @@ void mpix_port_printf(const char *fmt, ...)
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
+}
+
+int mpix_port_init_exposure(void *dev, struct mpix_ctrl *ctrl)
+{
+	struct video_ctrl_query cq = {.id = VIDEO_CID_EXPOSURE};
+	int ret;
+
+	ret = video_query_ctrl(dev, &cq);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ctrl->val = cq.range.def;
+	ctrl->min = cq.range.min;
+	ctrl->max = cq.range.max;
+
+	return 0;
+}
+
+int mpix_port_set_exposure(void *dev, int32_t val)
+{
+	return video_set_ctrl(
+		dev, &(struct video_control){.id = VIDEO_CID_EXPOSURE, .val = val});
 }

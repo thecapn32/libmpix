@@ -5,11 +5,13 @@
  *
  * @{
  */
-#ifndef MPIX_PORT
-#define MPIX_PORT
+#ifndef MPIX_PORT_H
+#define MPIX_PORT_H
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <mpix/ipa.h>
 
 /**
  * @brief Get the uptime in microsecond, used to compute performance statistics
@@ -48,5 +50,21 @@ void mpix_port_free(void *mem);
  * @param mem Pointer to the buffer to free.
  */
 void mpix_port_printf(const char *fmt, ...);
+
+/**
+ * @brief Initialize the exposure control with min/max values and current value.
+ *
+ * @param ctrl Control parameters to initialize.
+ * @param dev Device for which to set the exposure level need to be set.
+ */
+int mpix_port_init_exposure(void *dev, struct mpix_ctrl *ctrl);
+
+/**
+ * @brief Write the exposure level of the device.
+ *
+ * @param dev Device for which to set the exposure level.
+ * @param val The new exposure value.
+ */
+int mpix_port_set_exposure(void *dev, int32_t val);
 
 #endif /** @} */

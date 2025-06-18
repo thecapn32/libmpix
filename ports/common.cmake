@@ -7,11 +7,12 @@ set_property(GLOBAL PROPERTY LIBMPIX_DIR ${LIBMPIX_DIR})
 set(LIBMPIX_SRC
   ${LIBMPIX_DIR}/src/formats.c
   ${LIBMPIX_DIR}/src/image.c
-  ${LIBMPIX_DIR}/src/op_debayer.c
+  ${LIBMPIX_DIR}/src/ipa.c
   ${LIBMPIX_DIR}/src/op_convert.c
+  ${LIBMPIX_DIR}/src/op_debayer.c
   ${LIBMPIX_DIR}/src/op_kernel.c
-  ${LIBMPIX_DIR}/src/op_qoi.c
   ${LIBMPIX_DIR}/src/op_palettize.c
+  ${LIBMPIX_DIR}/src/op_qoi.c
   ${LIBMPIX_DIR}/src/op_resize.c
   ${LIBMPIX_DIR}/src/print.c
   ${LIBMPIX_DIR}/src/sample.c
