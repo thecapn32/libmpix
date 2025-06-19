@@ -13,12 +13,12 @@
 static const struct mpix_qoi_convert_op **mpix_qoi_convert_op_list;
 static const struct mpix_qoi_palette_op **mpix_qoi_palette_op_list;
 
-#define MPIX_QOI_OP_RGB   0xfe
-#define MPIX_QOI_OP_RGBA  0xff
-#define MPIX_QOI_OP_INDEX 0x00
-#define MPIX_QOI_OP_DIFF  0x40
-#define MPIX_QOI_OP_LUMA  0x80
-#define MPIX_QOI_OP_RUN   0xc0
+#define MPIX_QOI_OP_INDEX  0x00 /* 00xxxxxx */
+#define MPIX_QOI_OP_DIFF   0x40 /* 01xxxxxx */
+#define MPIX_QOI_OP_LUMA   0x80 /* 10xxxxxx */
+#define MPIX_QOI_OP_RUN    0xc0 /* 11xxxxxx */
+#define MPIX_QOI_OP_RGB    0xfe /* 11111110 */
+#define MPIX_QOI_OP_RGBA   0xff /* 11111111 */
 
 int mpix_image_qoi_depalettize(struct mpix_image *img, size_t max_sz, struct mpix_palette *plt)
 {
@@ -112,49 +112,63 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
 	return o;
 }
 
+#define printf(...) ((void)0)
+
 static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_convert_op *op, const uint8_t *src,
 					   uint8_t *dst, size_t dst_sz)
 {
 	const uint8_t r = src[0];
 	const uint8_t g = src[1];
 	const uint8_t b = src[2];
-	const uint8_t a = 0;
+	const uint8_t a = 0xff;
 	uint8_t cache_idx;
 	size_t o = 0;
 
+	printf("pixel #%02x%02x%02x, prev #%02x%02x%02x",
+		r, g, b, op->qoi_prev[0], op->qoi_prev[1], op->qoi_prev[2]);
+
 	/* Handle run-length operation */
 	if (memcmp(op->qoi_prev, src, 3) == 0) {
+		printf(" same as prev");
+
 		/* Increase run-length if same pixel */
 		op->qoi_run_length++;
 
 		/* Flush current run-length if reaching the maximum */
 		if (op->qoi_run_length >= 62) {
+			printf(" flushing long run");
 			MPIX_QOI_PUT_U8(MPIX_QOI_OP_RUN | (op->qoi_run_length - 1));
 			op->qoi_run_length = 0;
 		}
+		printf("\n");
 		return o;
 	} else {
 		/* Flush current run-length if different pixel */
 		if (op->qoi_run_length > 0) {
+			printf(" flushing run");
+
 			MPIX_QOI_PUT_U8(MPIX_QOI_OP_RUN | (op->qoi_run_length - 1));
 			op->qoi_run_length = 0;
 		}
 	}
 
 	/* Handle run-length operation */
-	cache_idx = (r * 3 + g * 5 + b * 7 + a * 11) % 64;
+	cache_idx = ((uint16_t)r * 3 + (uint16_t)g * 5 + (uint16_t)b * 7 + (uint16_t)a * 11) % 64;
 	if (memcmp(&op->qoi_cache[3 * cache_idx], src, 3) == 0) {
+		printf(" OP_INDEX: idx %u\n", cache_idx);
 		/* Use table encoding if previously encountered */
 		MPIX_QOI_PUT_U8(MPIX_QOI_OP_INDEX | cache_idx);
+		memcpy(op->qoi_prev, src, 3);
 		return o;
+	} else {
+		/* Cache the pixel in the array since it is different */
+		memcpy(&op->qoi_cache[3 * cache_idx], src, 3);
 	}
-	/* Cache the pixel in the array since it is different */
-	memcpy(&op->qoi_cache[3 * cache_idx], src, 3);
 
 	/* Relative difference with the previous pixels with wrap arround */
-	int8_t dr = op->qoi_prev[0] - r;
-	int8_t dg = op->qoi_prev[1] - g;
-	int8_t db = op->qoi_prev[2] - b;
+	int8_t dr = r - op->qoi_prev[0];
+	int8_t dg = g - op->qoi_prev[1];
+	int8_t db = b - op->qoi_prev[2];
 
 	/* Difference between the green channel and the red/blue channel */
 	int8_t dgr = dr - dg;
@@ -162,22 +176,29 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_convert_op *op, const
 
 	/* Handle difference operation */
 	if (IN_RANGE(dr, -2, 1) && IN_RANGE(dg, -2, 1) && IN_RANGE(db, -2, 1)) {
+		printf(" OP_DIFF: dr %d, dg %d, db %d\n", dr, dg, db);
 		MPIX_QOI_PUT_U8(MPIX_QOI_OP_DIFF | (dr + 2) << 4 | (dg + 2) << 2 | (db + 2) << 0);
+		memcpy(op->qoi_prev, src, 3);
 		return o;
 	}
 
 	/* Handle luma operation */
 	if (IN_RANGE(dgr, -8, 7) && IN_RANGE(dg, -32, 31) && IN_RANGE(dgb, -8, 7)) {
+		printf(" OP_LUMA: dgr %d, dg %d, dgb %d\n", dgr, dg, dgb);
 		MPIX_QOI_PUT_U8(MPIX_QOI_OP_LUMA | (dg + 32));
 		MPIX_QOI_PUT_U8((dgr + 8) << 4 | (dgb + 8) << 0);
+		memcpy(op->qoi_prev, src, 3);
+		return o;
 	}
 
 	/* Handle full RGB operation as fallback */
+	printf(" OP_RGB\n");
 	MPIX_QOI_PUT_U8(MPIX_QOI_OP_RGB);
 	MPIX_QOI_PUT_U8(r);
 	MPIX_QOI_PUT_U8(g);
 	MPIX_QOI_PUT_U8(b);
 
+	memcpy(op->qoi_prev, src, 3);
 	return o;
 }
 
