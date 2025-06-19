@@ -153,17 +153,20 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
 int mpix_image_debayer(struct mpix_image *img, uint32_t window_size);
 
 /**
- * @brief Convert an image from a bayer array format to RGB24.
+ * @brief Encode an image to the QOI compressed image format
  *
- * An operation is added to convert the image to RGB24 using the specified window size, such
- * as 2x2 or 3x3.
- *
- * @note It is also possible to use @ref mpix_image_convert to convert from bayer to RGB24 but
- *       this does not allow to select the window size.
- *
- * @param img Image to convert.
+ * @param image Image to convert to QOI format.
+ * @param max_sz Maximum size of the intermediate buffer to use.
  */
 int mpix_image_qoi_encode(struct mpix_image *img);
+
+/**
+ * @brief Encode an image to the JPEG compressed image format
+ *
+ * @param image Image to convert to JPEG format.
+ * @param max_sz Maximum size of the intermediate buffer to use.
+ */
+int mpix_image_jpeg_encode(struct mpix_image *img);
 
 /**
  * @brief Resize an image.
@@ -218,6 +221,7 @@ void mpix_image_print_256color(struct mpix_image *img);
 /** @cond INTERNAL_HIDDEN */
 
 /**
+ * @internal
  * @brief Add a operation processing step to an image.
  *
  * @note This is a low-level function only needed to implement new operations.
@@ -236,6 +240,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
 			 size_t op_sz, size_t buf_sz, size_t threshold);
 
 /**
+ * @internal
  * @brief Add a operation processing step to an image for uncompressed input data.
  *
  * @note This is a low-level function only needed to implement new operations.
@@ -254,6 +259,7 @@ int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_
 				      size_t op_sz);
 
 /**
+ * @internal
  * @brief Perform all the processing added to the
  *
  * @note This is a low-level function only needed to implement new operations.
@@ -267,12 +273,8 @@ int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_
 int mpix_image_process(struct mpix_image *img);
 
 /**
- * @brief Perform all the processing added to the
- *
- * @note This is a low-level function only needed to implement new operations.
- *
- * This is where all the image processing happens. The processing steps are not executed while they
- * are added to the pipeline, but only while this function is called.
+ * @internal
+ * @brief Set the error code of the image an error on the image
  *
  * @param img Image to which one or multiple processing steps were added.
  * @return 0 on success.

@@ -33,14 +33,14 @@ int mpix_image_qoi_encode(struct mpix_image *img)
 }
 
 #define MPIX_QOI_PUT_U8(u) ({                                                                      \
-	if (o >= dst_sz) {                                                                         \
+	if (o + 1 >= dst_sz) {                                                                     \
 		return o;                                                                          \
 	}                                                                                          \
 	dst[o++] = (u);                                                                            \
 })
 
 #define MPIX_QOI_PUT_U32(u) ({                                                                     \
-	if (o >= dst_sz) {                                                                         \
+	if (o + 4 >= dst_sz) {                                                                     \
 		return o;                                                                          \
 	}                                                                                          \
 	dst[o++] = (u) >> 24;                                                                      \
@@ -74,8 +74,6 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_op *op, uint8_t *dst, s
 	return o;
 }
 
-#define printf(...) ((void)0)
-
 static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t *src,
 					   uint8_t *dst, size_t dst_sz, bool is_last)
 {
@@ -86,29 +84,20 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t
 	uint8_t cache_idx;
 	size_t o = 0;
 
-	printf("pixel #%02x%02x%02x, prev #%02x%02x%02x",
-		r, g, b, op->qoi_prev[0], op->qoi_prev[1], op->qoi_prev[2]);
-
 	/* Handle run-length operation */
 	if (memcmp(op->qoi_prev, src, 3) == 0) {
-		printf(" same as prev");
-
 		/* Increase run-length if same pixel */
 		op->qoi_run_length++;
 
 		/* Flush current run-length if reaching the maximum */
 		if (op->qoi_run_length >= 62 || is_last) {
-			printf(" flushing long run");
 			MPIX_QOI_PUT_U8(MPIX_QOI_OP_RUN | (op->qoi_run_length - 1));
 			op->qoi_run_length = 0;
 		}
-		printf("\n");
 		return o;
 	} else {
 		/* Flush current run-length if different pixel */
 		if (op->qoi_run_length > 0) {
-			printf(" flushing run");
-
 			MPIX_QOI_PUT_U8(MPIX_QOI_OP_RUN | (op->qoi_run_length - 1));
 			op->qoi_run_length = 0;
 		}
@@ -117,7 +106,6 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t
 	/* Handle run-length operation */
 	cache_idx = ((uint16_t)r * 3 + (uint16_t)g * 5 + (uint16_t)b * 7 + (uint16_t)a * 11) % 64;
 	if (memcmp(&op->qoi_cache[3 * cache_idx], src, 3) == 0) {
-		printf(" OP_INDEX: idx %u\n", cache_idx);
 		/* Use table encoding if previously encountered */
 		MPIX_QOI_PUT_U8(MPIX_QOI_OP_INDEX | cache_idx);
 		memcpy(op->qoi_prev, src, 3);
@@ -138,7 +126,6 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t
 
 	/* Handle difference operation */
 	if (IN_RANGE(dr, -2, 1) && IN_RANGE(dg, -2, 1) && IN_RANGE(db, -2, 1)) {
-		printf(" OP_DIFF: dr %d, dg %d, db %d\n", dr, dg, db);
 		MPIX_QOI_PUT_U8(MPIX_QOI_OP_DIFF | (dr + 2) << 4 | (dg + 2) << 2 | (db + 2) << 0);
 		memcpy(op->qoi_prev, src, 3);
 		return o;
@@ -146,7 +133,6 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t
 
 	/* Handle luma operation */
 	if (IN_RANGE(dgr, -8, 7) && IN_RANGE(dg, -32, 31) && IN_RANGE(dgb, -8, 7)) {
-		printf(" OP_LUMA: dgr %d, dg %d, dgb %d\n", dgr, dg, dgb);
 		MPIX_QOI_PUT_U8(MPIX_QOI_OP_LUMA | (dg + 32));
 		MPIX_QOI_PUT_U8((dgr + 8) << 4 | (dgb + 8) << 0);
 		memcpy(op->qoi_prev, src, 3);
@@ -154,7 +140,6 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t
 	}
 
 	/* Handle full RGB operation as fallback */
-	printf(" OP_RGB\n");
 	MPIX_QOI_PUT_U8(MPIX_QOI_OP_RGB);
 	MPIX_QOI_PUT_U8(r);
 	MPIX_QOI_PUT_U8(g);

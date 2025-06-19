@@ -41,12 +41,4 @@ struct mpix_qoi_op {
 		.base.run = (op),                                                                  \
 	}
 
-/**
- * @brief Encode an image to the QOI compressed image format
- *
- * @param image Image to convert to QOI format.
- * @param max_sz Maximum size of the intermediate buffer to use.
- */
-int mpix_image_qoi_encode(struct mpix_image *img);
-
 #endif /** @} */
