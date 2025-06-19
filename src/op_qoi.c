@@ -6,12 +6,10 @@
 #include <mpix/formats.h>
 #include <mpix/genlist.h>
 #include <mpix/image.h>
-#include <mpix/op_palettize.h>
 #include <mpix/op_qoi.h>
 #include <mpix/utils.h>
 
-static const struct mpix_qoi_convert_op **mpix_qoi_convert_op_list;
-static const struct mpix_qoi_palette_op **mpix_qoi_palette_op_list;
+static const struct mpix_qoi_op **mpix_qoi_op_list;
 
 #define MPIX_QOI_OP_INDEX  0x00 /* 00xxxxxx */
 #define MPIX_QOI_OP_DIFF   0x40 /* 01xxxxxx */
@@ -20,39 +18,11 @@ static const struct mpix_qoi_palette_op **mpix_qoi_palette_op_list;
 #define MPIX_QOI_OP_RGB    0xfe /* 11111110 */
 #define MPIX_QOI_OP_RGBA   0xff /* 11111111 */
 
-int mpix_image_qoi_depalettize(struct mpix_image *img, size_t max_sz, struct mpix_palette *plt)
-{
-	const struct mpix_qoi_palette_op *op = NULL;
-	struct mpix_qoi_palette_op *new;
-	uint8_t bpp = mpix_bits_per_pixel(img->format);
-	size_t pitch = img->width * bpp / BITS_PER_BYTE;
-	int ret;
-
-	/* TODO: check that the image format is PALETTE# */
-
-	op = mpix_op_by_format(mpix_qoi_palette_op_list, img->format, MPIX_FMT_QOI);
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(MPIX_FMT_QOI));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	ret = mpix_image_append_op(img, &op->base, sizeof(*op), max_sz, pitch);
-	if (ret != 0) {
-		return ret;
-	}
-
-	new = (struct mpix_qoi_palette_op *)img->ops.last;
-	new->palette = plt;
-
-	return 0;
-}
-
 int mpix_image_qoi_encode(struct mpix_image *img)
 {
-	struct mpix_qoi_convert_op *op = NULL;
+	struct mpix_qoi_op *op = NULL;
 
-	op = mpix_op_by_format(mpix_qoi_convert_op_list, img->format, MPIX_FMT_QOI);
+	op = mpix_op_by_format(mpix_qoi_op_list, img->format, MPIX_FMT_QOI);
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s not found",
 			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(MPIX_FMT_QOI));
@@ -79,8 +49,7 @@ int mpix_image_qoi_encode(struct mpix_image *img)
 	dst[o++] = (u) >> 0;                                                                       \
 })
 
-static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
-					 uint8_t *dst, size_t dst_sz)
+static inline size_t mpix_qoi_add_header(struct mpix_qoi_op *op, uint8_t *dst, size_t dst_sz)
 {
 	size_t o = 0;
 
@@ -107,7 +76,7 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
 
 #define printf(...) ((void)0)
 
-static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_convert_op *op, const uint8_t *src,
+static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_op *op, const uint8_t *src,
 					   uint8_t *dst, size_t dst_sz, bool is_last)
 {
 	const uint8_t r = src[0];
@@ -197,7 +166,7 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_convert_op *op, const
 
 void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 {
-	struct mpix_qoi_convert_op *op = (void *)base;
+	struct mpix_qoi_op *op = (void *)base;
 	bool first = (base->line_offset == 0);
 	const uint8_t *src = mpix_op_get_input_line(base);
 	size_t dst_sz = 0;
@@ -224,38 +193,7 @@ void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 	mpix_op_get_output_bytes(base, o);
 	mpix_op_done(base);
 }
-MPIX_REGISTER_QOI_CONVERT_OP(encode_rgb24, mpix_qoi_encode_rgb24_op, RGB24, QOI);
+MPIX_REGISTER_QOI_OP(encode_rgb24, mpix_qoi_encode_rgb24_op, RGB24, QOI);
 
-static inline size_t mpix_qoi_depalettize(struct mpix_palette_op *op, uint8_t idx,
-					  uint8_t *buf, size_t sz)
-{
-	MPIX_INF("");
-
-	return 1;
-}
-
-void mpix_qoi_depalettize_op(struct mpix_base_op *base)
-{
-	struct mpix_palette_op *op = (void *)base;
-	const uint8_t *src = mpix_op_get_input_line(base);
-	size_t dst_sz = 0;
-	uint8_t *dst = mpix_op_peek_output(base, &dst_sz);
-	size_t o = 0;
-
-	for (size_t w = 0; w + 2 <= base->width; w += 2) {
-		uint8_t idx0 = (src[w / 2] & 0xf0) >> 4;
-		uint8_t idx1 = (src[w / 2] & 0x0f) >> 0;
-
-		o += mpix_qoi_depalettize(op, idx0, dst + o, dst_sz - o);
-		o += mpix_qoi_depalettize(op, idx1, dst + o, dst_sz - o);
-	}
-
-	mpix_op_done(base);
-}
-MPIX_REGISTER_QOI_PALETTE_OP(encode_palette1, mpix_qoi_depalettize_op, PALETTE1, QOI);
-
-static const struct mpix_qoi_palette_op **mpix_qoi_palette_op_list =
-	(const struct mpix_qoi_palette_op *[]){MPIX_LIST_QOI_PALETTE_OP};
-
-static const struct mpix_qoi_convert_op **mpix_qoi_convert_op_list =
-	(const struct mpix_qoi_convert_op *[]){MPIX_LIST_QOI_CONVERT_OP};
+static const struct mpix_qoi_op **mpix_qoi_op_list =
+	(const struct mpix_qoi_op *[]){MPIX_LIST_QOI_OP};
