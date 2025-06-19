@@ -171,6 +171,7 @@ static inline uint8_t *mpix_ring_write(struct mpix_ring *ring, size_t size)
 	uint8_t *data = ring->data + ring->head;
 
 	if (mpix_ring_headroom(ring) < size) {
+		MPIX_ERR("Not enough room (%u) to write %u bytes", mpix_ring_headroom(ring), size);
 		return NULL;
 	}
 	ring->head = (ring->head + size) % ring->size;

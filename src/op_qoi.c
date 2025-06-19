@@ -63,18 +63,20 @@ int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz)
 }
 
 #define MPIX_QOI_PUT_U8(u) ({                                                                      \
-	if ((o) >= (dst_sz)) {                                                                         \
-		return (o);                                                                        \
+	if (o >= dst_sz) {                                                                         \
+		return o;                                                                          \
 	}                                                                                          \
-	(dst)[(o)++] = (u);                                                                        \
+	dst[o++] = (u);                                                                            \
 })
 
 #define MPIX_QOI_PUT_U32(u) ({                                                                     \
-	if ((o) >= (dst_sz)) {                                                                         \
-		return (o);                                                                        \
+	if (o >= dst_sz) {                                                                         \
+		return o;                                                                          \
 	}                                                                                          \
-	(dst)[o] = mpix_htobe32(u);                                                                \
-	(o) += 4;                                                                                  \
+	dst[o++] = (u) >> 24;                                                                      \
+	dst[o++] = (u) >> 16;                                                                      \
+	dst[o++] = (u) >> 8;                                                                       \
+	dst[o++] = (u) >> 0;                                                                       \
 })
 
 static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
@@ -82,11 +84,16 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
 {
 	size_t o = 0;
 
+	MPIX_INF("Adding header to buffer of %u bytes", dst_sz);
+
 	/* magic */
 	MPIX_QOI_PUT_U8('q');
 	MPIX_QOI_PUT_U8('o');
 	MPIX_QOI_PUT_U8('i');
 	MPIX_QOI_PUT_U8('f');
+
+	MPIX_INF("converting header 'qoif' %ux%u, 3 channels, 0 colorspace",
+		op->base.width, op->base.height);
 
 	/* width */
 	MPIX_QOI_PUT_U32(op->base.width);
@@ -99,6 +106,8 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
 
 	/* colorspace */
 	MPIX_QOI_PUT_U8(0);
+
+	MPIX_INF("Added %u bytes", o);
 
 	return o;
 }
@@ -184,6 +193,7 @@ void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 	if (first) {
 		o += mpix_qoi_add_header(op, dst + o, dst_sz - o);
 	}
+
 
 	for (size_t w = 0; w < base->width; w++, src += 3) {
 		o += mpix_qoi_encode_rgb24(op, src, dst + o, dst_sz - o);

@@ -33,3 +33,18 @@ void mpix_port_printf(const char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 }
+
+int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max)
+{
+	*def = 0;
+	*max = 1;
+
+	return 0;
+}
+
+int mpix_port_set_exposure(void *dev, int32_t val)
+{
+	/* Not supported, do nothing */
+
+	return 0;
+}

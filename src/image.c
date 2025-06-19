@@ -116,7 +116,9 @@ int mpix_image_process(struct mpix_image *img)
 
 	for (op = op->next; op != NULL; op = op->next) {
 		if (op->ring.data == NULL) {
+			MPIX_INF("Allocating %u bytes for %s", op->ring.size, op->name);
 			op->ring.data = mpix_port_alloc(op->ring.size);
+			printf("YYY.%s %p\n", __func__, op->ring.data);
 			if (op->ring.data == NULL) {
 				MPIX_ERR("Failed to allocate a ring buffer");
 				return mpix_image_error(img, -ENOMEM);

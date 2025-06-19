@@ -217,8 +217,8 @@ static inline const uint8_t *mpix_op_get_all_input(struct mpix_base_op *op, size
  */
 static inline uint8_t *mpix_op_peek_output(struct mpix_base_op *op, size_t *sz)
 {
-	*sz = mpix_ring_tailroom(&op->ring);
-	return op->ring.data + op->ring.head;
+	*sz = mpix_ring_headroom(&op->next->ring);
+	return op->next->ring.data + op->next->ring.head;
 }
 
 static inline void mpix_op_run(struct mpix_base_op *op)
