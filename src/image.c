@@ -116,9 +116,7 @@ int mpix_image_process(struct mpix_image *img)
 
 	for (op = op->next; op != NULL; op = op->next) {
 		if (op->ring.data == NULL) {
-			MPIX_INF("Allocating %u bytes for %s", op->ring.size, op->name);
 			op->ring.data = mpix_port_alloc(op->ring.size);
-			printf("YYY.%s %p\n", __func__, op->ring.data);
 			if (op->ring.data == NULL) {
 				MPIX_ERR("Failed to allocate a ring buffer");
 				return mpix_image_error(img, -ENOMEM);
@@ -134,6 +132,7 @@ int mpix_image_process(struct mpix_image *img)
 	}
 
 	mpix_op_run(img->ops.first);
+	img->size = mpix_ring_tailroom(&img->ops.last->ring);
 	mpix_image_free(img);
 
 	return 0;
@@ -180,7 +179,7 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
 	ret = mpix_image_process(img);
 
 	img->buffer = buffer;
-	img->size = sz;
+	mpix_ring_tailroom(&img->ops.last->ring);
 
 	return ret;
 }

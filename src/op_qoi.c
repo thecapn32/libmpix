@@ -84,16 +84,11 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
 {
 	size_t o = 0;
 
-	MPIX_INF("Adding header to buffer of %u bytes", dst_sz);
-
 	/* magic */
 	MPIX_QOI_PUT_U8('q');
 	MPIX_QOI_PUT_U8('o');
 	MPIX_QOI_PUT_U8('i');
 	MPIX_QOI_PUT_U8('f');
-
-	MPIX_INF("converting header 'qoif' %ux%u, 3 channels, 0 colorspace",
-		op->base.width, op->base.height);
 
 	/* width */
 	MPIX_QOI_PUT_U32(op->base.width);
@@ -107,15 +102,13 @@ static inline size_t mpix_qoi_add_header(struct mpix_qoi_convert_op *op,
 	/* colorspace */
 	MPIX_QOI_PUT_U8(0);
 
-	MPIX_INF("Added %u bytes", o);
-
 	return o;
 }
 
 #define printf(...) ((void)0)
 
 static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_convert_op *op, const uint8_t *src,
-					   uint8_t *dst, size_t dst_sz)
+					   uint8_t *dst, size_t dst_sz, bool is_last)
 {
 	const uint8_t r = src[0];
 	const uint8_t g = src[1];
@@ -135,7 +128,7 @@ static inline size_t mpix_qoi_encode_rgb24(struct mpix_qoi_convert_op *op, const
 		op->qoi_run_length++;
 
 		/* Flush current run-length if reaching the maximum */
-		if (op->qoi_run_length >= 62) {
+		if (op->qoi_run_length >= 62 || is_last) {
 			printf(" flushing long run");
 			MPIX_QOI_PUT_U8(MPIX_QOI_OP_RUN | (op->qoi_run_length - 1));
 			op->qoi_run_length = 0;
@@ -209,15 +202,23 @@ void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 	const uint8_t *src = mpix_op_get_input_line(base);
 	size_t dst_sz = 0;
 	uint8_t *dst = mpix_op_peek_output(base, &dst_sz);
+	bool is_last = (base->line_offset == base->height);
 	size_t o = 0;
+
+	assert(base->width > 0);
 
 	if (first) {
 		o += mpix_qoi_add_header(op, dst + o, dst_sz - o);
 	}
 
+	for (size_t w = 0; w < base->width - 1; w++, src += 3) {
+		o += mpix_qoi_encode_rgb24(op, src, dst + o, dst_sz - o, false);
+	}
+	o += mpix_qoi_encode_rgb24(op, src, dst + o, dst_sz - o, is_last);
 
-	for (size_t w = 0; w < base->width; w++, src += 3) {
-		o += mpix_qoi_encode_rgb24(op, src, dst + o, dst_sz - o);
+	if (is_last && o + 8 < dst_sz) {
+		dst[o++] = 0x00, dst[o++] = 0x00, dst[o++] = 0x00, dst[o++] = 0x00;
+		dst[o++] = 0x00, dst[o++] = 0x00, dst[o++] = 0x00, dst[o++] = 0x01;
 	}
 
 	mpix_op_get_output_bytes(base, o);

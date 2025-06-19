@@ -69,12 +69,10 @@ struct mpix_qoi_convert_op {
 	}
 
 /**
- * ;
- */
-int mpix_image_qoi_depalettize(struct mpix_image *img, size_t max_sz, struct mpix_palette *plt);
-
-/**
- * ;
+ * @brief Encode an image to the QOI compressed image format
+ *
+ * @param image Image to convert to QOI format.
+ * @param max_sz Maximum size of the intermediate buffer to use.
  */
 int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz);
 

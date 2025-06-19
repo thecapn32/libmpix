@@ -66,7 +66,7 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
 	memset(nums, 0x00, nums_sz);
 
 	/* Take samples from the input image, find which palette point they belong to, and
-	 * accumulate the colors to get an average color
+	 * accumulate the colors to get an average color.
 	 */
 	for (uint16_t i = 0; i < num_samples; i++) {
 		uint8_t idx;

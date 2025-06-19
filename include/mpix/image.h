@@ -249,6 +249,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
  * @param img Image to which add a processing step.
  * @param template Stream processing step to apply to the image.
  * @param op_sz Size of the operation struct to allocate.
+ * @return 0 on success.
  */
 int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_base_op *op,
 				      size_t op_sz);
