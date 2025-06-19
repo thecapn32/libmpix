@@ -48,7 +48,7 @@ int mpix_image_qoi_depalettize(struct mpix_image *img, size_t max_sz, struct mpi
 	return 0;
 }
 
-int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz)
+int mpix_image_qoi_encode(struct mpix_image *img)
 {
 	struct mpix_qoi_convert_op *op = NULL;
 
@@ -59,7 +59,7 @@ int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz)
 		return mpix_image_error(img, -ENOSYS);
 	}
 
-	return mpix_image_append_op(img, &op->base, sizeof(*op), max_sz, mpix_op_pitch(&op->base));
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
 }
 
 #define MPIX_QOI_PUT_U8(u) ({                                                                      \

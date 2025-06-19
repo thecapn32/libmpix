@@ -162,9 +162,8 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t window_size);
  *       this does not allow to select the window size.
  *
  * @param img Image to convert.
- * @param max_sz Maximum QOI image size, too big wastes spaces, too small causes truncation.
  */
-int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz);
+int mpix_image_qoi_encode(struct mpix_image *img);
 
 /**
  * @brief Resize an image.

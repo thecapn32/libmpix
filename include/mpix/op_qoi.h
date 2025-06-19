@@ -74,6 +74,6 @@ struct mpix_qoi_convert_op {
  * @param image Image to convert to QOI format.
  * @param max_sz Maximum size of the intermediate buffer to use.
  */
-int mpix_image_qoi_encode(struct mpix_image *img, size_t max_sz);
+int mpix_image_qoi_encode(struct mpix_image *img);
 
 #endif /** @} */
