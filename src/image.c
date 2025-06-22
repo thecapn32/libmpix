@@ -139,7 +139,7 @@ int mpix_image_process(struct mpix_image *img)
 }
 
 void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buffer, size_t sz,
-			     uint16_t width, uint16_t height, uint32_t format)
+			 uint16_t width, uint16_t height, uint32_t format)
 {
 	memset(img, 0x00, sizeof(*img));
 	img->buffer = (uint8_t *)buffer;

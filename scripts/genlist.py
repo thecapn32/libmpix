@@ -32,7 +32,7 @@ def scan_file(symbols: dict, path: str) -> None:
     Aggregate all the matches found in the path and add them to the symbols table.
     '''
     with open(path) as f:
-        p = re.compile('MPIX_REGISTER_(\w+)')
+        p = re.compile('MPIX_REGISTER_(\\w+)')
 
         for line in f:
             m = p.match(line)

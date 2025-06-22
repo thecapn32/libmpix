@@ -10,16 +10,22 @@ success=0
 
 # Loop over every test, build it, run it, report
 for test in */; do
-    if ! cmake -B "$test/build" && cmake --build "$test/build" >$test/build.log 2>&1; then
-        echo "- $test: build error"
+
+    printf '%10s ' "$test"
+
+    if ! (cd "$test" && cmake -B "build" && cmake --build "build") >$test/build.log 2>&1; then
         build_error=$((build_error + 1))
-    elif ! "$test/build/libmpix_test" >$test/runtime.log 2>&1
-        echo "- $test: runtime error"
+        echo "Build error"
+
+    elif ! (cd "$test" && build/libmpix_test) >$test/runtime.log 2>&1; then
         runtime_error=$((runtime_error + 1))
+
     else
-        echo "- $test: PASS"
         success=$((success + 1))
+        echo "Ok"
+
     fi
+
 done
 
 echo "Test results: $build_error build error - $runtime_error runtime error - $success successed"
