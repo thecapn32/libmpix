@@ -3,5 +3,5 @@
 name: mpix
 
 build:
-  cmake: ports/zephyr
-  kconfig: ports/zephyr/Kconfig
+  cmake: zephyr
+  kconfig: zephyr/Kconfig

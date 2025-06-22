@@ -37,10 +37,10 @@ void mpix_port_printf(const char *fmt, ...)
 
 int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max)
 {
-	struct video_ctrl_query cq = {.id = VIDEO_CID_EXPOSURE};
+	struct video_ctrl_query cq = {.id = VIDEO_CID_EXPOSURE, .dev = dev};
 	int ret;
 
-	ret = video_query_ctrl(dev, &cq);
+	ret = video_query_ctrl(&cq);
 	if (ret != 0) {
 		return ret;
 	}
