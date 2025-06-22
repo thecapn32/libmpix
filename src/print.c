@@ -42,7 +42,7 @@ typedef void fn_print_t(const uint8_t row0[3], const uint8_t row1[3]);
 typedef void fn_conv_t(const uint8_t *src, uint8_t *dst, uint16_t w);
 
 static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t height,
-			fn_print_t *fn_print, fn_conv_t *fn_conv, int bitspp, int npix)
+		       fn_print_t *fn_print, fn_conv_t *fn_conv, int bitspp, int npix)
 {
 	size_t pitch = width * bitspp / BITS_PER_BYTE;
 	uint8_t nbytes = npix * bitspp  / BITS_PER_BYTE;
@@ -53,14 +53,13 @@ static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t
 
 			assert(npix <= 2);
 
-			fn_conv(&src[i + pitch * 0], rgb24a, npix);
-			fn_conv(&src[i + pitch * 1], rgb24b, npix);
-
-			if (i + pitch > size) {
-				mpix_port_printf("\e[m *** early end of buffer at %zu bytes ***\n",
-					    size);
+			if (i + pitch + 2 > size) {
+				mpix_port_printf("\e[m *** early end of buffer***\n");
 				return;
 			}
+
+			fn_conv(&src[i + pitch * 0], rgb24a, npix);
+			fn_conv(&src[i + pitch * 1], rgb24b, npix);
 
 			for (int n = 0; n < npix; n++) {
 				fn_print(&rgb24a[n * 3], &rgb24b[n * 3]);
