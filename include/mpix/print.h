@@ -49,29 +49,16 @@ void mpix_print_256color(const uint8_t row0[3], const uint8_t row1[3]);
 void mpix_print_256gray(uint8_t row0, uint8_t row1);
 
 /**
- * @brief Hexdump a buffer in the RAW8 format
+ * @brief Hexdump a buffer in the specified format.
  *
  * @param buf Input buffer to display in the terminal.
  * @param size Size of the input buffer in bytes.
  * @param width Number of pixel of the input buffer in width
  * @param height Max number of rows to print
+ * @param fourcc Four Character Code identifying the format to hexdump.
  */
-void mpix_hexdump_raw8(const uint8_t *buf, size_t size, uint16_t width, uint16_t height);
-/**
- * @brief Hexdump a buffer in the RGB24 format
- * @copydetails mpix_hexdump_raw8()
- */
-void mpix_hexdump_rgb24(const uint8_t *buf, size_t size, uint16_t width, uint16_t height);
-/**
- * @brief Hexdump a buffer in the RGB565 format
- * @copydetails mpix_hexdump_raw8()
- */
-void mpix_hexdump_rgb565(const uint8_t *buf, size_t size, uint16_t width, uint16_t height);
-/**
- * @brief Hexdump a buffer in the YUYV format
- * @copydetails mpix_hexdump_raw8()
- */
-void mpix_hexdump_yuyv(const uint8_t *buf, size_t size, uint16_t width, uint16_t height);
+void mpix_hexdump(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
+		  uint32_t fourcc);
 
 /**
  * @brief Printing RGB histograms to the terminal.

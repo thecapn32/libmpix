@@ -183,3 +183,9 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
 
 	return ret;
 }
+
+void mpix_image_hexdump(struct mpix_image *img)
+{
+	size_t i;
+
+}

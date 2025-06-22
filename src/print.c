@@ -136,7 +136,19 @@ void mpix_image_print_256color(struct mpix_image *img)
 	mpix_print_buffer_256color(img->buffer, img->size, img->width, img->height, img->format);
 }
 
-void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, uint16_t height)
+static void mpix_hexdump_raw(const uint8_t *buf, size_t size)
+{
+	for (size_t i = 0; i < size;) {
+		printf("%08x:", i);
+		for (int n = 0; n < 32 && i < size; n++, i++) {
+			printf(" %02x", buf[i]);
+		}
+
+		printf("\n");
+	}
+}
+
+static void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, uint16_t height)
 {
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
@@ -154,7 +166,7 @@ void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, uint16_
 	}
 }
 
-void mpix_hexdump_rgb24(const uint8_t *rgb24, size_t size, uint16_t width, uint16_t height)
+static void mpix_hexdump_rgb24(const uint8_t *rgb24, size_t size, uint16_t width, uint16_t height)
 {
 	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
@@ -183,7 +195,7 @@ void mpix_hexdump_rgb24(const uint8_t *rgb24, size_t size, uint16_t width, uint1
 	}
 }
 
-void mpix_hexdump_rgb565(const uint8_t *rgb565, size_t size, uint16_t width, uint16_t height)
+static void mpix_hexdump_rgb565(const uint8_t *rgb565, size_t size, uint16_t width, uint16_t height)
 {
 	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
@@ -212,7 +224,7 @@ void mpix_hexdump_rgb565(const uint8_t *rgb565, size_t size, uint16_t width, uin
 	}
 }
 
-void mpix_hexdump_yuyv(const uint8_t *yuyv, size_t size, uint16_t width, uint16_t height)
+static void mpix_hexdump_yuyv(const uint8_t *yuyv, size_t size, uint16_t width, uint16_t height)
 {
 	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
@@ -248,6 +260,32 @@ void mpix_hexdump_yuyv(const uint8_t *yuyv, size_t size, uint16_t width, uint16_
 			}
 		}
 		mpix_port_printf(" row%u\n", h);
+	}
+}
+
+void mpix_hexdump(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
+		  uint32_t fourcc)
+{
+	switch (fourcc) {
+	case MPIX_FMT_YUYV:
+		mpix_hexdump_yuyv(buf, size, width, height);
+		break;
+	case MPIX_FMT_RGB24:
+		mpix_hexdump_rgb24(buf, size, width, height);
+		break;
+	case MPIX_FMT_RGB565:
+		mpix_hexdump_rgb565(buf, size, width, height);
+		break;
+	case MPIX_FMT_SBGGR8:
+	case MPIX_FMT_SRGGB8:
+	case MPIX_FMT_SGRBG8:
+	case MPIX_FMT_SGBRG8:
+	case MPIX_FMT_GREY:
+		mpix_hexdump_raw8(buf, size, width, height);
+		break;
+	default:
+		mpix_hexdump_raw(buf, size);
+		break;
 	}
 }
 

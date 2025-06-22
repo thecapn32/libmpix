@@ -218,7 +218,12 @@ void mpix_image_print_truecolor(struct mpix_image *img);
  */
 void mpix_image_print_256color(struct mpix_image *img);
 
-/** @cond INTERNAL_HIDDEN */
+/**
+ * @brief Print a hexdump of the image to the console for debug purpose.
+ *
+ * @param img Image to print.
+ */
+void mpix_image_hexdump(struct mpix_image *img);
 
 /**
  * @internal
@@ -280,7 +285,5 @@ int mpix_image_process(struct mpix_image *img);
  * @return 0 on success.
  */
 int mpix_image_error(struct mpix_image *img, int err);
-
-/** @endcond */
 
 #endif /** @} */
