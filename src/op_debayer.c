@@ -203,6 +203,7 @@ static void mpix_op_sbggr8_to_rgb24_3x3(struct mpix_base_op *base)
 				   &mpix_convert_grbg8_to_rgb24_3x3);
 }
 MPIX_REGISTER_DEBAYER_OP(sbggr8_3x3, mpix_op_sbggr8_to_rgb24_3x3, SBGGR8, 3);
+MPIX_REGISTER_DEBAYER_OP(bggr8_3x3, mpix_op_sbggr8_to_rgb24_3x3, BGGR8, 3);
 
 static void mpix_op_sgrbg8_to_rgb24_3x3(struct mpix_base_op *base)
 {
@@ -319,7 +320,7 @@ static inline void mpix_op_debayer_to_rgb24_2x2(struct mpix_base_op *base,
 	}
 
 	if (base->line_offset + 1 == base->height) {
-		fn0(i1, i0, mpix_op_get_output_line(base), base->width);
+		fn1(i1, i0, mpix_op_get_output_line(base), base->width);
 		mpix_op_done(base);
 
 		/* Skip the two lines of lookahead context, now that the conversion is complete */
