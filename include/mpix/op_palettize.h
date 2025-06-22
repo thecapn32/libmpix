@@ -19,7 +19,7 @@ struct mpix_palette {
 	/** Color value where the position in the array (in pixel number) is the color inxdex. */
 	uint8_t *colors;
 	/** Format of the indexed colors, defining the palette size. */
-	uint32_t format;
+	uint32_t fourcc;
 };
 
 /** @internal */
@@ -37,14 +37,14 @@ struct mpix_palette_op {
  *
  * @param id Short identifier to differentiate operations of the same category.
  * @param fn Function converting one input line.
- * @param format_in The input format for that operation.
- * @param format_out The Output format for that operation.
+ * @param fmt_in The input format for that operation.
+ * @param fmt_out The Output format for that operation.
  */
-#define MPIX_REGISTER_PALETTE_OP(id, fn, format_in, format_out)                                    \
+#define MPIX_REGISTER_PALETTE_OP(id, fn, fmt_in, fmt_out)                                          \
 	const struct mpix_palette_op mpix_palette_op_##id = {                                      \
 		.base.name = ("palettize_" #id),                                                   \
-		.base.format_src = (MPIX_FMT_##format_in),                                         \
-		.base.format_dst = (MPIX_FMT_##format_out),                                        \
+		.base.fourcc_src = (MPIX_FMT_##fmt_in),                                            \
+		.base.fourcc_dst = (MPIX_FMT_##fmt_out),                                           \
 		.base.window_size = 1,                                                             \
 		.base.run = mpix_palettize_op,                                                     \
 		.palette_fn = (fn),                                                                \

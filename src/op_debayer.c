@@ -16,8 +16,8 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t win_sz)
 	for (size_t i = 0; mpix_debayer_op_list[i] != NULL; i++) {
 		const struct mpix_debayer_op *tmp = mpix_debayer_op_list[i];
 
-		if (tmp->base.format_src == img->format &&
-		    tmp->base.format_dst == MPIX_FMT_RGB24 &&
+		if (tmp->base.fourcc_src == img->fourcc &&
+		    tmp->base.fourcc_dst == MPIX_FMT_RGB24 &&
 		    tmp->base.window_size == win_sz) {
 			op = tmp;
 			break;
@@ -25,7 +25,7 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t win_sz)
 	}
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s using %ux%u window not found",
-			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
 			 win_sz, win_sz);
 		return mpix_image_error(img, -ENOSYS);
 	}

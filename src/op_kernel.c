@@ -31,7 +31,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
 	for (size_t i = 0; kernel_op_list[i] != NULL; i++) {
 		const struct mpix_kernel_op *tmp = kernel_op_list[i];
 
-		if (tmp->base.format_src == img->format &&
+		if (tmp->base.fourcc_src == img->fourcc &&
 		    tmp->base.window_size == kernel_size &&
 		    tmp->type == kernel_type) {
 			op = tmp;
@@ -41,7 +41,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
 
 	if (op == NULL) {
 		MPIX_ERR("Kernel operation %u of size %ux%u on %s data not found",
-			 kernel_type, kernel_size, kernel_size, MPIX_FOURCC_TO_STR(img->format));
+			 kernel_type, kernel_size, kernel_size, MPIX_FOURCC_TO_STR(img->fourcc));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

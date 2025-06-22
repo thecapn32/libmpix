@@ -16,9 +16,9 @@ int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height)
 	const struct mpix_resize_op *op = NULL;
 	int ret;
 
-	op = mpix_op_by_format(mpix_resize_op_list, img->format, img->format);
+	op = mpix_op_by_format(mpix_resize_op_list, img->fourcc, img->fourcc);
 	if (op == NULL) {
-		MPIX_ERR("Resize operation for %s not found", MPIX_FOURCC_TO_STR(img->format));
+		MPIX_ERR("Resize operation for %s not found", MPIX_FOURCC_TO_STR(img->fourcc));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

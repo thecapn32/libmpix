@@ -56,8 +56,8 @@ struct mpix_isp_op {
 #define MPIX_REGISTER_ISP_OP(id, fn, t, fmt)                                                       \
 	const struct mpix_isp_op mpix_isp_op_##id = {                                              \
 		.base.name = ("isp_" #id),                                                         \
-		.base.format_src = (MPIX_FMT_##fmt),                                               \
-		.base.format_dst = (MPIX_FMT_##fmt),                                               \
+		.base.fourcc_src = (MPIX_FMT_##fmt),                                               \
+		.base.fourcc_dst = (MPIX_FMT_##fmt),                                               \
 		.base.window_size = 1,                                                             \
 		.base.run = mpix_isp_op,                                                           \
 		.isp_fn = (fn),                                                                    \

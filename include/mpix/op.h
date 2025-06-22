@@ -30,9 +30,9 @@ struct mpix_base_op {
 	/** Name of the operation, useful for debugging the operation */
 	const uint8_t *name;
 	/** Pixel input format */
-	uint32_t format_src;
+	uint32_t fourcc_src;
 	/** Pixel output format */
-	uint32_t format_dst;
+	uint32_t fourcc_dst;
 	/** Width of the image in pixels */
 	uint16_t width;
 	/** Height of the image in pixels */
@@ -62,24 +62,24 @@ struct mpix_base_op {
  */
 static inline size_t mpix_op_pitch(struct mpix_base_op *op)
 {
-	return op->width * mpix_bits_per_pixel(op->format_src) / BITS_PER_BYTE;
+	return op->width * mpix_bits_per_pixel(op->fourcc_src) / BITS_PER_BYTE;
 }
 
 /**
  * @brief Find an operation on a list given its input and output format.
  *
  * @param list An array of pointer to operations of any type.
- * @param format_src Four Character Code to match for the source format.
- * @param format_dst Four Character Code to match for the destination format.
+ * @param fourcc_src Four Character Code to match for the source format.
+ * @param fourcc_dst Four Character Code to match for the destination format.
  * @return A pointer to the operation element of the list, or NULL if none is found.
  */
-static inline void *mpix_op_by_format(void *list, uint32_t format_src, uint32_t format_dst)
+static inline void *mpix_op_by_format(void *list, uint32_t fourcc_src, uint32_t fourcc_dst)
 {
 	struct mpix_base_op **op_list = list;
 
 	for (size_t i = 0; op_list[i] != NULL; i++) {
-		if (op_list[i]->format_src == format_src &&
-		    op_list[i]->format_dst == format_dst) {
+		if (op_list[i]->fourcc_src == fourcc_src &&
+		    op_list[i]->fourcc_dst == fourcc_dst) {
 			return op_list[i];
 		}
 	}

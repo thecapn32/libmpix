@@ -56,7 +56,7 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 
 void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats)
 {
-	mpix_stats_from_buf(stats, img->buffer, img->width, img->height, img->format);
+	mpix_stats_from_buf(stats, img->buffer, img->width, img->height, img->fourcc);
 }
 
 void mpix_stats_print(struct mpix_stats *stats)

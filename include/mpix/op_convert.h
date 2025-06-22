@@ -34,8 +34,8 @@ struct mpix_convert_op {
 #define MPIX_REGISTER_CONVERT_OP(id, fn, format_in, format_out)                                    \
 	const struct mpix_convert_op mpix_convert_op_##id = {                                      \
 		.base.name = ("convert_" #id),                                                     \
-		.base.format_src = (MPIX_FMT_##format_in),                                         \
-		.base.format_dst = (MPIX_FMT_##format_out),                                        \
+		.base.fourcc_src = (MPIX_FMT_##format_in),                                         \
+		.base.fourcc_dst = (MPIX_FMT_##format_out),                                        \
 		.base.window_size = 1,                                                             \
 		.base.run = (mpix_convert_op),                                                     \
 		.convert_fn = (fn),                                                                \

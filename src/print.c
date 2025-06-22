@@ -128,12 +128,12 @@ void mpix_print_buf_256color(const uint8_t *buffer, size_t size, uint16_t width,
 
 void mpix_image_print_truecolor(struct mpix_image *img)
 {
-	mpix_print_buf_truecolor(img->buffer, img->size, img->width, img->height, img->format);
+	mpix_print_buf_truecolor(img->buffer, img->size, img->width, img->height, img->fourcc);
 }
 
 void mpix_image_print_256color(struct mpix_image *img)
 {
-	mpix_print_buf_256color(img->buffer, img->size, img->width, img->height, img->format);
+	mpix_print_buf_256color(img->buffer, img->size, img->width, img->height, img->fourcc);
 }
 
 static void mpix_hexdump_raw(const uint8_t *buf, size_t size)

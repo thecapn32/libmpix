@@ -14,7 +14,7 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 {
 	const struct mpix_convert_op *op = NULL;
 
-	if (img->format == new_format) {
+	if (img->fourcc == new_format) {
 		/* no-op */
 		return 0;
 	}
@@ -22,7 +22,7 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 	for (size_t i = 0; mpix_convert_op_list[i] != NULL; i++) {
 		const struct mpix_convert_op *tmp = mpix_convert_op_list[i];
 
-		if (tmp->base.format_src == img->format && tmp->base.format_dst == new_format) {
+		if (tmp->base.fourcc_src == img->fourcc && tmp->base.fourcc_dst == new_format) {
 			op = tmp;
 			break;
 		}
@@ -30,7 +30,7 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
 
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(new_format));
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(new_format));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

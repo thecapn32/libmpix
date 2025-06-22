@@ -34,10 +34,10 @@ static int mpix_image_append_palette_op(struct mpix_image *img, const struct mpi
 
 uint8_t mpix_palette_depth(const struct mpix_palette *palette)
 {
-	assert(memcmp(MPIX_FOURCC_TO_STR(palette->format), "PLT", 3) == 0);
-	assert(IN_RANGE(MPIX_FOURCC_TO_STR(palette->format)[3], '1', '8'));
+	assert(memcmp(MPIX_FOURCC_TO_STR(palette->fourcc), "PLT", 3) == 0);
+	assert(IN_RANGE(MPIX_FOURCC_TO_STR(palette->fourcc)[3], '1', '8'));
 
-	return MPIX_FOURCC_TO_STR(palette->format)[3] - '0';
+	return MPIX_FOURCC_TO_STR(palette->fourcc)[3] - '0';
 }
 
 int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *palette,
@@ -71,7 +71,7 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
 	for (uint16_t i = 0; i < num_samples; i++) {
 		uint8_t idx;
 
-		mpix_sample_random_rgb(img->buffer, img->width, img->height, img->format, rgb);
+		mpix_sample_random_rgb(img->buffer, img->width, img->height, img->fourcc, rgb);
 		idx = mpix_rgb24_to_palette(rgb, palette);
 
 		sums[idx * 3 + 0] += rgb[0];
@@ -107,14 +107,14 @@ int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette)
 {
 	const struct mpix_palette_op *op = NULL;
 
-	if (img->format != palette->format) {
+	if (img->fourcc != palette->fourcc) {
 		MPIX_ERR("Image format is not matching the palette format");
 	}
 
-	op = mpix_op_by_format(mpix_palette_op_list, img->format, MPIX_FMT_RGB24);
+	op = mpix_op_by_format(mpix_palette_op_list, img->fourcc, MPIX_FMT_RGB24);
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(palette->format));
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(palette->fourcc));
 		return mpix_image_error(img, -ENOSYS);
 	}
 
@@ -131,10 +131,10 @@ int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette)
 		return ret;
 	}
 
-	op = mpix_op_by_format(mpix_palette_op_list, img->format, palette->format);
+	op = mpix_op_by_format(mpix_palette_op_list, img->fourcc, palette->fourcc);
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(palette->format));
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(palette->fourcc));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

@@ -29,8 +29,8 @@ struct mpix_resize_op {
 #define MPIX_REGISTER_RESIZE_OP(id, fn, fmt)                                                       \
 	const struct mpix_resize_op mpix_resize_op_##id = {                                        \
 		.base.name = ("resize_" #id),                                                      \
-		.base.format_src = (MPIX_FMT_##fmt),                                                  \
-		.base.format_dst = (MPIX_FMT_##fmt),                                                  \
+		.base.fourcc_src = (MPIX_FMT_##fmt),                                                  \
+		.base.fourcc_dst = (MPIX_FMT_##fmt),                                                  \
 		.base.window_size = 1,                                                             \
 		.base.run = (fn),                                                                  \
 	}

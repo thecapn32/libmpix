@@ -35,7 +35,7 @@ struct mpix_image {
 	/** Current height of the image */
 	uint16_t height;
 	/** Current pixel format of the image */
-	uint32_t format;
+	uint32_t fourcc;
 	/** Input or output buffer used with the conversion */
 	uint8_t *buffer;
 	/** Size of the input or output buffer */

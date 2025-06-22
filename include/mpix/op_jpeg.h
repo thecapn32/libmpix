@@ -29,8 +29,8 @@ struct mpix_jpeg_op {
 #define MPIX_REGISTER_JPEG_OP(id, op, fmt_src, fmt_dst)                                            \
 	const struct mpix_jpeg_op mpix_jpeg_op_##id = {                                            \
 		.base.name = ("jpeg_" #id),                                                        \
-		.base.format_src = (MPIX_FMT_##fmt_src),                                           \
-		.base.format_dst = (MPIX_FMT_##fmt_dst),                                           \
+		.base.fourcc_src = (MPIX_FMT_##fmt_src),                                           \
+		.base.fourcc_dst = (MPIX_FMT_##fmt_dst),                                           \
 		.base.window_size = 1,                                                             \
 		.base.run = (op),                                                                  \
 	}

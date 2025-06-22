@@ -19,7 +19,7 @@ int mpix_image_signal_processing(struct mpix_image *img, uint32_t type, struct m
 	for (size_t i = 0; mpix_isp_op_list[i] != NULL; i++) {
 		const struct mpix_isp_op *tmp = mpix_isp_op_list[i];
 
-		if (tmp->base.format_src == img->format &&
+		if (tmp->base.fourcc_src == img->fourcc &&
 		    tmp->type == type) {
 			op = tmp;
 			break;
@@ -28,7 +28,7 @@ int mpix_image_signal_processing(struct mpix_image *img, uint32_t type, struct m
 
 	if (op == NULL) {
 		MPIX_ERR("ISP operation %u on %s data not found",
-			 type, MPIX_FOURCC_TO_STR(img->format));
+			 type, MPIX_FOURCC_TO_STR(img->fourcc));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

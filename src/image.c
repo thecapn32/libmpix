@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #include <mpix/image.h>
+#include <mpix/print.h>
 
 void mpix_image_free(struct mpix_image *img)
 {
@@ -51,9 +52,9 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
 		return -ECANCELED;
 	}
 
-	if (template->format_src != img->format) {
+	if (template->fourcc_src != img->fourcc) {
 		MPIX_ERR("Wrong format for this operation: image has %s, operation uses %s",
-			MPIX_FOURCC_TO_STR(template->format_src), MPIX_FOURCC_TO_STR(img->format));
+			MPIX_FOURCC_TO_STR(template->fourcc_src), MPIX_FOURCC_TO_STR(img->fourcc));
 		return mpix_image_error(img, -EINVAL);
 	}
 
@@ -70,7 +71,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
 	op->ring.data = NULL; /* allocated later */
 	op->ring.size = buffer_sz;
 
-	img->format = op->format_dst;
+	img->fourcc = op->fourcc_dst;
 
 	mpix_image_append(img, op);
 
@@ -80,7 +81,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
 int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_base_op *op,
 				      size_t op_sz)
 {
-	size_t pitch = img->width * mpix_bits_per_pixel(img->format) / BITS_PER_BYTE;
+	size_t pitch = img->width * mpix_bits_per_pixel(img->fourcc) / BITS_PER_BYTE;
 	size_t buf_sz = op->window_size * pitch;
 
 	return mpix_image_append_op(img, op, op_sz, buf_sz, buf_sz);
@@ -127,8 +128,8 @@ int mpix_image_process(struct mpix_image *img)
 
 	for (struct mpix_base_op *op = img->ops.first; op != NULL; op = op->next) {
 		MPIX_DBG("- %s %ux%u to %s, %s, threshold %u",
-			MPIX_FOURCC_TO_STR(op->format_src), op->width, op->height,
-			MPIX_FOURCC_TO_STR(op->format_dst), op->name, op->threshold);
+			MPIX_FOURCC_TO_STR(op->fourcc_src), op->width, op->height,
+			MPIX_FOURCC_TO_STR(op->fourcc_dst), op->name, op->threshold);
 	}
 
 	mpix_op_run(img->ops.first);
@@ -139,14 +140,14 @@ int mpix_image_process(struct mpix_image *img)
 }
 
 void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buffer, size_t sz,
-			 uint16_t width, uint16_t height, uint32_t format)
+			 uint16_t width, uint16_t height, uint32_t fourcc)
 {
 	memset(img, 0x00, sizeof(*img));
 	img->buffer = (uint8_t *)buffer;
 	img->size = sz;
 	img->width = width;
 	img->height = height;
-	img->format = format;
+	img->fourcc = fourcc;
 }
 
 int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
@@ -167,8 +168,8 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
 	memset(op, 0x00, sizeof(*op));
 	op->name = __func__;
 	op->threshold = sz;
-	op->format_src = img->format;
-	op->format_dst = img->format;
+	op->fourcc_src = img->fourcc;
+	op->fourcc_dst = img->fourcc;
 	op->width = img->width;
 	op->height = img->height;
 	op->ring.data = buffer;
@@ -186,5 +187,5 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
 
 void mpix_image_hexdump(struct mpix_image *img)
 {
-	;
+	mpix_hexdump(img->buffer, img->size, img->width, img->height, img->fourcc);
 }

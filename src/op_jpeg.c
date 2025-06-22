@@ -22,10 +22,10 @@ int mpix_image_jpeg_encode(struct mpix_image *img)
 {
 	struct mpix_jpeg_op *op = NULL;
 
-	op = mpix_op_by_format(mpix_jpeg_op_list, img->format, MPIX_FMT_JPEG);
+	op = mpix_op_by_format(mpix_jpeg_op_list, img->fourcc, MPIX_FMT_JPEG);
 	if (op == NULL) {
 		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->format), MPIX_FOURCC_TO_STR(MPIX_FMT_JPEG));
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_JPEG));
 		return mpix_image_error(img, -ENOSYS);
 	}
 

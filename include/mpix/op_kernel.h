@@ -49,8 +49,8 @@ struct mpix_kernel_op {
 #define MPIX_REGISTER_KERNEL_5X5_OP(id, fn, t, fmt)                                                \
 	const struct mpix_kernel_op mpix_kernel_5x5_op_##id = {                                    \
 		.base.name = ("kernel_5x5_" #id),                                                  \
-		.base.format_src = (MPIX_FMT_##fmt),                                               \
-		.base.format_dst = (MPIX_FMT_##fmt),                                               \
+		.base.fourcc_src = (MPIX_FMT_##fmt),                                               \
+		.base.fourcc_dst = (MPIX_FMT_##fmt),                                               \
 		.base.window_size = 5,                                                             \
 		.base.run = mpix_kernel_5x5_op,                                                    \
 		.kernel_fn = (fn),                                                                 \
@@ -68,8 +68,8 @@ struct mpix_kernel_op {
 #define MPIX_REGISTER_KERNEL_3X3_OP(id, fn, t, fmt)                                                \
 	const struct mpix_kernel_op mpix_kernel_3x3_op_##id = {                                    \
 		.base.name = ("kernel_3x3_" #id),                                                  \
-		.base.format_src = (MPIX_FMT_##fmt),                                                  \
-		.base.format_dst = (MPIX_FMT_##fmt),                                                  \
+		.base.fourcc_src = (MPIX_FMT_##fmt),                                                  \
+		.base.fourcc_dst = (MPIX_FMT_##fmt),                                                  \
 		.base.window_size = 3,                                                             \
 		.base.run = mpix_kernel_3x3_op,                                                    \
 		.kernel_fn = (fn),                                                                 \

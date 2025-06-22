@@ -28,15 +28,15 @@ struct mpix_qoi_op {
  * @brief Define a new encoding operation: from a pixel format to the QOI format.
  *
  * @param id Short identifier to differentiate operations of the same category.
- * @param fn Function converting one input line.
- * @param format_in The input format for that operation.
- * @param format_out The Output format for that operation.
+ * @param op Operation to use for the conversion.
+ * @param fmt_in The input format for that operation.
+ * @param fmt_out The Output format for that operation.
  */
 #define MPIX_REGISTER_QOI_OP(id, op, fmt_src, fmt_dst)                                             \
 	const struct mpix_qoi_op mpix_qoi_op_##id = {                                              \
 		.base.name = ("qoi_" #id),                                                         \
-		.base.format_src = (MPIX_FMT_##fmt_src),                                           \
-		.base.format_dst = (MPIX_FMT_##fmt_dst),                                           \
+		.base.fourcc_src = (MPIX_FMT_##fmt_src),                                           \
+		.base.fourcc_dst = (MPIX_FMT_##fmt_dst),                                           \
 		.base.window_size = 1,                                                             \
 		.base.run = (op),                                                                  \
 	}
