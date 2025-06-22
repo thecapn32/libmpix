@@ -73,8 +73,8 @@ static void mpix_print(const uint8_t *src, size_t size, uint16_t width, uint16_t
 	}
 }
 
-static void mpix_print_buffer(const uint8_t *buffer, size_t size, uint16_t width, uint16_t height,
-			       uint32_t fourcc, fn_print_t *fn)
+static void mpix_print_buf(const uint8_t *buffer, size_t size, uint16_t width, uint16_t height,
+			   uint32_t fourcc, fn_print_t *fn)
 {
 	switch (fourcc) {
 	case MPIX_FMT_RGB24:
@@ -114,26 +114,26 @@ static void mpix_print_buffer(const uint8_t *buffer, size_t size, uint16_t width
 	}
 }
 
-void mpix_print_buffer_truecolor(const uint8_t *buffer, size_t size, uint16_t width,
-				  uint16_t height, uint32_t fourcc)
+void mpix_print_buf_truecolor(const uint8_t *buffer, size_t size, uint16_t width,
+			      uint16_t height, uint32_t fourcc)
 {
-	mpix_print_buffer(buffer, size, width, height, fourcc, mpix_print_truecolor);
+	mpix_print_buf(buffer, size, width, height, fourcc, mpix_print_truecolor);
 }
 
-void mpix_print_buffer_256color(const uint8_t *buffer, size_t size, uint16_t width,
+void mpix_print_buf_256color(const uint8_t *buffer, size_t size, uint16_t width,
 				  uint16_t height, uint32_t fourcc)
 {
-	mpix_print_buffer(buffer, size, width, height, fourcc, mpix_print_256color);
+	mpix_print_buf(buffer, size, width, height, fourcc, mpix_print_256color);
 }
 
 void mpix_image_print_truecolor(struct mpix_image *img)
 {
-	mpix_print_buffer_truecolor(img->buffer, img->size, img->width, img->height, img->format);
+	mpix_print_buf_truecolor(img->buffer, img->size, img->width, img->height, img->format);
 }
 
 void mpix_image_print_256color(struct mpix_image *img)
 {
-	mpix_print_buffer_256color(img->buffer, img->size, img->width, img->height, img->format);
+	mpix_print_buf_256color(img->buffer, img->size, img->width, img->height, img->format);
 }
 
 static void mpix_hexdump_raw(const uint8_t *buf, size_t size)

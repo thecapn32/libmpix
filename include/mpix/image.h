@@ -54,7 +54,7 @@ struct mpix_image {
  * @param height Height of the complete image in pixels.
  * @param format Format of data in the buffer as a four-character-code.
  */
-void mpix_image_from_buf(struct mpix_image *img, uint8_t *buf, size_t size,
+void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buf, size_t size,
 			 uint16_t width, uint16_t height, uint32_t format);
 
 /**
@@ -66,6 +66,15 @@ void mpix_image_from_buf(struct mpix_image *img, uint8_t *buf, size_t size,
  * @return 0 on success
  */
 int mpix_image_to_buf(struct mpix_image *img, uint8_t *buf, size_t size);
+
+/**
+ * @brief Free the intermediate buffers of an image.
+ *
+ * This is only required if not calling any export funcitons such as @ref mpix_image_to_buf.
+ *
+ * @param img Image for which to release resources. Only internal buffers are freed.
+ */
+void mpix_image_free(struct mpix_image *img);
 
 /**
  * @brief Collect statistics from an image.

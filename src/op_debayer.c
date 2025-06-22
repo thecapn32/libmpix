@@ -347,6 +347,7 @@ static void mpix_op_sbggr8_to_rgb24_2x2(struct mpix_base_op *base)
 					 &mpix_convert_grbg8_to_rgb24_2x2);
 }
 MPIX_REGISTER_DEBAYER_OP(sbggr8_2x2, mpix_op_sbggr8_to_rgb24_2x2, SBGGR8, 2);
+MPIX_REGISTER_DEBAYER_OP(bggr8_2x2, mpix_op_sbggr8_to_rgb24_2x2, BGGR8, 2); /* Zephyr 3.6 compat */
 
 static void mpix_op_sgrbg8_to_rgb24_2x2(struct mpix_base_op *base)
 {

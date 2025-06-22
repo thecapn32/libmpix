@@ -15,18 +15,31 @@ endfunction()
 file(REAL_PATH .. LIBMPIX_DIR)
 include(${LIBMPIX_DIR}/ports/common.cmake)
 
-if(Zephyr_VERSION VERSION_EQUAL "3.7")
+if(Zephyr_VERSION VERSION_EQUAL "3.6")
+  message(STATUS "Using Zephyr 3.6.x port")
+  zephyr_library_sources(${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/zephyr_3_6/port.c)
+
+elseif(Zephyr_VERSION VERSION_EQUAL "3.7")
+  message(STATUS "Using Zephyr 3.7.x port")
   zephyr_library_sources(${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/zephyr_3_7/port.c)
-endif()
 
-if(Zephyr_VERSION VERSION_EQUAL "4.0")
+elseif(Zephyr_VERSION VERSION_EQUAL "4.0")
+  message(STATUS "Using Zephyr 4.0.x port")
   zephyr_library_sources(${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/zephyr_4_0/port.c)
-endif()
 
-if(Zephyr_VERSION VERSION_EQUAL "4.1.0")
+elseif(Zephyr_VERSION VERSION_EQUAL "4.1.0")
+  message(STATUS "Using Zephyr 4.1.x port")
   zephyr_library_sources(${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/zephyr_4_1/port.c)
-endif()
 
-if(Zephyr_VERSION VERSION_EQUAL "4.1.99")
+elseif(Zephyr_VERSION VERSION_EQUAL "4.1.99")
+  message(STATUS "Using Zephyr main port")
   zephyr_library_sources(${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/zephyr_main/port.c)
+
+elseif(Zephyr_VERSION VERSION_EQUAL "4.2.0")
+  message(STATUS "Using Zephyr 4.2.x port")
+  zephyr_library_sources(${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/zephyr_4_2/port.c)
+
+else()
+  message(FATAL_ERROR "unable to find a supported Zephyr version")
+
 endif()

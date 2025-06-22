@@ -19,14 +19,14 @@
  * @param height Max number of rows to print
  * @param fourcc Format of the buffer to print
  */
-void mpix_print_buffer_truecolor(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
-				 uint32_t fourcc);
+void mpix_print_buf_truecolor(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
+			      uint32_t fourcc);
 /**
  * @brief Print a buffer using higher speed 256COLOR terminal escape codes.
  * @copydetails mpix_print_buffer_truecolor()
  */
-void mpix_print_buffer_256color(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
-				uint32_t fourcc);
+void mpix_print_buf_256color(const uint8_t *buf, size_t size, uint16_t width, uint16_t height,
+			     uint32_t fourcc);
 
 /**
  * @brief Print two pixels using TRUECOLOR terminal escape sequences

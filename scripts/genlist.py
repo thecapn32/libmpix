@@ -18,7 +18,7 @@ def add_match(symbols: dict, category: str, line: str) -> None:
     if category not in symbols:
         symbols[category] = []
 
-    p = re.compile('\\(\s*(\w+)\s*[,\\)]')
+    p = re.compile('\\(\\s*(\\w+)\\s*[,\\)]')
     m = p.match(line)
 
     if m is None:

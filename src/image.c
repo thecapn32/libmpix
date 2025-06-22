@@ -6,7 +6,7 @@
 
 #include <mpix/image.h>
 
-static void mpix_image_free(struct mpix_image *img)
+void mpix_image_free(struct mpix_image *img)
 {
 	for (struct mpix_base_op *next, *op = img->ops.first; op != NULL; op = next) {
 		next = op->next;
@@ -138,11 +138,11 @@ int mpix_image_process(struct mpix_image *img)
 	return 0;
 }
 
-void mpix_image_from_buf(struct mpix_image *img, uint8_t *buffer, size_t sz,
+void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buffer, size_t sz,
 			     uint16_t width, uint16_t height, uint32_t format)
 {
 	memset(img, 0x00, sizeof(*img));
-	img->buffer = buffer;
+	img->buffer = (uint8_t *)buffer;
 	img->size = sz;
 	img->width = width;
 	img->height = height;
@@ -186,6 +186,5 @@ int mpix_image_to_buf(struct mpix_image *img, uint8_t *buffer, size_t sz)
 
 void mpix_image_hexdump(struct mpix_image *img)
 {
-	size_t i;
-
+	;
 }

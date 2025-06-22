@@ -80,6 +80,7 @@ static inline size_t mpix_jpeg_encode_block(struct mpix_jpeg_op *op, uint8_t blo
 					    uint8_t *dst, size_t dst_sz)
 {
 	/* TODO insert JPEG input block to JPEG output here */
+	return 0;
 }
 
 void mpix_jpeg_encode_yuyv_op(struct mpix_base_op *base)

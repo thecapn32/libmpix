@@ -14,6 +14,9 @@
 	assert((ret) == 0)
 
 #define mpix_test_within(val, reference, margin) \
-	(assert((val) > (reference) - (margin)), assert((val) < (reference) + (margin)))
+	(assert((val) >= (reference) - (margin)), assert((val) <= (reference) + (margin)))
+
+#define mpix_test_equal(val, reference) \
+	assert((val) == (reference))
 
 #endif /* @} */
