@@ -1,8 +1,10 @@
 Introduction
 ============
 
-The **libmpix** is a library to work with image data on microcontrollers: pixel format conversion,
-debayer, blur, sharpen, color correction, resizing...
+The **libmpix** is an open-source
+([Apache 2.0](https://github.com/libmpix/libmpix/blob/main/LICENSE))
+library to work with image data on microcontrollers:
+pixel format conversion, debayer, blur, sharpen, color correction, resizing...
 
 It pipelines multiple operations together, eliminating the intermediate buffers.
 This allows larger resolution to fit in constrained systems, without compromising performance.
