@@ -341,6 +341,7 @@ static inline uint8_t mpix_bits_per_pixel(uint32_t fourcc)
 		return 8;
 
 	/* Bayer formats */
+	case MPIX_FMT_BGGR8: /* Zephyr 3.6 compat */
 	case MPIX_FMT_SRGGB8:
 	case MPIX_FMT_SBGGR8:
 	case MPIX_FMT_SGBRG8:

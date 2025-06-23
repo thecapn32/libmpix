@@ -62,6 +62,7 @@ void mpix_isp_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t width,
 		*dst = MAX(0, *src - level);
 	}
 }
+MPIX_REGISTER_ISP_OP(isp_blc_bggr8, mpix_isp_black_level_raw8, BLACK_LEVEL, BGGR8); /* Zephyr 3.6 */
 MPIX_REGISTER_ISP_OP(isp_blc_sbggr8, mpix_isp_black_level_raw8, BLACK_LEVEL, SBGGR8);
 MPIX_REGISTER_ISP_OP(isp_blc_srggb8, mpix_isp_black_level_raw8, BLACK_LEVEL, SRGGB8);
 MPIX_REGISTER_ISP_OP(isp_blc_sgrbg8, mpix_isp_black_level_raw8, BLACK_LEVEL, SGRBG8);

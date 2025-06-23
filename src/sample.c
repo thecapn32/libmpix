@@ -69,6 +69,7 @@ int mpix_sample_random_rgb(const uint8_t *buf, uint16_t width, uint16_t height, 
 		mpix_sample_random_bayer(buf, width, height, rgb,
 					 MPIX_IDX_R, MPIX_IDX_G, MPIX_IDX_G, MPIX_IDX_B);
 		break;
+	case MPIX_FMT_BGGR8:
 	case MPIX_FMT_SBGGR8:
 		mpix_sample_random_bayer(buf, width, height, rgb,
 					 MPIX_IDX_B, MPIX_IDX_G, MPIX_IDX_G, MPIX_IDX_R);
