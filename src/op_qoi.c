@@ -156,7 +156,7 @@ void mpix_qoi_encode_rgb24_op(struct mpix_base_op *base)
 	const uint8_t *src = mpix_op_get_input_line(base);
 	size_t dst_sz = 0;
 	uint8_t *dst = mpix_op_peek_output(base, &dst_sz);
-	bool is_last = (base->line_offset == base->height);
+	bool is_last = (base->line_offset >= base->height);
 	size_t o = 0;
 
 	assert(base->width > 0);

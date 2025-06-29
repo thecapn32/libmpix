@@ -327,17 +327,17 @@ void mpix_print_rgb_hist(const uint16_t *r_hist, const uint16_t *g_hist, const u
 	mpix_print_hist_scale(size / 3);
 }
 
-void mpix_print_y_hist(const uint16_t *y_hist, size_t size, uint16_t height)
+void mpix_print_y_hist(const uint16_t *y_hist, size_t y_hist_sz, uint16_t height)
 {
 	static const char *const bar_chars[] = {" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
 	uint32_t max = 1;
 
-	for (size_t i = 0; i < size; i++) {
+	for (size_t i = 0; i < y_hist_sz; i++) {
 		max = y_hist[i] > max ? y_hist[i] : max;
 	}
 
 	for (uint16_t h = height * 8; h >= 8; h -= 8) {
-		for (size_t i = 0; i < size; i++) {
+		for (size_t i = 0; i < y_hist_sz; i++) {
 			uint16_t bar_height = height * 8 * y_hist[i] / max;
 
 			mpix_port_printf(bar_chars[CLAMP(1 + bar_height - h, 0, 8)]);
@@ -346,5 +346,5 @@ void mpix_print_y_hist(const uint16_t *y_hist, size_t size, uint16_t height)
 	}
 
 	/* This makes the graph look more intuitive, but reduces print speed on slow UARTs */
-	//mpix_print_hist_scale(size);
+	mpix_print_hist_scale(y_hist_sz);
 }

@@ -18,8 +18,14 @@ struct mpix_stats {
 	uint16_t y_histogram[64];
 	/** Average value for each histogram bin. */
 	uint8_t y_histogram_vals[64];
+	/** Average value for each histogram bin. */
+	uint16_t y_histogram_total;
 	/** Average pixel value */
 	uint8_t rgb_average[3];
+	/** Minimum of each channel */
+	uint8_t rgb_min[3];
+	/** Maximum of each channel */
+	uint8_t rgb_max[3];
 	/** Number of values collected for building these statistics. */
 	uint16_t nvals;
 };

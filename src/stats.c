@@ -31,8 +31,10 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 
 		mpix_sample_random_rgb(buf, width, height, fourcc, rgb_value);
 
-		/* Histogram statistics: use BT.601 like libcamera, reduce precision to fit hist[64] */
-		stats->y_histogram[mpix_rgb24_get_luma_bt709(rgb_value) >> 2]++;
+		/* Histogram statistics by ignoring the red/green/blue value */
+		stats->y_histogram[rgb_value[0] >> 2]++;
+		stats->y_histogram[rgb_value[1] >> 2]++;
+		stats->y_histogram[rgb_value[2] >> 2]++;
 
 		/* RGB statistics */
 		rgb_sum[0] += rgb_value[0];
@@ -46,6 +48,9 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 
 		/* Initialize to the middle value of each range */
 		stats->y_histogram_vals[i] = i * step + step / 2;
+
+		/* Values got aggregated for RGB24 as if they were RAW8, adjust */
+		stats->y_histogram_vals[i] /= 3;
 	}
 
 	/* Completion for RGB averages */

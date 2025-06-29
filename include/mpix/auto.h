@@ -1,27 +1,27 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_ipa mpix/ipa.h
- * @brief Image Processing Algorithms (auto-exposure, etc.) [EXPERIMENTAL]
+ * @defgroup mpix_auto_ctrls ctrls/ipa.h
+ * @brief Basic IPAs (auto-exposure, auto-white-balance...) for demo purpose
  * @{
  */
-#ifndef MPIX_IPA_H
-#define MPIX_IPA_H
+#ifndef MPIX_AUTO_H
+#define MPIX_AUTO_H
 
 #include <stdint.h>
 #include <stddef.h>
 
 #include <mpix/stats.h>
-#include <mpix/op_isp.h>
+#include <mpix/op_correction.h>
 
-struct mpix_ipa {
+struct mpix_auto_ctrls {
 	/** Pointer to user-provided data that represents a video device */
 	void *dev;
 	/** Current sensor exposure value */
 	int32_t exposure_level;
 	/** Maximum sensor exposure value */
 	int32_t exposure_max;
-	/** The ISP controls */
-	struct mpix_isp isp;
+	/** The correction levels */
+	struct mpix_correction correction;
 };
 
 /**
@@ -30,13 +30,7 @@ struct mpix_ipa {
  * @param ipa The IPA context to initialize.
  * @param dev The device pointer, passed to functions such as @ref mpix_port_set_exposure().
  */
-int mpix_ipa_init(struct mpix_ipa *ipa, void *dev);
-
-/**
- * @brief Apply the current exposure level to the targetted video device.
- * @param ipa The collection of all controls to propagate to the source device.
- */
-int mpix_ipa_update_controls(struct mpix_ipa *ipa);
+int mpix_auto_exposure_init(struct mpix_auto_ctrls *ctrls, void *dev);
 
 /**
  * @brief Run auto-exposure algorithm to update the exposure control value.
@@ -44,7 +38,7 @@ int mpix_ipa_update_controls(struct mpix_ipa *ipa);
  * @param ipa The current Image Processing Algorithm (IPA) context.
  * @param stats The statistics used to control the exposure.
  */
-void mpix_ipa_do_aec(struct mpix_ipa *ipa, struct mpix_stats *stats);
+void mpix_auto_exposure_control(struct mpix_auto_ctrls *ctrls, struct mpix_stats *stats);
 
 /**
  * @brief Run Black Level Correction (BLC) algorithm to update the black level.
@@ -52,7 +46,7 @@ void mpix_ipa_do_aec(struct mpix_ipa *ipa, struct mpix_stats *stats);
  * @param ipa The current Image Processing Algorithm (IPA) context.
  * @param stats The statistics used to control the black level and then updated.
  */
-void mpix_ipa_do_blc(struct mpix_ipa *ipa, struct mpix_stats *stats);
+void mpix_auto_black_level(struct mpix_auto_ctrls *ctrls, struct mpix_stats *stats);
 
 /**
  * @brief Run Auto White Balance algorithm to update the color balance.
@@ -60,6 +54,6 @@ void mpix_ipa_do_blc(struct mpix_ipa *ipa, struct mpix_stats *stats);
  * @param ipa The current Image Processing Algorithm (IPA) context.
  * @param stats The statistics used to control the white balance and then updated.
  */
-void mpix_ipa_do_awb(struct mpix_ipa *ipa, struct mpix_stats *stats);
+void mpix_auto_white_balance(struct mpix_auto_ctrls *ctrls, struct mpix_stats *stats);
 
 #endif /** @} */
