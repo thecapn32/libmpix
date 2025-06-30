@@ -28,6 +28,7 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 	/* Accumulate the statistics from the pixels */
 	for (uint16_t i = 0; i < nvals; i++) {
 		uint8_t rgb_value[3];
+		uint8_t thres = 0xf0;
 
 		mpix_sample_random_rgb(buf, width, height, fourcc, rgb_value);
 
@@ -35,6 +36,11 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 		stats->y_histogram[rgb_value[0] >> 2]++;
 		stats->y_histogram[rgb_value[1] >> 2]++;
 		stats->y_histogram[rgb_value[2] >> 2]++;
+
+		/* Over-exposed pixel, do not retain it for statistics */
+		if (rgb_value[0] > thres && rgb_value[1] > thres && rgb_value[2] > thres) {
+			continue;
+		}
 
 		/* RGB statistics */
 		rgb_sum[0] += rgb_value[0];
