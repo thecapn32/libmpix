@@ -58,7 +58,7 @@ void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buf, size_t size
 			 uint16_t width, uint16_t height, uint32_t format);
 
 /**
- * @brief Initialize an image from a memory buffer.
+ * @brief Convert an image and store it into the output buffer.
  *
  * @param img Image being processed.
  * @param buf Memory that receives the image data.
@@ -137,6 +137,28 @@ int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette);
 int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette);
 
 /**
+ * @brief Initialize an image from a palette.
+ *
+ * This permits to process a color palette as if it was an RGB24 image, which leads to far fewer
+ * data to process than the full frame.
+ *
+ * @param img Image to convert.
+ * @param palette The color palette to use for the conversion.
+ */
+void mpix_image_from_palette(struct mpix_image *img, struct mpix_palette *palette);
+
+/**
+ * @brief Convert an image and store it into a color palette.
+ *
+ * This is the reciproqual operation from @ref mpix_image_from_palette.
+ *
+ * @param img Image being processed.
+ * @param palette The color palette to use for the conversion.
+ * @return 0 on success or negative error code on failure.
+ */
+int mpix_image_to_palette(struct mpix_image *img, struct mpix_palette *palette);
+
+/**
  * @brief Update the color palette after an input image buffer.
  *
  * This is performed on the original input image rather than the current state of the image.
@@ -144,7 +166,7 @@ int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette)
  * times to improve accuracy.
  *
  * @param img Input image sampled to generate the palette.
- * @param palette The palette that will be updated with colors fitting the image better
+ * @param palette The palette that will be updated with colors fitting the image better.
  * @param num_samples Number of samples to take from the input image.
  */
 int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *palette,

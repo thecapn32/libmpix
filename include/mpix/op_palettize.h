@@ -30,6 +30,8 @@ struct mpix_palette_op {
 	void (*palette_fn)(const uint8_t *s, uint8_t *d, uint16_t w, const struct mpix_palette *p);
 	/** Color palette to use for the conversion */
 	struct mpix_palette *palette;
+	/** Number of samples to be taken from the frame as it is being processed */
+	uint16_t num_samples;
 };
 
 /**

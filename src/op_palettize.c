@@ -32,6 +32,35 @@ static int mpix_image_append_palette_op(struct mpix_image *img, const struct mpi
 	return 0;
 }
 
+static uint8_t mpix_palette_bit_depth(uint32_t fourcc)
+{
+	char *str = MPIX_FOURCC_TO_STR(fourcc);
+
+	if (strncmp(str, "PLT", 3) != 0 || !IN_RANGE(str[3], '0', '9')) {
+		return 0;
+	}
+
+	return str[3] - '0';
+}
+
+void mpix_image_from_palette(struct mpix_image *img, struct mpix_palette *palette)
+{
+	uint16_t num_colors = 1 << mpix_palette_bit_depth(palette->fourcc);
+
+	assert(num_colors > 0);
+
+	mpix_image_from_buf(img, palette->colors, num_colors * 3, num_colors, 1, MPIX_FMT_RGB24);
+}
+
+int mpix_image_to_palette(struct mpix_image *img, struct mpix_palette *palette)
+{
+	uint16_t num_colors = 1 << mpix_palette_bit_depth(palette->fourcc);
+
+	assert(num_colors > 0);
+
+	return mpix_image_to_buf(img, palette->colors, num_colors * 3);
+}
+
 uint8_t mpix_palette_depth(const struct mpix_palette *palette)
 {
 	assert(memcmp(MPIX_FOURCC_TO_STR(palette->fourcc), "PLT", 3) == 0);
@@ -40,6 +69,10 @@ uint8_t mpix_palette_depth(const struct mpix_palette *palette)
 	return MPIX_FOURCC_TO_STR(palette->fourcc)[3] - '0';
 }
 
+/*
+ * This is an implementation of K-Mean algorithm to estimate the color palette that best matches
+ * an image.
+ */
 int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *palette,
 				uint16_t num_samples)
 {
