@@ -196,6 +196,7 @@ static inline uint8_t *mpix_op_peek_input_line(struct mpix_base_op *op)
  * @brief Request a pointer to the entire input buffer content, consumed from the input operation.
  *
  * @param op Current operation in progress.
+ * @param sz Pointer filled with the current size of the input as returned.
  * @return The pointer to the input data.
  */
 static inline const uint8_t *mpix_op_get_all_input(struct mpix_base_op *op, size_t *sz)
@@ -221,6 +222,15 @@ static inline uint8_t *mpix_op_peek_output(struct mpix_base_op *op, size_t *sz)
 	return op->next->ring.data + op->next->ring.head;
 }
 
+/**
+ * @brief Run an operation on the current buffer content
+ * @internal
+ *
+ * This is called by @ref mpix_image_process to run the operation chain until the input buffer
+ * is empty, as well as in @ref mpix_op_done to run the next operation in the chain.
+ *
+ * @param op The operation to run.
+ */
 static inline void mpix_op_run(struct mpix_base_op *op)
 {
 	if (op != NULL && op->run != NULL) {

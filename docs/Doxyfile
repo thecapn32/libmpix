@@ -3,6 +3,7 @@ PROJECT_BRIEF		= The open imaging DSP library
 OPTIMIZE_OUTPUT_FOR_C	= YES
 SHOW_FILES		= NO
 SHOW_NAMESPACES		= NO
+EXTRACT_STATIC		= YES
 INPUT			= . ../include
 IMAGE_PATH		= img
 PROJECT_LOGO		= img/libmpmix_logo_light_background.png

@@ -8,34 +8,7 @@
 #include <mpix/op_convert.h>
 #include <mpix/genlist.h>
 
-static const struct mpix_convert_op **mpix_convert_op_list;
-
-int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
-{
-	const struct mpix_convert_op *op = NULL;
-
-	if (img->fourcc == new_format) {
-		/* no-op */
-		return 0;
-	}
-
-	for (size_t i = 0; mpix_convert_op_list[i] != NULL; i++) {
-		const struct mpix_convert_op *tmp = mpix_convert_op_list[i];
-
-		if (tmp->base.fourcc_src == img->fourcc && tmp->base.fourcc_dst == new_format) {
-			op = tmp;
-			break;
-		}
-	}
-
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(new_format));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-}
+/* Helpers */
 
 void mpix_convert_op(struct mpix_base_op *base)
 {
@@ -46,6 +19,8 @@ void mpix_convert_op(struct mpix_base_op *base)
 	op->convert_fn(line_in, line_out, base->width);
 	mpix_op_done(base);
 }
+
+/* Implementation */
 
 __attribute__((weak))
 void mpix_convert_rgb24_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width)
@@ -270,5 +245,34 @@ void mpix_convert_rgb24_to_y8_bt709(const uint8_t *rgb24, uint8_t *y8, uint16_t 
 }
 MPIX_REGISTER_CONVERT_OP(rgb24_grey, mpix_convert_rgb24_to_y8_bt709, RGB24, GREY);
 
+/* High-level API */
+
 static const struct mpix_convert_op **mpix_convert_op_list =
 	(const struct mpix_convert_op *[]){MPIX_LIST_CONVERT_OP};
+
+int mpix_image_convert(struct mpix_image *img, uint32_t new_format)
+{
+	const struct mpix_convert_op *op = NULL;
+
+	if (img->fourcc == new_format) {
+		/* no-op */
+		return 0;
+	}
+
+	for (size_t i = 0; mpix_convert_op_list[i] != NULL; i++) {
+		const struct mpix_convert_op *tmp = mpix_convert_op_list[i];
+
+		if (tmp->base.fourcc_src == img->fourcc && tmp->base.fourcc_dst == new_format) {
+			op = tmp;
+			break;
+		}
+	}
+
+	if (op == NULL) {
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(new_format));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+}

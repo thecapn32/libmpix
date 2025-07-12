@@ -12,7 +12,7 @@
  *
  * @param img Image to initialize.
  * @param vbuf Video buffer that contains the image data to process.
- * @param vfmt Video format describing the buffer.
+ * @param fmt Video format describing the buffer.
  */
 static inline void mpix_image_from_vbuf(struct mpix_image *img, struct video_buffer *vbuf,
 					struct video_format *fmt)

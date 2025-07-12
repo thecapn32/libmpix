@@ -318,6 +318,16 @@ uint8_t mpix_bits_per_pixel_cb(uint32_t fourcc);
 
 /** @} */
 
+/**
+ * @brief Get the average number of bits per pixel of a pixel format.
+ *
+ * For compressed formats, the convention is that the result is 0.
+ *
+ * This function calls @ref mpix_bits_per_pixel_cb in case a format is not found, which the user
+ * can override (weak alias) to add support for application-specific formats.
+ *
+ * @return Average number of bits per pixel.
+ */
 static inline uint8_t mpix_bits_per_pixel(uint32_t fourcc)
 {
 	switch (fourcc) {
