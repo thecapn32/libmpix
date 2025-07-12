@@ -1,68 +1,50 @@
 @page architecture Architecture
 @brief Internal structure of libmpix
 
-SIMD brings video abilities to microcontrollers:
+SIMD brings image processing abilities to low power microcontrollers
 [#1](https://www.synopsys.com/designware-ip/technical-bulletin/signal-processing-risc-v-dsp-extensions.html),
-[#2](https://www.arm.com/technologies/helium).
+[#2](https://www.arm.com/technologies/helium),
+[#3](https://bitbanksoftware.blogspot.com/2024/01/surprise-esp32-s3-has-few-simd.html).
 
 **libmpix** mixes SIMD instructions, hardware accelerators and software to process video data as
 efficiently as a chip permits, with RAM down to a few hundread kilobytes.
 
-
-Original idea
--------------
+## Original idea
 
 Color image sensors produce [bayer data](https://en.wikipedia.org/wiki/Bayer_filter),
-which go x3 in size once converted to RGB.
+which goes 3 times larger once converted to RGB. For instance in VGA (640x480) resolution:
+`640 * 480 * 1 (raw) + 640 * 480 * 3 (rgb) = 1 228 800` bytes, which is more than what most
+microcontrollers have.
 
-An MCU with 1 MByte of RAM cannot store both the input and output VGA frame in these conditions:
-`640 * 480 * (1 + 3) = 1228800`.
-
-By inserting a ring buffer between line-processing functions, the large intermediate buffers are
-eliminated:
+By processing the image line line by line, the large intermediate buffers are eliminated:
 
 ```
-convert_1line_awb() --(gearbox)--> convert_2lines_debayer_2x2() --(gearbox)--> convert_8lines_jpeg()
+--1-line--> correct_white_balance() --2-lines-RAW--> debayer_2x2() --8-lines-RGB--> jpeg_compress()
 ```
 
-Only the final buffer with the compact JPEG image is present.
-
-Because vairous steps do not take the same amount of lines, some adaptation between the function
-calls must be made:
-
+But as seen above operations require different number of input lines.
+Functions must be called different number of times per image:
+ different number of times per image:
 ```
-convert_1line_awb() --+--> convert_2lines_debayer_2x2() --+--> convert_8lines_jpeg()
-convert_1line_awb() --'                                   |
-convert_1line_awb() --+--> convert_2lines_debayer_2x2() --+
-convert_1line_awb() --'                                   |
-convert_1line_awb() --+--> convert_2lines_debayer_2x2() --+
-convert_1line_awb() --'                                   |
-convert_1line_awb() --+--> convert_2lines_debayer_2x2() --'
-convert_1line_awb() --'
+--1-line--> correct_white_balance() --+-2-lines--> debayer_2x2() --+-8-lines--> jpeg_compress()
+--1-line--> correct_white_balance() --'                            |
+--1-line--> correct_white_balance() --+-2-lines--> debayer_2x2() --+
+--1-line--> correct_white_balance() --'                            |
+--1-line--> correct_white_balance() --+-2-lines--> debayer_2x2() --+
+--1-line--> correct_white_balance() --'                            |
+--1-line--> correct_white_balance() --+-2-lines--> debayer_2x2() --'
+--1-line--> correct_white_balance() --'
+
+ [ repeat the above for the entire image ]
 ```
 
-This becomes complex to manage manually.
+## Need for libmpix
 
-
-Introduction of libmpix
------------------------
-
-**libmpix** automates this flow, permitting to define "stream processors" that are independent on
-their context:
+This becomes complex to manage manually, so **libmpix** automates this by providing an API for
+defining operations in a line-based fashion. Each operation (blue) define an input buffer (green),
+and push data to the next operation.
 
 ![](page_architehcture_stream.drawio.png)
-
-- Facilitates writing new line conversion functions, and stitch them into streams
-  (**[gstreamer](https://gstreamer.freedesktop.org/)** style).
-
-- This will be extended in the future to cover a complete ISP pipeline for Zephyr
-  (**[libcamera](https://libcamera.org/)** style)
-
-- Most image pre-processing algorithms can be implemented on a line-based fashion
-  (**[opencv](https://opencv.org/)** style).
-
-- A driver using this to automatically convert data between input and output formats is provided
-  (**[ffmpeg](https://ffmpeg.org/)** style)
 
 Performance-wise:
 
@@ -76,8 +58,10 @@ Performance-wise:
 - This permits the transfer of the converted image to start as soon as the first line of data is
   converted, without waiting the full conversion.
 
+## Detailed explanation
 
-Detailled example
------------------
+This diagram presents everything that the pipeline does and that the developer does not need to
+manage anymore, as it is handled under the hood by libmpix, but helps understanding the entire
+flow in detail, which helps debugging when writing new operations.
 
 ![](page_architehcture_detail.drawio.png)

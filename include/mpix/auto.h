@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_auto_ctrls ctrls/ipa.h
+ * @defgroup mpix_auto_ctrls mpix/auto.h
  * @brief Basic IPAs (auto-exposure, auto-white-balance...) for demo purpose
  * @{
  */
