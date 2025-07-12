@@ -10,27 +10,8 @@
 #include <mpix/utils.h>
 #include <mpix/op_palettize.h>
 
-static const struct mpix_palette_op **mpix_palette_op_list;
-
 static inline uint8_t mpix_rgb24_to_palette(const uint8_t rgb[3],
 					    const struct mpix_palette *palette);
-
-static int mpix_image_append_palette_op(struct mpix_image *img, const struct mpix_palette_op *op,
-					struct mpix_palette *palette)
-{
-	struct mpix_palette_op *new;
-	int ret;
-
-	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-	if (ret != 0) {
-		return ret;
-	}
-
-	new = (struct mpix_palette_op *)img->ops.last;
-	new->palette = palette;
-
-	return 0;
-}
 
 static uint8_t mpix_palette_bit_depth(uint32_t fourcc)
 {
@@ -134,44 +115,6 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
 	mpix_port_free(nums);
 
 	return 0;
-}
-
-int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette)
-{
-	const struct mpix_palette_op *op = NULL;
-
-	if (img->fourcc != palette->fourcc) {
-		MPIX_ERR("Image format is not matching the palette format");
-	}
-
-	op = mpix_op_by_format(mpix_palette_op_list, img->fourcc, MPIX_FMT_RGB24);
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(palette->fourcc));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_palette_op(img, op, palette);
-}
-
-int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette)
-{
-	const struct mpix_palette_op *op = NULL;
-	int ret;
-
-	ret = mpix_image_convert(img, MPIX_FMT_RGB24);
-	if (ret != 0) {
-		return ret;
-	}
-
-	op = mpix_op_by_format(mpix_palette_op_list, img->fourcc, palette->fourcc);
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(palette->fourcc));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_palette_op(img, op, palette);
 }
 
 void mpix_palettize_op(struct mpix_base_op *base)
@@ -347,3 +290,58 @@ MPIX_REGISTER_PALETTE_OP(palette8_rgb24, mpix_convert_palette8_to_rgb24, PALETTE
 
 static const struct mpix_palette_op **mpix_palette_op_list =
 	(const struct mpix_palette_op *[]){MPIX_LIST_PALETTE_OP};
+
+static int mpix_image_append_palette_op(struct mpix_image *img, const struct mpix_palette_op *op,
+					struct mpix_palette *palette)
+{
+	struct mpix_palette_op *new;
+	int ret;
+
+	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+	if (ret != 0) {
+		return ret;
+	}
+
+	new = (struct mpix_palette_op *)img->ops.last;
+	new->palette = palette;
+
+	return 0;
+}
+
+int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette)
+{
+	const struct mpix_palette_op *op = NULL;
+	int ret;
+
+	ret = mpix_image_convert(img, MPIX_FMT_RGB24);
+	if (ret != 0) {
+		return ret;
+	}
+
+	op = mpix_op_by_format(mpix_palette_op_list, img->fourcc, palette->fourcc);
+	if (op == NULL) {
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(palette->fourcc));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_palette_op(img, op, palette);
+}
+
+int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette)
+{
+	const struct mpix_palette_op *op = NULL;
+
+	if (img->fourcc != palette->fourcc) {
+		MPIX_ERR("Image format is not matching the palette format");
+	}
+
+	op = mpix_op_by_format(mpix_palette_op_list, img->fourcc, MPIX_FMT_RGB24);
+	if (op == NULL) {
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(palette->fourcc));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_palette_op(img, op, palette);
+}

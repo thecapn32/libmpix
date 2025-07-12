@@ -8,46 +8,6 @@
 #include <mpix/image.h>
 #include <mpix/op_kernel.h>
 
-static const struct mpix_kernel_op **mpix_kernel_3x3_op_list;
-static const struct mpix_kernel_op **mpix_kernel_5x5_op_list;
-
-int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_size)
-{
-	const struct mpix_kernel_op *op = NULL;
-	const struct mpix_kernel_op **kernel_op_list;
-
-	switch (kernel_size) {
-	case 3:
-		kernel_op_list = mpix_kernel_3x3_op_list;
-		break;
-	case 5:
-		kernel_op_list = mpix_kernel_5x5_op_list;
-		break;
-	default:
-		MPIX_ERR("Unsupported kernel size %u, only supporting 3 or 5", kernel_size);
-		return mpix_image_error(img, -ENOTSUP);
-	}
-
-	for (size_t i = 0; kernel_op_list[i] != NULL; i++) {
-		const struct mpix_kernel_op *tmp = kernel_op_list[i];
-
-		if (tmp->base.fourcc_src == img->fourcc &&
-		    tmp->base.window_size == kernel_size &&
-		    tmp->type == kernel_type) {
-			op = tmp;
-			break;
-		}
-	}
-
-	if (op == NULL) {
-		MPIX_ERR("Kernel operation %u of size %ux%u on %s data not found",
-			 kernel_type, kernel_size, kernel_size, MPIX_FOURCC_TO_STR(img->fourcc));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-}
-
 /* Function that processes a 3x3 or 5x5 pixel block described by line buffers and column indexes */
 typedef void kernel_3x3_t(const uint8_t *in[3], int i0, int i1, int i2,
 			  uint8_t *out, int o0, uint16_t base, const uint16_t *kernel);
@@ -450,3 +410,40 @@ static const struct mpix_kernel_op **mpix_kernel_5x5_op_list =
 
 static const struct mpix_kernel_op **mpix_kernel_3x3_op_list =
 	(const struct mpix_kernel_op *[]){MPIX_LIST_KERNEL_3X3_OP};
+
+int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_size)
+{
+	const struct mpix_kernel_op *op = NULL;
+	const struct mpix_kernel_op **kernel_op_list;
+
+	switch (kernel_size) {
+	case 3:
+		kernel_op_list = mpix_kernel_3x3_op_list;
+		break;
+	case 5:
+		kernel_op_list = mpix_kernel_5x5_op_list;
+		break;
+	default:
+		MPIX_ERR("Unsupported kernel size %u, only supporting 3 or 5", kernel_size);
+		return mpix_image_error(img, -ENOTSUP);
+	}
+
+	for (size_t i = 0; kernel_op_list[i] != NULL; i++) {
+		const struct mpix_kernel_op *tmp = kernel_op_list[i];
+
+		if (tmp->base.fourcc_src == img->fourcc &&
+		    tmp->base.window_size == kernel_size &&
+		    tmp->type == kernel_type) {
+			op = tmp;
+			break;
+		}
+	}
+
+	if (op == NULL) {
+		MPIX_ERR("Kernel operation %u of size %ux%u on %s data not found",
+			 kernel_type, kernel_size, kernel_size, MPIX_FOURCC_TO_STR(img->fourcc));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+}

@@ -6,6 +6,7 @@ SHOW_NAMESPACES		= NO
 EXTRACT_STATIC		= YES
 INPUT			= . ../include
 IMAGE_PATH		= img
+DOTFILE_DIRS		= .
 PROJECT_LOGO		= img/libmpmix_logo_light_background.png
 RECURSIVE		= YES
 SEARCH_INCLUDES		= YES

@@ -9,28 +9,12 @@
 #include <mpix/op_jpeg.h>
 #include <mpix/utils.h>
 
-static const struct mpix_jpeg_op **mpix_jpeg_op_list;
-
 #define MPIX_JPEG_OP_INDEX  0x00 /* 00xxxxxx */
 #define MPIX_JPEG_OP_DIFF   0x40 /* 01xxxxxx */
 #define MPIX_JPEG_OP_LUMA   0x80 /* 10xxxxxx */
 #define MPIX_JPEG_OP_RUN    0xc0 /* 11xxxxxx */
 #define MPIX_JPEG_OP_RGB    0xfe /* 11111110 */
 #define MPIX_JPEG_OP_RGBA   0xff /* 11111111 */
-
-int mpix_image_jpeg_encode(struct mpix_image *img)
-{
-	struct mpix_jpeg_op *op = NULL;
-
-	op = mpix_op_by_format(mpix_jpeg_op_list, img->fourcc, MPIX_FMT_JPEG);
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_JPEG));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-}
 
 #define MPIX_JPEG_PUT_U8(u) ({                                                                     \
 	if (o + 1 >= dst_sz) {                                                                     \
@@ -144,3 +128,17 @@ MPIX_REGISTER_JPEG_OP(encode_yuyv, mpix_jpeg_encode_yuyv_op, YUYV, JPEG);
 
 static const struct mpix_jpeg_op **mpix_jpeg_op_list =
 	(const struct mpix_jpeg_op *[]){MPIX_LIST_JPEG_OP};
+
+int mpix_image_jpeg_encode(struct mpix_image *img)
+{
+	struct mpix_jpeg_op *op = NULL;
+
+	op = mpix_op_by_format(mpix_jpeg_op_list, img->fourcc, MPIX_FMT_JPEG);
+	if (op == NULL) {
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_JPEG));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+}

@@ -9,25 +9,6 @@
 #include <mpix/image.h>
 #include <mpix/op_resize.h>
 
-static const struct mpix_resize_op **mpix_resize_op_list;
-
-int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height)
-{
-	const struct mpix_resize_op *op = NULL;
-	int ret;
-
-	op = mpix_op_by_format(mpix_resize_op_list, img->fourcc, img->fourcc);
-	if (op == NULL) {
-		MPIX_ERR("Resize operation for %s not found", MPIX_FOURCC_TO_STR(img->fourcc));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-	img->width = width;
-	img->height = height;
-	return ret;
-}
-
 static inline void mpix_resize_line(const uint8_t *src_buf, size_t src_width, uint8_t *dst_buf,
 				    size_t dst_width, uint8_t bits_per_pixel)
 {
@@ -94,24 +75,41 @@ void mpix_resize_op_raw24(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 24);
 }
-MPIX_REGISTER_RESIZE_OP(rgb24, mpix_resize_op_raw24, RGB24);
-MPIX_REGISTER_RESIZE_OP(yuv24, mpix_resize_op_raw24, YUV24);
+MPIX_REGISTER_RESIZE_OP(rgb24, mpix_resize_op_raw24, MPIX_RESIZE_SUBSAMPLING, RGB24);
+MPIX_REGISTER_RESIZE_OP(yuv24, mpix_resize_op_raw24, MPIX_RESIZE_SUBSAMPLING, YUV24);
 
 __attribute__((weak))
 void mpix_resize_op_raw16(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 16);
 }
-MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, RGB565);
-MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, RGB565X);
+MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLINGR, RGB565);
+MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLINGR, RGB565X);
 
 __attribute__((weak))
 void mpix_resize_op_raw8(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 8);
 }
-MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, GREY);
-MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, RGB332);
+MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLINGR, GREY);
+MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLINGR, RGB332);
 
 static const struct mpix_resize_op **mpix_resize_op_list =
 	(const struct mpix_resize_op *[]){MPIX_LIST_RESIZE_OP};
+
+int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height)
+{
+	const struct mpix_resize_op *op = NULL;
+	int ret;
+
+	op = mpix_op_by_format(mpix_resize_op_list, img->fourcc, img->fourcc);
+	if (op == NULL) {
+		MPIX_ERR("Resize operation for %s not found", MPIX_FOURCC_TO_STR(img->fourcc));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+	img->width = width;
+	img->height = height;
+	return ret;
+}

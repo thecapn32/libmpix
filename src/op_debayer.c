@@ -7,32 +7,6 @@
 #include <mpix/image.h>
 #include <mpix/op_debayer.h>
 
-static const struct mpix_debayer_op **mpix_debayer_op_list;
-
-int mpix_image_debayer(struct mpix_image *img, uint32_t win_sz)
-{
-	const struct mpix_debayer_op *op = NULL;
-
-	for (size_t i = 0; mpix_debayer_op_list[i] != NULL; i++) {
-		const struct mpix_debayer_op *tmp = mpix_debayer_op_list[i];
-
-		if (tmp->base.fourcc_src == img->fourcc &&
-		    tmp->base.fourcc_dst == MPIX_FMT_RGB24 &&
-		    tmp->base.window_size == win_sz) {
-			op = tmp;
-			break;
-		}
-	}
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s using %ux%u window not found",
-			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
-			 win_sz, win_sz);
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-}
-
 /* 3x3 debayer */
 
 #define FOLD_L_3X3(l0, l1, l2)                                                                     \
@@ -375,7 +349,31 @@ MPIX_REGISTER_DEBAYER_OP(sbggr8_1x1, mpix_op_debayer_to_rgb24_1x1, SBGGR8, 1);
 MPIX_REGISTER_DEBAYER_OP(sgbrg8_1x1, mpix_op_debayer_to_rgb24_1x1, SGBRG8, 1);
 MPIX_REGISTER_DEBAYER_OP(sgrbg8_1x1, mpix_op_debayer_to_rgb24_1x1, SGRBG8, 1);
 
-/* end */
+/* High-level API */
 
 static const struct mpix_debayer_op **mpix_debayer_op_list =
 	(const struct mpix_debayer_op *[]){MPIX_LIST_DEBAYER_OP};
+
+int mpix_image_debayer(struct mpix_image *img, uint32_t win_sz)
+{
+	const struct mpix_debayer_op *op = NULL;
+
+	for (size_t i = 0; mpix_debayer_op_list[i] != NULL; i++) {
+		const struct mpix_debayer_op *tmp = mpix_debayer_op_list[i];
+
+		if (tmp->base.fourcc_src == img->fourcc &&
+		    tmp->base.fourcc_dst == MPIX_FMT_RGB24 &&
+		    tmp->base.window_size == win_sz) {
+			op = tmp;
+			break;
+		}
+	}
+	if (op == NULL) {
+		MPIX_ERR("Conversion operation from %s to %s using %ux%u window not found",
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
+			 win_sz, win_sz);
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+}

@@ -8,8 +8,6 @@
 #include <mpix/op_convert.h>
 #include <mpix/genlist.h>
 
-/* Helpers */
-
 void mpix_convert_op(struct mpix_base_op *base)
 {
 	struct mpix_convert_op *op = (void *)base;
@@ -19,8 +17,6 @@ void mpix_convert_op(struct mpix_base_op *base)
 	op->convert_fn(line_in, line_out, base->width);
 	mpix_op_done(base);
 }
-
-/* Implementation */
 
 __attribute__((weak))
 void mpix_convert_rgb24_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width)
@@ -244,8 +240,6 @@ void mpix_convert_rgb24_to_y8_bt709(const uint8_t *rgb24, uint8_t *y8, uint16_t 
 	}
 }
 MPIX_REGISTER_CONVERT_OP(rgb24_grey, mpix_convert_rgb24_to_y8_bt709, RGB24, GREY);
-
-/* High-level API */
 
 static const struct mpix_convert_op **mpix_convert_op_list =
 	(const struct mpix_convert_op *[]){MPIX_LIST_CONVERT_OP};

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Navigate to the base directory of the script
-cd "${0%/*}"
+# Navigate to the base directory of the tests
+cd "${0%/*}/../tests"
 
 # To give the final test result
 build_error=0

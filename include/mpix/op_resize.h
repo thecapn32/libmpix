@@ -12,6 +12,16 @@
 #include <mpix/op.h>
 
 /**
+ * Available scaling strategies to use while resizing an image.
+ */
+enum mpix_resize_type {
+	/** Pick a single input pixel for every output pixel, faster but lower quality */
+	MPIX_RESIZE_SUBSAMPLING,
+	/** Perform pixel binning, good performance and quality but sizes must be x2 or /2 */
+	MPIX_RESIZE_BINNING,
+};
+
+/**
  * Image resizing operation.
  * @internal
  */
@@ -29,11 +39,11 @@ struct mpix_resize_op {
  * @param fn Function converting one input line.
  * @param fmt The pixel format of the data resized.
  */
-#define MPIX_REGISTER_RESIZE_OP(id, fn, fmt)                                                       \
+#define MPIX_REGISTER_RESIZE_OP(id, fn, type, fmt)                                                 \
 	const struct mpix_resize_op mpix_resize_op_##id = {                                        \
 		.base.name = ("resize_" #id),                                                      \
-		.base.fourcc_src = (MPIX_FMT_##fmt),                                                  \
-		.base.fourcc_dst = (MPIX_FMT_##fmt),                                                  \
+		.base.fourcc_src = (MPIX_FMT_##fmt),                                               \
+		.base.fourcc_dst = (MPIX_FMT_##fmt),                                               \
 		.base.window_size = 1,                                                             \
 		.base.run = (fn),                                                                  \
 	}

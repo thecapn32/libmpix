@@ -15,7 +15,7 @@ of operation.
 
 ## Create the new type struct
 
-All libmpix operations use a common base defined in @ref mpix/op.h, the @ref mpix_base_op.
+All libmpix operations use a common base defined in @ref mpix_op_h, the @ref mpix_base_op.
 
 - It describes the operation so that it can be selected from a list of operations available.
 

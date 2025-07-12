@@ -9,41 +9,6 @@
 #include <mpix/utils.h>
 #include <mpix/genlist.h>
 
-static const struct mpix_correction_op **mpix_correction_op_list;
-
-int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_correction *corr)
-{
-	const struct mpix_correction_op *op = NULL;
-	struct mpix_correction_op *new;
-	int ret;
-
-	for (size_t i = 0; mpix_correction_op_list[i] != NULL; i++) {
-		const struct mpix_correction_op *tmp = mpix_correction_op_list[i];
-
-		if (tmp->base.fourcc_src == img->fourcc &&
-		    tmp->type == type) {
-			op = tmp;
-			break;
-		}
-	}
-
-	if (op == NULL) {
-		MPIX_ERR("ISP operation %u on %s data not found",
-			 type, MPIX_FOURCC_TO_STR(img->fourcc));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-	if (ret != 0) {
-		return ret;
-	}
-
-	new = (struct mpix_correction_op *)img->ops.last;
-	new->correction = corr;
-
-	return 0;
-}
-
 void mpix_correction_op(struct mpix_base_op *base)
 {
 	const uint16_t line_offset = base->line_offset;
@@ -193,3 +158,36 @@ MPIX_REGISTER_CORRECTION_OP(gc_rgb24, mpix_correction_gamma_rgb24, GAMMA, RGB24)
 
 static const struct mpix_correction_op **mpix_correction_op_list =
 	(const struct mpix_correction_op *[]){MPIX_LIST_CORRECTION_OP};
+
+int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_correction *corr)
+{
+	const struct mpix_correction_op *op = NULL;
+	struct mpix_correction_op *new;
+	int ret;
+
+	for (size_t i = 0; mpix_correction_op_list[i] != NULL; i++) {
+		const struct mpix_correction_op *tmp = mpix_correction_op_list[i];
+
+		if (tmp->base.fourcc_src == img->fourcc &&
+		    tmp->type == type) {
+			op = tmp;
+			break;
+		}
+	}
+
+	if (op == NULL) {
+		MPIX_ERR("ISP operation %u on %s data not found",
+			 type, MPIX_FOURCC_TO_STR(img->fourcc));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	ret = mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+	if (ret != 0) {
+		return ret;
+	}
+
+	new = (struct mpix_correction_op *)img->ops.last;
+	new->correction = corr;
+
+	return 0;
+}

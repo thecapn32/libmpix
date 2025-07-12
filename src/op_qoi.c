@@ -9,28 +9,12 @@
 #include <mpix/op_qoi.h>
 #include <mpix/utils.h>
 
-static const struct mpix_qoi_op **mpix_qoi_op_list;
-
 #define MPIX_QOI_OP_INDEX  0x00 /* 00xxxxxx */
 #define MPIX_QOI_OP_DIFF   0x40 /* 01xxxxxx */
 #define MPIX_QOI_OP_LUMA   0x80 /* 10xxxxxx */
 #define MPIX_QOI_OP_RUN    0xc0 /* 11xxxxxx */
 #define MPIX_QOI_OP_RGB    0xfe /* 11111110 */
 #define MPIX_QOI_OP_RGBA   0xff /* 11111111 */
-
-int mpix_image_qoi_encode(struct mpix_image *img)
-{
-	struct mpix_qoi_op *op = NULL;
-
-	op = mpix_op_by_format(mpix_qoi_op_list, img->fourcc, MPIX_FMT_QOI);
-	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s not found",
-			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_QOI));
-		return mpix_image_error(img, -ENOSYS);
-	}
-
-	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
-}
 
 #define MPIX_QOI_PUT_U8(u) ({                                                                      \
 	if (o + 1 >= dst_sz) {                                                                     \
@@ -182,3 +166,17 @@ MPIX_REGISTER_QOI_OP(encode_rgb24, mpix_qoi_encode_rgb24_op, RGB24, QOI);
 
 static const struct mpix_qoi_op **mpix_qoi_op_list =
 	(const struct mpix_qoi_op *[]){MPIX_LIST_QOI_OP};
+
+int mpix_image_qoi_encode(struct mpix_image *img)
+{
+	struct mpix_qoi_op *op = NULL;
+
+	op = mpix_op_by_format(mpix_qoi_op_list, img->fourcc, MPIX_FMT_QOI);
+	if (op == NULL) {
+		MPIX_ERR("Conversion operation from %s to %s not found",
+			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_QOI));
+		return mpix_image_error(img, -ENOSYS);
+	}
+
+	return mpix_image_append_uncompressed_op(img, &op->base, sizeof(*op));
+}
