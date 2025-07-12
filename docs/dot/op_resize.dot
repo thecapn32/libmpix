@@ -9,13 +9,13 @@ digraph mpix_op_convert_list {
     MPIX_RESIZE_SUBSAMPLING [ label="MPIX_RESIZE_SUBSAMPLING" URL="@ref MPIX_RESIZE_MPIX_RESIZE_SUBSAMPLING"];
     MPIX_RESIZE_SUBSAMPLING -> YUV24 [label="", fontname=monospace, fontsize=9];
 
-    GB565 [ label="GB565" URL="@ref MPIX_FMT_GB565"];
+    RGB565 [ label="RGB565" URL="@ref MPIX_FMT_RGB565"];
     MPIX_RESIZE_SUBSAMPLINGR [ label="MPIX_RESIZE_SUBSAMPLINGR" URL="@ref MPIX_RESIZE_MPIX_RESIZE_SUBSAMPLINGR"];
-    MPIX_RESIZE_SUBSAMPLINGR -> GB565 [label="", fontname=monospace, fontsize=9];
+    MPIX_RESIZE_SUBSAMPLINGR -> RGB565 [label="", fontname=monospace, fontsize=9];
 
-    GB565X [ label="GB565X" URL="@ref MPIX_FMT_GB565X"];
+    RGB565X [ label="RGB565X" URL="@ref MPIX_FMT_RGB565X"];
     MPIX_RESIZE_SUBSAMPLINGR [ label="MPIX_RESIZE_SUBSAMPLINGR" URL="@ref MPIX_RESIZE_MPIX_RESIZE_SUBSAMPLINGR"];
-    MPIX_RESIZE_SUBSAMPLINGR -> GB565X [label="", fontname=monospace, fontsize=9];
+    MPIX_RESIZE_SUBSAMPLINGR -> RGB565X [label="", fontname=monospace, fontsize=9];
 
     GREY [ label="GREY" URL="@ref MPIX_FMT_GREY"];
     MPIX_RESIZE_SUBSAMPLINGR [ label="MPIX_RESIZE_SUBSAMPLINGR" URL="@ref MPIX_RESIZE_MPIX_RESIZE_SUBSAMPLINGR"];

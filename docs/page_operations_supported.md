@@ -22,8 +22,14 @@ libmpix can perform pixel format conversion to support multiple input and output
 
 ## Raw Bayer format conversion
 
-libmpix can perform debayer operations to use raw
-[Bayer](https://en.wikipedia.org/wiki/Bayer_filter) frames as input.
+libmpix can perform debayer operations to use
+[raw image](https://en.wikipedia.org/wiki/Bayer_filter) as input.
+
+The various options are:
+
+- 3x3, a higher quality but more compute intensive variant
+- 2x2, a lower quality but faster to process variant
+- 1x1, which lets the bayer pattern unchanged, useful for debug purpose
 
 @see mpix_op_debayer_h
 @dotfile dot/op_debayer.dot
@@ -31,6 +37,10 @@ libmpix can perform debayer operations to use raw
 ## Palette format conversion
 
 libmpix can generate and read data in [indexed colors](https://en.wikipedia.org/wiki/Indexed_color).
+
+The performance quickly goes down as approaching 256 colors (`PALETTE8`),
+and the image loose most of the information as approaching 2 colors (`PALETTE1`).
+Intermediate palette sizes are a trade-off of performance vs quality.
 
 @see mpix_op_palettize_h
 @dotfile dot/op_palettize.dot
