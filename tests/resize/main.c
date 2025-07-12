@@ -40,7 +40,7 @@ static void test_resize(uint32_t fourcc)
 
 	ret = mpix_image_convert(&img, fourcc);
 	mpix_test_ok(ret);
-	ret = mpix_image_resize(&img, WIDTH_OUT, HEIGHT_OUT);
+	ret = mpix_image_resize(&img, MPIX_RESIZE_SUBSAMPLING, WIDTH_OUT, HEIGHT_OUT);
 	mpix_test_ok(ret);
 	ret = mpix_image_convert(&img, MPIX_FMT_RGB24);
 	mpix_test_ok(ret);

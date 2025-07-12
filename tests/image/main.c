@@ -36,13 +36,13 @@ int main(void)
 	mpix_image_print_truecolor(&img);
 
 	/* Turn it into a tall vertical image, now displeasant "banding" artifacts appear */
-	mpix_image_resize(&img, 5, 40);
+	mpix_image_resize(&img, MPIX_RESIZE_SUBSAMPLING, 5, 40);
 
 	/* Try to attenuate it with a blur effect (comment this line to see the difference) */
 	mpix_image_kernel(&img, MPIX_KERNEL_GAUSSIAN_BLUR, 5);
 
 	/* Stretch the gradient horizontally over the entire width of the output buffer */
-	mpix_image_resize(&img, 120, 40);
+	mpix_image_resize(&img, MPIX_RESIZE_SUBSAMPLING, 120, 40);
 
 	/* Save the image into the output buffer and check for errors */
 	mpix_image_to_buf(&img, rgb24frame_out, sizeof(rgb24frame_out));

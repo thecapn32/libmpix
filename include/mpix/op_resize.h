@@ -28,6 +28,8 @@ enum mpix_resize_type {
 struct mpix_resize_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
+	/** The resize strategy to use */
+	enum mpix_resize_type type;
 };
 
 /**
@@ -37,15 +39,17 @@ struct mpix_resize_op {
  *
  * @param id Short identifier to differentiate operations of the same type.
  * @param fn Function converting one input line.
+ * @param t The strategy to use from @ref mpix_resize_type
  * @param fmt The pixel format of the data resized.
  */
-#define MPIX_REGISTER_RESIZE_OP(id, fn, type, fmt)                                                 \
+#define MPIX_REGISTER_RESIZE_OP(id, fn, t, fmt)                                                    \
 	const struct mpix_resize_op mpix_resize_op_##id = {                                        \
 		.base.name = ("resize_" #id),                                                      \
 		.base.fourcc_src = (MPIX_FMT_##fmt),                                               \
 		.base.fourcc_dst = (MPIX_FMT_##fmt),                                               \
 		.base.window_size = 1,                                                             \
 		.base.run = (fn),                                                                  \
+		.type = (t),                                                                       \
 	}
 
 /**

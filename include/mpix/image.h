@@ -12,6 +12,7 @@
 #include <mpix/op_correction.h>
 #include <mpix/op_kernel.h>
 #include <mpix/op_palettize.h>
+#include <mpix/op_resize.h>
 #include <mpix/stats.h>
 
 /**
@@ -217,7 +218,8 @@ int mpix_image_jpeg_encode(struct mpix_image *img);
  * @param height The new height in pixels.
  * @return 0 on success or negative error code.
  */
-int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height);
+int mpix_image_resize(struct mpix_image *img, enum mpix_resize_type type,
+		      uint16_t width, uint16_t height);
 
 /**
  * @brief Apply a kernel operation on an image.

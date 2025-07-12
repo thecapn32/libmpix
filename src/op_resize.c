@@ -83,21 +83,22 @@ void mpix_resize_op_raw16(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 16);
 }
-MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLINGR, RGB565);
-MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLINGR, RGB565X);
+MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLING, RGB565);
+MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLING, RGB565X);
 
 __attribute__((weak))
 void mpix_resize_op_raw8(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 8);
 }
-MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLINGR, GREY);
-MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLINGR, RGB332);
+MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLING, GREY);
+MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLING, RGB332);
 
 static const struct mpix_resize_op **mpix_resize_op_list =
 	(const struct mpix_resize_op *[]){MPIX_LIST_RESIZE_OP};
 
-int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height)
+int mpix_image_resize(struct mpix_image *img, enum mpix_resize_type type,
+		      uint16_t width, uint16_t height)
 {
 	const struct mpix_resize_op *op = NULL;
 	int ret;

@@ -1,4 +1,4 @@
-@page operation_supported Operations supported
+@page supported_operations Supported operations
 @brief List of image processing operations supported by libmpix
 
 @note At the moment, the libmpix library only supports C implementation for each operation.
@@ -75,7 +75,8 @@ operations to work on adjacent pixel affecting the sharpness, noise, blurriness.
 
 ## Image resizing operations
 
-libmpix can resize images using various strategies.
+libmpix can resize images using various strategies with a different trade-off between quality,
+flexibility and performance.
 
 @see mpix_op_resize_h
 @dotfile dot/op_resize.dot

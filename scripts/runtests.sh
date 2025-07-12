@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Navigate to the base directory of the tests
-cd "${0%/*}/../tests"
+cd "${0%/*}/.."
 
 # To give the final test result
 build_error=0
@@ -9,9 +9,9 @@ runtime_error=0
 success=0
 
 # Loop over every test, build it, run it, report
-for test in */; do
+for test in tests/*/; do
 
-    printf '%10s ' "$test"
+    printf '%20s ' "$test"
 
     if ! (cd "$test" && cmake -B "build" && cmake --build "build") >$test/build.log 2>&1; then
         build_error=$((build_error + 1))
