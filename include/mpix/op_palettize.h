@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_palettize mpix/op_palettize.h
+ * @defgroup mpix_op_palettize_h mpix/op_palettize.h
  * @brief Low-level palettization operations
  * @{
  */

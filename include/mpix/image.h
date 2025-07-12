@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_image mpix/image.h
+ * @defgroup mpix_image_h mpix/image.h
  * @brief Main user API
  * @{
  */
@@ -226,7 +226,7 @@ int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height);
  * entire image to apply a desired effect on an image.
  *
  * @param img Image to convert.
- * @param kernel_type The type of kernel to apply as defined in @ref mpix_op_kernel
+ * @param kernel_type The type of kernel to apply as defined in @ref mpix_op_kernel_h
  * @param kernel_sz The size of the kernel operaiton, usually 3 or 5.
  * @return 0 on success or negative error code.
  */
@@ -239,7 +239,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
  * entire image to apply a desired effect on an image.
  *
  * @param img Image to convert.
- * @param type The type of ISP to apply as defined in @ref mpix_op_correction
+ * @param type The type of ISP to apply as defined in @ref mpix_op_correction_h
  * @param corr The color tuning parameters that controls the various amounts correction.
  * @return 0 on success or negative error code.
  */

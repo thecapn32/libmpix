@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_resize mpix/op_resize.h
+ * @defgroup mpix_op_resize_h mpix/op_resize.h
  * @brief Low-level resizing operations
  * @{
  */

@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_zephyr mpix/zephyr.h
+ * @defgroup mpix_zephyr_h mpix/zephyr.h
  * @brief Zephyr-specific functions
  * @{
  */

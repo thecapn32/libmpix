@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_port mpix/port.h
+ * @defgroup mpix_port_h mpix/port.h
  * @brief Low-level functions to implement new libmpix ports
  *
  * @{

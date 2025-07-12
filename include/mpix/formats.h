@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_formats mpix/formats.h
+ * @defgroup mpix_formats_h mpix/formats.h
  * @brief Pixel format definitions
  * @{
  */

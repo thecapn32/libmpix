@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_convert mpix/op_convert.h
+ * @defgroup mpix_op_convert_h mpix/op_convert.h
  * @brief Low-level pixel format conversion operations
  * @{
  */
@@ -51,7 +51,7 @@ uint8_t mpix_rgb24_get_luma_bt709(const uint8_t rgb24[3]);
 /**
  * @brief Convert a line of pixel data from RGB24 to RGB24 (null conversion).
  *
- * See @ref mpix_formats for the definition of the input and output formats.
+ * See @ref mpix_formats_h for the definition of the input and output formats.
  *
  * You only need to call this function to work directly on raw buffers.
  * See @ref mpix_image_convert for converting between formats.

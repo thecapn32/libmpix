@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_jpeg mpix/op_jpeg.h
+ * @defgroup mpix_op_jpeg_h mpix/op_jpeg.h
  * @brief Low-level JPEG encoding operations [WORK-IN-PROGRESS]
  * @{
  */

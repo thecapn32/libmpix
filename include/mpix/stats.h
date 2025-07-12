@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_stats mpix/stats.h
+ * @defgroup mpix_stats_h mpix/stats.h
  * @brief Compute statistics on images.
  * @{
  */

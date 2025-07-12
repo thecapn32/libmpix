@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @internal
- * @defgroup mpix_test mpix/test.h
+ * @defgroup mpix_test_h mpix/test.h
  * @brief Test suite utilities
  * @{
  */

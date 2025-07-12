@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_correction mpix/op_correction.h
+ * @defgroup mpix_op_correction_h mpix/op_correction.h
  * @brief Low-level image correction operations
  * @{
  */

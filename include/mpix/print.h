@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_print mpix/print.h
+ * @defgroup mpix_print_h mpix/print.h
  * @brief Print images and statistics
  * @{
  */

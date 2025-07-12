@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
- * @defgroup mpix_op_qoi mpix/op_qoi.h
+ * @defgroup mpix_op_qoi_h mpix/op_qoi.h
  * @brief Low-level QOI encoding operations
  * @{
  */
