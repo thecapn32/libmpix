@@ -63,7 +63,7 @@ void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buf, size_t size
  * @param img Image being processed.
  * @param buf Memory that receives the image data.
  * @param size Size of the buffer.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_to_buf(struct mpix_image *img, uint8_t *buf, size_t size);
 
@@ -100,7 +100,7 @@ void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats);
  *
  * @param img Image to convert.
  * @param new_format A four-character-code (FOURCC) as defined by @c <zephyr/drivers/video.h>.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_convert(struct mpix_image *img, uint32_t new_format);
 
@@ -116,7 +116,7 @@ int mpix_image_convert(struct mpix_image *img, uint32_t new_format);
  *
  * @param img Image to convert.
  * @param palette The color palette to use for the conversion.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette);
 
@@ -132,7 +132,7 @@ int mpix_image_palettize(struct mpix_image *img, struct mpix_palette *palette);
  *
  * @param img Image to convert.
  * @param palette The color palette to use for the conversion.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_depalettize(struct mpix_image *img, struct mpix_palette *palette);
 
@@ -154,7 +154,7 @@ void mpix_image_from_palette(struct mpix_image *img, struct mpix_palette *palett
  *
  * @param img Image being processed.
  * @param palette The color palette to use for the conversion.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_to_palette(struct mpix_image *img, struct mpix_palette *palette);
 
@@ -168,6 +168,7 @@ int mpix_image_to_palette(struct mpix_image *img, struct mpix_palette *palette);
  * @param img Input image sampled to generate the palette.
  * @param palette The palette that will be updated with colors fitting the image better.
  * @param num_samples Number of samples to take from the input image.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *palette,
 				uint16_t num_samples);
@@ -183,7 +184,7 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
  *
  * @param img Image to convert.
  * @param window_size The window size for the conversion, usually 2 (faster) or 3 (higher quality).
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_debayer(struct mpix_image *img, uint32_t window_size);
 
@@ -191,7 +192,7 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t window_size);
  * @brief Encode an image to the QOI compressed image format
  *
  * @param img Image to convert to QOI format.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_qoi_encode(struct mpix_image *img);
 
@@ -201,7 +202,7 @@ int mpix_image_qoi_encode(struct mpix_image *img);
  * @note This is a placeholder and implementation is still in progress
  *
  * @param img Image to convert to JPEG format.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_jpeg_encode(struct mpix_image *img);
 
@@ -214,7 +215,7 @@ int mpix_image_jpeg_encode(struct mpix_image *img);
  * @param img Image to convert.
  * @param width The new width in pixels.
  * @param height The new height in pixels.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height);
 
@@ -227,7 +228,7 @@ int mpix_image_resize(struct mpix_image *img, uint16_t width, uint16_t height);
  * @param img Image to convert.
  * @param kernel_type The type of kernel to apply as defined in @ref mpix_op_kernel
  * @param kernel_sz The size of the kernel operaiton, usually 3 or 5.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_sz);
 
@@ -240,7 +241,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
  * @param img Image to convert.
  * @param type The type of ISP to apply as defined in @ref mpix_op_correction
  * @param corr The color tuning parameters that controls the various amounts correction.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_correction *corr);
 
@@ -279,7 +280,7 @@ void mpix_image_hexdump(struct mpix_image *img);
  * @param op_sz Size of the operation struct to allocate.
  * @param buf_sz Size of the input buffer to allocate for this operation.
  * @param threshold Minimum number of bytes the operation needs to run one cycle.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *template,
 			 size_t op_sz, size_t buf_sz, size_t threshold);
@@ -298,7 +299,7 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
  * @param img Image to which add a processing step.
  * @param template Stream processing step to apply to the image.
  * @param op_sz Size of the operation struct to allocate.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_base_op *op,
 				      size_t op_sz);
@@ -313,7 +314,7 @@ int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_
  * are added to the pipeline, but only while this function is called.
  *
  * @param img Image to which one or multiple processing steps were added.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_process(struct mpix_image *img);
 
@@ -322,7 +323,7 @@ int mpix_image_process(struct mpix_image *img);
  * @internal
  *
  * @param img Image to which one or multiple processing steps were added.
- * @return 0 on success or negative error code on failure.
+ * @return 0 on success or negative error code.
  */
 int mpix_image_error(struct mpix_image *img, int err);
 

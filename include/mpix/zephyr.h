@@ -26,7 +26,7 @@ static inline void mpix_image_from_vbuf(struct mpix_image *img, struct video_buf
  *
  * @param img Image being processed.
  * @param vbuf Video buffer that receives the image data.
- * @return 0 on success
+ * @return 0 on success or negative error code.
  */
 static inline int mpix_image_to_vbuf(struct mpix_image *img, struct video_buffer *vbuf)
 {

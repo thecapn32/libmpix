@@ -55,7 +55,7 @@ void mpix_port_printf(const char *fmt, ...);
  * @param dev Device on which apply the exposure, as a port-specific type.
  * @param def Default exposure level, set by querying the device for its default.
  * @param max Maximum exposure level, set by querying the device for its maximum.
- * @return 0 on success, negative errno on error.
+ * @return 0 on success or negative error code.
  */
 int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max);
 
@@ -64,7 +64,7 @@ int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max);
  *
  * @param dev Device for which to set the exposure level.
  * @param val The new exposure value.
- * @return 0 on success, negative errno on error.
+ * @return 0 on success or negative error code.
  */
 int mpix_port_set_exposure(void *dev, int32_t val);
 

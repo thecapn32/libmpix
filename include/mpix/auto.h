@@ -33,6 +33,7 @@ struct mpix_auto_ctrls {
  *
  * @param ctrls The Image Processing Algorithm (IPA) context to initialize.
  * @param dev The device pointer, passed to functions such as @ref mpix_port_set_exposure().
+ * @return 0 on success or negative error code.
  */
 int mpix_auto_exposure_init(struct mpix_auto_ctrls *ctrls, void *dev);
 
