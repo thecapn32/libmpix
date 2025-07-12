@@ -28,13 +28,16 @@ enum mpix_kernel_type {
 	MPIX_KERNEL_DENOISE,
 };
 
-/** @internal */
+/**
+ * Kernel-based operation
+ * @internal
+ */
 struct mpix_kernel_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
 	/** Type of kernel operation */
 	enum mpix_kernel_type type;
-	/**  */
+	/** Pointer to a function performing the transformation on one image tile. */
 	void (*kernel_fn)(const uint8_t *src[], uint8_t *dst, uint16_t w);
 };
 

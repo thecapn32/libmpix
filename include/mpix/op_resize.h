@@ -11,7 +11,10 @@
 
 #include <mpix/op.h>
 
-/** @internal */
+/**
+ * Image resizing operation.
+ * @internal
+ */
 struct mpix_resize_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;

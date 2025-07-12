@@ -85,7 +85,7 @@ void mpix_image_free(struct mpix_image *img);
  * from the image to generate statistics such as histogram and .
  *
  * @param img Image to convert.
- * @param new_format A four-character-code (FOURCC) as defined by @c <zephyr/drivers/video.h>.
+ * @param stats Statistics filled from the image.
  */
 void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats);
 
@@ -190,8 +190,7 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t window_size);
 /**
  * @brief Encode an image to the QOI compressed image format
  *
- * @param image Image to convert to QOI format.
- * @param max_sz Maximum size of the intermediate buffer to use.
+ * @param img Image to convert to QOI format.
  * @return 0 on success or negative error code on failure.
  */
 int mpix_image_qoi_encode(struct mpix_image *img);
@@ -199,8 +198,9 @@ int mpix_image_qoi_encode(struct mpix_image *img);
 /**
  * @brief Encode an image to the JPEG compressed image format
  *
- * @param image Image to convert to JPEG format.
- * @param max_sz Maximum size of the intermediate buffer to use.
+ * @note This is a placeholder and implementation is still in progress
+ *
+ * @param img Image to convert to JPEG format.
  * @return 0 on success or negative error code on failure.
  */
 int mpix_image_jpeg_encode(struct mpix_image *img);
@@ -239,7 +239,7 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
  *
  * @param img Image to convert.
  * @param type The type of ISP to apply as defined in @ref mpix_op_correction
- * @param tuning The color tuning parameters that controls the various amounts correction.
+ * @param corr The color tuning parameters that controls the various amounts correction.
  * @return 0 on success or negative error code on failure.
  */
 int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_correction *corr);
@@ -266,8 +266,8 @@ void mpix_image_print_256color(struct mpix_image *img);
 void mpix_image_hexdump(struct mpix_image *img);
 
 /**
- * @internal
  * @brief Add a operation processing step to an image.
+ * @internal
  *
  * @note This is a low-level function only needed to implement new operations.
  *
@@ -285,8 +285,8 @@ int mpix_image_append_op(struct mpix_image *img, const struct mpix_base_op *temp
 			 size_t op_sz, size_t buf_sz, size_t threshold);
 
 /**
- * @internal
  * @brief Add a operation processing step to an image for uncompressed input data.
+ * @internal
  *
  * @note This is a low-level function only needed to implement new operations.
  *
@@ -304,8 +304,8 @@ int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_
 				      size_t op_sz);
 
 /**
- * @internal
  * @brief Perform all the processing added to the
+ * @internal
  *
  * @note This is a low-level function only needed to implement new operations.
  *
@@ -318,8 +318,8 @@ int mpix_image_append_uncompressed_op(struct mpix_image *img, const struct mpix_
 int mpix_image_process(struct mpix_image *img);
 
 /**
- * @internal
  * @brief Set the error code of the image an error on the image
+ * @internal
  *
  * @param img Image to which one or multiple processing steps were added.
  * @return 0 on success or negative error code on failure.

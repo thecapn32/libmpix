@@ -1,5 +1,4 @@
-Introduction
-============
+# Introduction
 
 The **libmpix** is an open-source
 ([Apache 2.0](https://github.com/libmpix/libmpix/blob/main/LICENSE))

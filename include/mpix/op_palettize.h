@@ -22,7 +22,10 @@ struct mpix_palette {
 	uint32_t fourcc;
 };
 
-/** @internal */
+/**
+ * Image palettization/depalettization operation.
+ * @internal
+ */
 struct mpix_palette_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;

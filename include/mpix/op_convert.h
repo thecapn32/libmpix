@@ -132,7 +132,13 @@ void mpix_convert_y8_to_rgb24_bt709(const uint8_t *src, uint8_t *dst, uint16_t w
  */
 void mpix_convert_rgb24_to_y8_bt709(const uint8_t *src, uint8_t *dst, uint16_t width);
 
-/** @internal */
+/**
+ * Helper to simplify the implementation of an image format conversion operation.
+ *
+ * @internal
+ *
+ * @param base Base operation type, casted to @ref mpix_convert_op.
+ */
 void mpix_convert_op(struct mpix_base_op *base);
 
 #endif /** @} */

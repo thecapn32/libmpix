@@ -17,6 +17,9 @@
  */
 #define MPIX_CORRECTION_WB_SCALE 1024
 
+/**
+ * Configuration of the image correction levels.
+ */
 struct mpix_correction {
 	/** Offset removed to every pixel, 0 for no correction, 255 for dark image */
 	uint8_t black_level;
@@ -29,7 +32,7 @@ struct mpix_correction {
 };
 
 /**
- * Available correction operations to apply to the image.
+ * Correction types that can be applied to the image.
  */
 enum mpix_correction_type {
 	/** Correct the black level applied to every pixel */
@@ -40,7 +43,10 @@ enum mpix_correction_type {
 	MPIX_CORRECTION_GAMMA,
 };
 
-/** @internal */
+/**
+ * Image correction operation
+ * @internal
+ */
 struct mpix_correction_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
@@ -81,13 +87,13 @@ struct mpix_correction_op {
  * @param line_offset Number of the line being processed within the frame.
  * @param corr Correction levels to apply to the image.
  */
-void mpix_correction_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t size,
+void mpix_correction_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t width,
 				      uint16_t line_offset, struct mpix_correction *corr);
 /**
  * @brief Correct the black level of an input line in RGB24 pixel format.
  * @copydetails mpix_correction_black_level_raw8
  */
-void mpix_correction_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_t size,
+void mpix_correction_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
 				       uint16_t line_offset, struct mpix_correction *corr);
 /**
  * @brief Correct the white balance of an input line in RGB24 pixel format.
@@ -96,7 +102,13 @@ void mpix_correction_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_
 void mpix_correction_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
 					 uint16_t line_offset, struct mpix_correction *corr);
 
-/** @internal */
+/**
+ * Helper to simplify the implementation of a image correction operation.
+ *
+ * @internal
+ *
+ * @param base Base operation type, casted to @ref mpix_correction_op.
+ */
 void mpix_correction_op(struct mpix_base_op *base);
 
 #endif /** @} */

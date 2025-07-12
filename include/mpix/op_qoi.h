@@ -12,7 +12,10 @@
 
 #include <mpix/op.h>
 
-/** @internal */
+/**
+ * QOI format conversion operation.
+ * @internal
+ */
 struct mpix_qoi_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
@@ -29,8 +32,8 @@ struct mpix_qoi_op {
  *
  * @param id Short identifier to differentiate operations of the same category.
  * @param op Operation to use for the conversion.
- * @param fmt_in The input format for that operation.
- * @param fmt_out The Output format for that operation.
+ * @param fmt_src The input format for that operation.
+ * @param fmt_dst The Output format for that operation.
  */
 #define MPIX_REGISTER_QOI_OP(id, op, fmt_src, fmt_dst)                                             \
 	const struct mpix_qoi_op mpix_qoi_op_##id = {                                              \

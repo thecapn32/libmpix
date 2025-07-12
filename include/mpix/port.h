@@ -45,15 +45,17 @@ void mpix_port_free(void *mem);
  * This will be used to log debug messages according to the log level, as well as print image
  * previews in the terminal.
  *
- * @param mem Pointer to the buffer to free.
+ * @param fmt A printf format string followed by arguments to be printed.
  */
 void mpix_port_printf(const char *fmt, ...);
 
 /**
  * @brief Initialize the exposure control with min/max values and current value.
  *
- * @param ctrl Control parameters to initialize.
- * @param dev Device for which to set the exposure level need to be set.
+ * @param dev Device on which apply the exposure, as a port-specific type.
+ * @param def Default exposure level, set by querying the device for its default.
+ * @param max Maximum exposure level, set by querying the device for its maximum.
+ * @return 0 on success, negative errno on error.
  */
 int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max);
 
@@ -62,6 +64,7 @@ int mpix_port_init_exposure(void *dev, int32_t *def, int32_t *max);
  *
  * @param dev Device for which to set the exposure level.
  * @param val The new exposure value.
+ * @return 0 on success, negative errno on error.
  */
 int mpix_port_set_exposure(void *dev, int32_t val);
 

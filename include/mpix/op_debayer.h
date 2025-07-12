@@ -12,7 +12,10 @@
 
 #include <mpix/op.h>
 
-/** @internal */
+/**
+ * Debayer operation
+ * @internal
+ */
 struct mpix_debayer_op {
 	/** Fields common to all operations. */
 	struct mpix_base_op base;
