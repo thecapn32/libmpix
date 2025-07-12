@@ -10,6 +10,11 @@ operation type with one operation, which is easier to do than define new operati
 @note This process is the same if you wish to implement new operations inside your application or
 for contributing new operations to libmpix.
 
+Through these code snippets, replace `<custom>` or `<CUSTOM>` by any name you wish for your type
+of operation.
+
+## Create the new type struct
+
 All libmpix operations use a common base defined in @ref mpix/op.h, the @ref mpix_base_op.
 
 - It describes the operation so that it can be selected from a list of operations available.
@@ -19,9 +24,6 @@ All libmpix operations use a common base defined in @ref mpix/op.h, the @ref mpi
 For both purpose, new operation types might need extra fields to define more than the basics.
 One way to do this in the C language is to define a new structure with the @ref mpix_base_op as
 the first field, so that the pointer can be casted between the two.
-
-Through these code snippets, replace `<custom>` or `<CUSTOM>` by any name you wish for your type
-of operation.
 
 To reduce repetitive boilerplate, it is possible to add a function pointer field, so that each
 individual operation defined with this type has minimal work to do.
@@ -35,6 +37,8 @@ struct mpix_<custom>_op {
 	/* Any other custom fields */
 };
 ```
+
+## Define a helper for more convenient API
 
 Then a wrapper function can convert between the generic operation API and the custom API that you
 define for your own operation type.
@@ -53,8 +57,10 @@ void mpix_<custom>_op(struct mpix_base_op *base)
 }
 ```
 
-Once this is done, to conveniently define a new operation, it is possible to use a macro which
-exposes only the fields that the user has to fill, and reduce the amount of typing. For instance:
+## Add a macro to create operations
+
+Once this is done, to define all the operations with that type, define a macro which exposes only
+the fields that the user has to fill, and reduce the amount of typing. For instance:
 
 ```c
 #define MPIX_REGISTER_<CUSTOM>_OP(id, fn, /* Anything you need */)                                 \
@@ -69,6 +75,8 @@ exposes only the fields that the user has to fill, and reduce the amount of typi
 	}
 ```
 
+## Add an example operation using these
+
 It is now possible to add new operations with this type in a C source file:
 
 ```c
@@ -79,6 +87,8 @@ void mpix_<custom>_convert_from_x_to_y(/* Local API you defined for yourself */)
 MPIX_REGISTER_<CUSTOM>_OP(x_to_y, mpix_convert_rgb24_to_rgb332, /* Anything you need */);
 ```
 
+## Add a table of operations
+
 Every time `MPIX_REGISTER_<CUSTOM>_OP` is added in C file, this will add the operation to a global
 list which you can access via `MPIX_LIST_<CUSTOM>_OP`, typically at the bottom of the C file:
 
@@ -86,6 +96,8 @@ list which you can access via `MPIX_LIST_<CUSTOM>_OP`, typically at the bottom o
 static const struct mpix_<custom>_op **mpix_<custom>_op_list =
 	(const struct mpix_<custom>_op *[]){MPIX_LIST_<CUSTOM>_OP};
 ```
+
+## Define an user API searching that table
 
 Finally, you can select which high-level API you wish to expose to the user, so that he can select
 an operation from this list.
@@ -129,9 +141,11 @@ int mpix_image_<custom>(struct mpix_image *img, /* Anything you need */)
 
 The new custom operation can now be used in the application using the user API.
 
+## Tell genlist.py to also scan this C source
+
 Finishing step is in the the `CMakeLists.txt`, add the C source to the files to scan for
 `MPIX_REGISTER_..._OP()` entries:
 
 ```cmake
-ibmpix_add_genlist_source(op_<custom>.c)
+libmpix_add_genlist_source(op_<custom>.c)
 ```

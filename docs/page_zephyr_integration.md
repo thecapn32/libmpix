@@ -37,3 +37,13 @@ mpix_image_from_vbuf(&img, vbuf, &fmt);
 /* Store the processed image back into the (large enough) video buffer */
 mpix_image_to_vbuf(&img, vbuf);
 ```
+
+For a complete end-to-end example, see the
+[`libmpix_example_zephyr`](https://github.com/libmpix/libmpix_example_zephyr) repository.
+
+## Implementation details
+
+Just like any other ecosystem, Zephyr uses a
+[port](https://github.com/libmpix/libmpix/tree/main/ports) acting as integration layer:
+
+![](img/libmpix_zephyr_integration.png)
