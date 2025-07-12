@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_sample mpix/sample.h
- * @brief Sampling of image pixels [EXPERIMENTAL]
+ * @brief Sampling of image pixels
  * @{
  */
 #ifndef MPIX_SAMPLE_H

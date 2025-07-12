@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_auto mpix/auto.h
- * @brief Basic IPAs (auto-exposure, auto-white-balance...) for demo purpose
+ * @brief Basic auto-algorithm (auto-exposure, auto-white-balance...)
  * @{
  */
 #ifndef MPIX_AUTO_H

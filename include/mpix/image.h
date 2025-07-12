@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_image mpix/image.h
- * @brief User API
+ * @brief Main user API
  * @{
  */
 #ifndef MPIX_IMAGE_H

@@ -1,6 +1,8 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @internal
+ * TODO better Kconfig integration
+ * TODO better CMakeLists.txt integration for UNIX ports
  * @{
  */
 #ifndef MPIX_CONFIG_H

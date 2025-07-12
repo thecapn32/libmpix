@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: Apache-2.0
  * @defgroup mpix_op_convert mpix/op_convert.h
- * @brief Implementing new conversion operations
+ * @brief Low-level pixel format conversion operations
  * @{
  */
 #ifndef MPIX_OP_CONVERT_H
