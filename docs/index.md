@@ -36,11 +36,11 @@ C API:
 
 struct mpix_image img;
 
-mpix_image_from_buf(&img, buf_in, sizeof(buf_in), MPIX_FORMAT_RGB24);
+mpix_image_from_buf(&img, src, sizeof(src), MPIX_FORMAT_RGB24);
 mpix_image_kernel(&img, MPIX_KERNEL_DENOISE, 5);
 mpix_image_kernel(&img, MPIX_KERNEL_SHARPEN, 3);
-mpix_image_convert(&img, MPIX_FORMAT_YUYV);
-mpix_image_to_buf(&img, buf_out, sizeof(buf_out));
+mpix_image_convert(&img, MPIX_FMT_YUYV);
+mpix_image_to_buf(&img, dst, sizeof(dst));
 
 return img.err;
 ```
