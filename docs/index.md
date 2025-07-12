@@ -8,9 +8,9 @@ pixel format conversion, debayer, blur, sharpen, color correction, resizing...
 It pipelines multiple operations together, eliminating the intermediate buffers.
 This allows larger resolution to fit in constrained systems, without compromising performance.
 
-It provides a C implementation of the classical operations of an imaging pipeline, and allows
-ports or the application alike to implement hardware-optimized operations such as
-[ARM Helium](https://www.arm.com/technologies/helium) SIMD instructions.
+It provides a C implementation of the classical operations of an imaging pipeline, and plans to
+add support for hardware-optimized implementations leveraging SIMD instructions like
+[ARM Helium](https://www.arm.com/technologies/helium) present on ARM Cortex-M55/M85.
 
 It is born out of a
 [proposal for the Zephyr RTOS](https://github.com/zephyrproject-rtos/zephyr/issues/86669)
