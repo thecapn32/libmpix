@@ -91,6 +91,25 @@ void mpix_image_free(struct mpix_image *img);
 void mpix_image_stats(struct mpix_image *img, struct mpix_stats *stats);
 
 /**
+ * @brief Collect a random RGB pixel from an image.
+ *
+ * The image can have any format from this list:
+ *
+ * - @ref MPIX_FMT_RGB24,
+ * - @ref MPIX_FMT_RGB565,
+ * - @ref MPIX_FMT_YUYV,
+ * - @ref MPIX_FMT_SRGGB8,
+ * - @ref MPIX_FMT_BGGR8,
+ * - @ref MPIX_FMT_SBGGR8,
+ * - @ref MPIX_FMT_SGBRG8,
+ * - @ref MPIX_FMT_SGRBG8,
+ *
+ * @param img Image to sample a value from.
+ * @param rgb Buffer to 3 bytes filled with the red, green, blue value from the image.
+ */
+int mpix_image_sample_random_rgb(struct mpix_image *img, uint8_t rgb[3]);
+
+/**
  * @brief Convert an image to a new pixel format.
  *
  * An operation is added to convert the image to a new pixel format.

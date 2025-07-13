@@ -10,6 +10,9 @@
 
 #include <assert.h>
 
+#define mpix_test(expr) \
+	assert(expr)
+
 #define mpix_test_ok(ret) \
 	assert((ret) == 0)
 

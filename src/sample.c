@@ -89,3 +89,8 @@ int mpix_sample_random_rgb(const uint8_t *buf, uint16_t width, uint16_t height, 
 
 	return 0;
 }
+
+int mpix_image_sample_random_rgb(struct mpix_image *img, uint8_t rgb[3])
+{
+	return mpix_sample_random_rgb(img->buffer, img->width, img->height, img->fourcc, rgb);
+}
