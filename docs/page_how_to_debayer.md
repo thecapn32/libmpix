@@ -35,8 +35,8 @@ be sensitive to just one color information such as the red, green or blue wavele
 ![](img/bayer_filter_rgb.drawio.png)
 
 But the filter has to be aligned with every pixel so that it is possible to give each pixel an
-unique color, with a well-known pattern so that it is possible to know which color each pixel is
-expected to receive. The most widespread pattern is the Bayer pattern:
+unique color. And with a well-known pattern to assign each pixel is to a known color R, G or B.
+The most widespread pattern is the Bayer pattern:
 
 ![](img/bayer_filter_rgb_bayer.drawio.png)
 
@@ -46,7 +46,7 @@ position of the bayer filter, it is possible to reconstitute the RGB data. This 
 
 ![](img/bayer_filter_rgb_bayer_data.drawio.png)
 
-## How to do Debayer on libmpix
+## How to do debayer on libmpix
 
 The name of the bayer format is obtained by looking at the order of colors in a bayer image:
 

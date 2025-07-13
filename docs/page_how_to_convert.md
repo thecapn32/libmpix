@@ -23,4 +23,4 @@ mpix_image_convert(&img, MPIX_FMT_GREY);
 
 Add more processing steps as needed.
 
-@see supported_operations for a list of all supported conversion operations.
+See @ref supported_operations for a list of all supported format conversions.

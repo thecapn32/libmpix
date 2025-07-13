@@ -1,5 +1,5 @@
 @page how_to_correct How to correct images
-@brief Uses libmpix to apply image correction to improve contrasts and colors
+@brief Use libmpix to apply image correction to improve contrasts and colors
 
 Raw images coming from a sensor are typically too dark or over-exposed, with green colors and other
 visible defects.
@@ -41,10 +41,10 @@ light condition manually:
 
 ```c
 struct mpix_correction corr = {
-        .black_level = 0x0f,
-        .red_level = 2048,
-        .blue_level = 2048,
-	uint8_t.gamma_level = 10,
+	.black_level = 0x0f,
+	.red_level = 2048,
+	.blue_level = 2048,
+	.gamma_level = 10,
 };
 ```
 
@@ -58,4 +58,4 @@ mpix_image_correction(&img, MPIX_CORRECTION_GAMMA, &corr);
 
 The image will now be corrected using each of the steps specified.
 
-@see supported_operations for a list of all supported image correction operations.
+See @ref supported_operations for a list of all supported image correction operations.

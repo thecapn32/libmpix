@@ -46,3 +46,6 @@ For getting RGB data back, it is possible to run the opposite operation with the
 ```c
 mpix_image_depalettize(&img, palette);
 ```
+
+See @ref supported_operations for the list of all palettization format.
+The conversion is always between RGB24 and one of the palette size.
