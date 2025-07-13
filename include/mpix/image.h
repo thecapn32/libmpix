@@ -214,6 +214,7 @@ int mpix_image_jpeg_encode(struct mpix_image *img);
  * image size is exactly the same as requested.
  *
  * @param img Image to convert.
+ * @param type Type of image resizing to apply.
  * @param width The new width in pixels.
  * @param height The new height in pixels.
  * @return 0 on success or negative error code.
