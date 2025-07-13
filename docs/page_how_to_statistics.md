@@ -19,7 +19,7 @@ Then several types of statistics can be gathered from the image in one function 
 This will sample the specified number of values from the image, and accumulate the information into
 the statistics struct. For instance here for `1000` values.
 
-```
+```c
 struct mpix_stats stats = {.nvals = 1000};
 
 mpix_stats_from_buf(&img, &stats);
@@ -31,7 +31,7 @@ The content of @ref mpix_stats can be browsed directly for any purpose.
 
 Then derived statistics can optionally be computed out of the generated histograms:
 
-```
+```c
 /* Get the mean lightness of the image */
 val = mpix_stats_get_y_mean(&stats);
 ```

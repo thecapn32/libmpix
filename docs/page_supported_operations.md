@@ -85,3 +85,35 @@ flexibility and performance.
 @dotfile dot/op_resize.dot
 
 @see @ref how_to_resize
+
+## Image statistics collection
+
+libmpix can collect selected statistics from an image.
+
+Statistics collection are supported for any of the pixel sampling formats (see below).
+
+The following types of statistics are stored into the @ref mpix_stats struct:
+
+- luma (Y channel) histogram
+- RGB channel average, minimum, maximum
+
+@see @ref how_to_statistics
+
+## Pixel value sampling
+
+libmpix can collect RGB pixels from the image using the following strategy:
+
+- Random sampling
+
+And from the following input image formats:
+
+- @ref MPIX_FMT_RGB24
+- @ref MPIX_FMT_RGB565
+- @ref MPIX_FMT_YUYV
+- @ref MPIX_FMT_SRGGB8
+- @ref MPIX_FMT_BGGR8
+- @ref MPIX_FMT_SBGGR8
+- @ref MPIX_FMT_SGBRG8
+- @ref MPIX_FMT_SGRBG8
+
+@see @ref how_to_sample
