@@ -8,8 +8,11 @@ build_error=0
 runtime_error=0
 success=0
 
+# If no argument, default to all tests
+if [ $# = 0 ]; then set -- tests/*/; fi
+
 # Loop over every test, build it, run it, report
-for test in tests/*/; do
+for test in "$@"; do
 
     printf '%20s ' "$test"
 
