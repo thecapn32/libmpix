@@ -1,4 +1,4 @@
-@page how_to_convert How to convert images pixel formats
+@page how_to_convert How to convert pixel formats
 @brief Converting between uncompressed pixel format conversion in libmpix
 
 @note This guide is about uncompressed pixel formats. Different guide describe how to work with

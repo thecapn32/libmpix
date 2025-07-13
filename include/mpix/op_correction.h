@@ -27,7 +27,7 @@ struct mpix_correction {
 	uint16_t red_level;
 	/** Blue value correction level multiplied by 1024: 2048 applies 2x to blue channel */
 	uint16_t blue_level;
-	/** Gamma level to be applied to the pixels */
+	/** Gamma level divided by 16: min value 1 for gamma=1/16, max value 15  for gamma=15/16 */
 	uint8_t gamma_level;
 };
 
