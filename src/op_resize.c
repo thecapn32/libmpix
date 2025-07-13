@@ -75,24 +75,24 @@ void mpix_resize_op_raw24(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 24);
 }
-MPIX_REGISTER_RESIZE_OP(rgb24, mpix_resize_op_raw24, MPIX_RESIZE_SUBSAMPLING, RGB24);
-MPIX_REGISTER_RESIZE_OP(yuv24, mpix_resize_op_raw24, MPIX_RESIZE_SUBSAMPLING, YUV24);
+MPIX_REGISTER_RESIZE_OP(rgb24, mpix_resize_op_raw24, SUBSAMPLING, RGB24);
+MPIX_REGISTER_RESIZE_OP(yuv24, mpix_resize_op_raw24, SUBSAMPLING, YUV24);
 
 __attribute__((weak))
 void mpix_resize_op_raw16(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 16);
 }
-MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLING, RGB565);
-MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, MPIX_RESIZE_SUBSAMPLING, RGB565X);
+MPIX_REGISTER_RESIZE_OP(rgb565, mpix_resize_op_raw16, SUBSAMPLING, RGB565);
+MPIX_REGISTER_RESIZE_OP(rgb565x, mpix_resize_op_raw16, SUBSAMPLING, RGB565X);
 
 __attribute__((weak))
 void mpix_resize_op_raw8(struct mpix_base_op *base)
 {
 	mpix_resize_op(base, 8);
 }
-MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLING, GREY);
-MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, MPIX_RESIZE_SUBSAMPLING, RGB332);
+MPIX_REGISTER_RESIZE_OP(grey, mpix_resize_op_raw8, SUBSAMPLING, GREY);
+MPIX_REGISTER_RESIZE_OP(rgb332, mpix_resize_op_raw8, SUBSAMPLING, RGB332);
 
 static const struct mpix_resize_op **mpix_resize_op_list =
 	(const struct mpix_resize_op *[]){MPIX_LIST_RESIZE_OP};

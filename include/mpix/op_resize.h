@@ -44,12 +44,12 @@ struct mpix_resize_op {
  */
 #define MPIX_REGISTER_RESIZE_OP(id, fn, t, fmt)                                                    \
 	const struct mpix_resize_op mpix_resize_op_##id = {                                        \
-		.base.name = ("resize_" #id),                                                      \
-		.base.fourcc_src = (MPIX_FMT_##fmt),                                               \
-		.base.fourcc_dst = (MPIX_FMT_##fmt),                                               \
+		.base.name = "resize_" #id,                                                        \
+		.base.fourcc_src = MPIX_FMT_##fmt,                                                 \
+		.base.fourcc_dst = MPIX_FMT_##fmt,                                                 \
 		.base.window_size = 1,                                                             \
-		.base.run = (fn),                                                                  \
-		.type = (t),                                                                       \
+		.base.run = fn,                                                                    \
+		.type = MPIX_RESIZE_##t,                                                           \
 	}
 
 /**
