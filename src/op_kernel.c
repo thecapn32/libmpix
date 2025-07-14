@@ -10,17 +10,17 @@
 
 /* Function that processes a 3x3 or 5x5 pixel block described by line buffers and column indexes */
 typedef void kernel_3x3_t(const uint8_t *in[3], int i0, int i1, int i2,
-			  uint8_t *out, int o0, uint16_t base, const uint16_t *kernel);
+			  uint8_t *out, int o0, uint16_t base, const int16_t *kernel);
 typedef void kernel_5x5_t(const uint8_t *in[3], int i0, int i1, int i2, int i3, int i4,
-			  uint8_t *out, int o0, uint16_t base, const uint16_t *kernel);
+			  uint8_t *out, int o0, uint16_t base, const int16_t *kernel);
 
 /* Function that repeats a 3x3 or 5x5 block operation to each channel of a pixel format */
 typedef void pixformat_3x3_t(const uint8_t *in[3], int i0, int i1, int i2,
 			  uint8_t *out, int o0, uint16_t base, kernel_3x3_t *line_fn,
-			  const uint16_t *kernel);
+			  const int16_t *kernel);
 typedef void pixformat_5x5_t(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
 			  uint8_t *out, int o0, uint16_t base, kernel_5x5_t *line_fn,
-			  const uint16_t *kernel);
+			  const int16_t *kernel);
 
 /* Function that repeats a 3x3 or 5x5 kernel operation over an entire line line */
 typedef void line_3x3_t(const uint8_t *in[3], uint8_t *out, uint16_t width);
@@ -32,9 +32,9 @@ typedef void line_5x5_t(const uint8_t *in[5], uint8_t *out, uint16_t width);
  */
 
 static void mpix_convolve_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_t *out, int o0,
-			      uint16_t base, const uint16_t *kernel)
+			      uint16_t base, const int16_t *kernel)
 {
-	int16_t result = 0;
+	int32_t result = 0;
 	int k = 0;
 
 	/* Apply the coefficients on 3 rows */
@@ -46,13 +46,14 @@ static void mpix_convolve_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint
 	}
 
 	/* Store the scaled-down output */
-	out[base + o0] = result >> kernel[k];
+	result >>= kernel[k];
+	out[base + o0] = CLAMP(result, 0x00, 0xff);
 }
 
 static void mpix_convolve_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
-			      uint8_t *out, int o0, uint16_t base, const uint16_t *kernel)
+			      uint8_t *out, int o0, uint16_t base, const int16_t *kernel)
 {
-	int16_t result = 0;
+	int32_t result = 0;
 	int k = 0;
 
 	/* Apply the coefficients on 5 rows */
@@ -66,7 +67,8 @@ static void mpix_convolve_5x5(const uint8_t *in[5], int i0, int i1, int i2, int 
 	}
 
 	/* Store the scaled-down output */
-	out[base + o0] = result >> kernel[k];
+	result >>= kernel[k];
+	out[base + o0] = CLAMP(result, 0x00, 0xff);
 }
 
 /*
@@ -104,7 +106,7 @@ static inline uint8_t mpix_median(const uint8_t **in, int *idx, uint8_t size)
 }
 
 static void mpix_median_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_t *out, int o0,
-			    uint16_t base, const uint16_t *unused)
+			    uint16_t base, const int16_t *unused)
 {
 	int idx[] = {base + i0, base + i1, base + i2};
 
@@ -112,7 +114,7 @@ static void mpix_median_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_
 }
 
 static void mpix_median_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
-			    uint8_t *out, int o0, uint16_t base, const uint16_t *unused)
+			    uint8_t *out, int o0, uint16_t base, const int16_t *unused)
 {
 	int idx[] = {base + i0, base + i1, base + i2, base + i3, base + i4};
 
@@ -126,7 +128,7 @@ static void mpix_median_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3
 
 static void mpix_kernel_rgb24_3x3(const uint8_t *in[3], int i0, int i1, int i2, uint8_t *out,
 				  int o0, uint16_t base, kernel_3x3_t *line_fn,
-				  const uint16_t *kernel)
+				  const int16_t *kernel)
 {
 	i0 *= 3, i1 *= 3, i2 *= 3, o0 *= 3, base *= 3;
 	line_fn(in, i0, i1, i2, out, o0, base + 0, kernel); /* R */
@@ -136,7 +138,7 @@ static void mpix_kernel_rgb24_3x3(const uint8_t *in[3], int i0, int i1, int i2, 
 
 static void mpix_kernel_rgb24_5x5(const uint8_t *in[5], int i0, int i1, int i2, int i3, int i4,
 				  uint8_t *out, int o0, uint16_t base, kernel_5x5_t *line_fn,
-				  const uint16_t *kernel)
+				  const int16_t *kernel)
 {
 	i0 *= 3, i1 *= 3, i2 *= 3, i3 *= 3, i4 *= 3, o0 *= 3, base *= 3;
 	line_fn(in, i0, i1, i2, i3, i4, out, o0, base + 0, kernel); /* R */
@@ -151,7 +153,7 @@ static void mpix_kernel_rgb24_5x5(const uint8_t *in[5], int i0, int i1, int i2, 
 
 static inline void mpix_kernel_3x3(const uint8_t *in[3], uint8_t *out, uint16_t width,
 				   pixformat_3x3_t *pixformat_fn, kernel_3x3_t *line_fn,
-				   const uint16_t *kernel)
+				   const int16_t *kernel)
 {
 	uint16_t w = 0;
 
@@ -169,7 +171,7 @@ static inline void mpix_kernel_3x3(const uint8_t *in[3], uint8_t *out, uint16_t 
 
 static inline void mpix_kernel_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width,
 				   pixformat_5x5_t *pixformat_fn, kernel_5x5_t *line_fn,
-				   const uint16_t *kernel)
+				   const int16_t *kernel)
 {
 	uint16_t w = 0;
 
@@ -309,7 +311,7 @@ __attribute__((weak))
 void mpix_identity_rgb24_5x5(const uint8_t *in[5], uint8_t *out, uint16_t width)
 {
 	mpix_kernel_5x5(in, out, width, mpix_kernel_rgb24_5x5, mpix_convolve_5x5,
-			 mpix_identity_5x5);
+			mpix_identity_5x5);
 }
 MPIX_REGISTER_KERNEL_5X5_OP(identity_rgb24, mpix_identity_rgb24_5x5, IDENTITY, RGB24);
 
