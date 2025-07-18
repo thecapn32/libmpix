@@ -72,24 +72,23 @@ uint32_t mpix_lcg_rand_u32(void);
 
 /* Endianness operations */
 
-static inline uint16_t mpix_bswap16(uint16_t i)
+static inline uint16_t mpix_bswap16(uint16_t u)
 {
-	return	(i & 0xff00 >> 8) |
-		(i & 0x00ff << 8);
+	return	((u & 0xff00U) >> 8) | ((u & 0x00ffU) << 8);
 }
 
-static inline uint32_t mpix_bswap32(uint32_t i)
+static inline uint32_t mpix_bswap32(uint32_t u)
 {
-	return	(i & 0xff000000UL >> 24) | (i & 0x000000ffUL << 24) |
-		(i & 0x00ff0000UL >> 8)  | (i & 0x0000ff00UL << 8);
+	return	((u & 0xff000000UL) >> 24) | ((u & 0x000000ffUL) << 24) |
+		((u & 0x00ff0000UL) >> 8)  | ((u & 0x0000ff00UL) << 8);
 }
 
-static inline uint64_t mpix_bswap64(uint64_t i)
+static inline uint64_t mpix_bswap64(uint64_t u)
 {
-	return	(i & 0xff00000000000000ULL >> 56) | (i & 0x00000000000000ffULL << 56) |
-		(i & 0x00ff000000000000ULL >> 40) | (i & 0x000000000000ff00ULL << 40) |
-		(i & 0x0000ff0000000000ULL >> 24) | (i & 0x0000000000ff0000ULL << 24) |
-		(i & 0x000000ff00000000ULL >> 8)  | (i & 0x00000000ff000000ULL << 8);
+	return	((u & 0xff00000000000000ULL) >> 56) | ((u & 0x00000000000000ffULL) << 56) |
+		((u & 0x00ff000000000000ULL) >> 40) | ((u & 0x000000000000ff00ULL) << 40) |
+		((u & 0x0000ff0000000000ULL) >> 24) | ((u & 0x0000000000ff0000ULL) << 24) |
+		((u & 0x000000ff00000000ULL) >> 8)  | ((u & 0x00000000ff000000ULL) << 8);
 }
 
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__

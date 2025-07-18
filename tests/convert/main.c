@@ -74,20 +74,20 @@ void test_conversion(const uint8_t *pix_in, uint32_t fourcc_in, size_t pix_in_st
 	/* Perform the conversion to test */
 	fn(line_in, line_out, WIDTH);
 
-	printf("\n");
+	mpix_port_printf("\n");
 
-	printf("out:");
+	mpix_port_printf("%s out:", MPIX_FOURCC_TO_STR(fourcc_out));
 	for (int i = 0; i < pix_out_step * pix_out_size; i++) {
-		printf(" %02x", line_out[i]);
+		mpix_port_printf(" %02x", line_out[i]);
 	}
-	printf(" |");
+	mpix_port_printf(" |");
 	mpix_print_buf_truecolor(line_out, sizeof(line_out), WIDTH / 2, 2, fourcc_out);
 
-	printf("ref:");
+	mpix_port_printf("%s ref:", MPIX_FOURCC_TO_STR(fourcc_out));
 	for (int i = 0; i < pix_out_step * pix_out_size; i++) {
-		printf(" %02x", pix_out[i]);
+		mpix_port_printf(" %02x", pix_out[i]);
 	}
-	printf(" |");
+	mpix_port_printf(" |");
 	mpix_print_buf_truecolor(line_in, sizeof(line_in), WIDTH / 2, 2, fourcc_in);
 
 	/* Scan the result against the reference output pixel to make sure it worked */
@@ -138,7 +138,8 @@ void test_low_level(void)
 			ref->yuv24_bt709[2],
 		};
 
-		printf("\nColor #%02x%02x%02x\n", ref->rgb24[0], ref->rgb24[1], ref->rgb24[2]);
+		mpix_port_printf("\nColor #%02x%02x%02x\n",
+				 ref->rgb24[0], ref->rgb24[1], ref->rgb24[2]);
 
 		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb565be,
 				MPIX_FMT_RGB565X, 1, &mpix_convert_rgb24_to_rgb565be);
@@ -181,7 +182,7 @@ void test_high_level(void)
 	mpix_image_from_buf(&img, rgb24frame_in, sizeof(rgb24frame_in),
 			    WIDTH, HEIGHT, MPIX_FMT_RGB24);
 
-	printf("input:\n");
+	mpix_port_printf("input:\n");
 	mpix_image_print_truecolor(&img);
 
 	ret = mpix_image_convert(&img, MPIX_FMT_RGB24);
@@ -217,7 +218,7 @@ void test_high_level(void)
 
 	mpix_image_to_buf(&img, rgb24frame_out, sizeof(rgb24frame_out));
 
-	printf("output:\n");
+	mpix_port_printf("output:\n");
 	mpix_image_print_truecolor(&img);
 
 	for (int i = 0; i < sizeof(rgb24frame_out); i++) {
