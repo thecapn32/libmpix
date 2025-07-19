@@ -25,35 +25,36 @@ struct mpix_image img;
 mpix_image_from_buf(&img, buf, sizeof(buf), 640, 480, MPIX_FMT_RGB24);
 ```
 
-All the possible correction tuning is stored inside a single @ref mpix_correction struct.
+Each type of correction have their own struct, all of which are represented as members of
+the @ref mpix_correction_all struct (convenient to store all parameters) and
+@ref mpix_correction_any (used to control a particular operation).
+
 To control the correction level, you may adjust each parameter to fit a particular camera and
 light condition manually:
 
-- `.black_level` is the value to subtract to every pixel to set the black back to 0.
+- `any.black_level.level` is the value to subtract to every pixel to set the black back to 0.
   This can be set to the minimum value you observe in an image and rarely needs to be updated.
 
-- `.red_level` and `.blue_level` are defined as a proportion to the green channel, with 1.0 mapped
-  to 1024. Let's try to apply x2 to both blue and red to correct the green tint: `1024 * 2 = 2048`.
+- `any.white_balance.red_level` and `.blue_level` are defined as a proportion to the green channel,
+  with 1.0 mapped to 1024. Let's try to apply x2 to both blue and red to correct the green tint:
+  `1024 * 2 = 2048`.
 
-- `.gamma_level` gamma correction to non-linearly increase the brightness: dark/bright colors
+- `any.gamma_level` gamma correction to non-linearly increase the brightness: dark/bright colors
   remain dark/bright but intermediate tones become brighter to reflect eye's natural light
   sensitivity. Contrasts will appear more natural and accurate.
 
 ```c
-struct mpix_correction corr = {
-	.black_level = 0x0f,
-	.red_level = 2048,
-	.blue_level = 2048,
-	.gamma_level = 10,
-};
+struct mpix_correction_any bl = {.black_level = {.level = 0x0f}};
+struct mpix_correction_any wb = {.white_balance = {.red_level = 2048, .blue_level = 2048}};
+struct mpix_correction_any gc = {.gamma = {.level = 240}};
 ```
 
 Then, apply each step of the correction you wish to the image:
 
 ```c
-mpix_image_correction(&img, MPIX_CORRECTION_BLACK_LEVEL, &corr);
-mpix_image_correction(&img, MPIX_CORRECTION_WHITE_BALANCE, &corr);
-mpix_image_correction(&img, MPIX_CORRECTION_GAMMA, &corr);
+mpix_image_correction(&img, MPIX_CORRECTION_BLACK_LEVEL, &bl);
+mpix_image_correction(&img, MPIX_CORRECTION_WHITE_BALANCE, &wb);
+mpix_image_correction(&img, MPIX_CORRECTION_GAMMA, &gc);
 ```
 
 The image will now be corrected using each of the steps specified.

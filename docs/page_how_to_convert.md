@@ -17,7 +17,7 @@ mpix_image_from_buf(&img, buf, sizeof(buf), 640, 480, MPIX_FMT_RGB24);
 
 Then convert the image to the destination format:
 
-```
+```c
 mpix_image_convert(&img, MPIX_FMT_GREY);
 ```
 

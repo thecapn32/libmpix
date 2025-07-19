@@ -18,7 +18,7 @@ Then collect an individual pixel from the image.
 
 For now only sampling from a random location is supported.
 
-```
+```c
 uint8_t rgb_value[3];
 
 mpix_image_sample_random_rgb(&img, rgb_value);

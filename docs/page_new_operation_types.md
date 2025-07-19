@@ -92,7 +92,7 @@ MPIX_REGISTER_<CUSTOM>_OP(x_to_y, mpix_convert_rgb24_to_rgb332, /* Anything you 
 Every time `MPIX_REGISTER_<CUSTOM>_OP` is added in C file, this will add the operation to a global
 list which you can access via `MPIX_LIST_<CUSTOM>_OP`, typically at the bottom of the C file:
 
-```
+```c
 static const struct mpix_<custom>_op **mpix_<custom>_op_list =
 	(const struct mpix_<custom>_op *[]){MPIX_LIST_<CUSTOM>_OP};
 ```
