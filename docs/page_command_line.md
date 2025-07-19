@@ -42,7 +42,7 @@ Available commands:
 - Encode the image as QOI data and write the file out
 
 ```
-mpix read /tmp/image.raw 640x480 YUYV ! resize SUBSAMPLING 128x128 \
+mpix read /tmp/image.bin 640x480 YUYV ! convert RGB24 ! resize SUBSAMPLING 128x128 \
   ! qoi_encode ! write /tmp/image.qoi
 ```
 

@@ -444,7 +444,6 @@ static int cmd_correction(int argc, char **argv)
 		arg = argv[2];
 
 		ull = 255 * strtof(arg, &arg);
-		MPIX_INF("gamma=%u/256", ull);
 		if (*arg != '\0' || ull > 255) {
 			MPIX_ERR("Invalid gamma value '%s' (min=0.0, max=1.0)", ull);
 			return -EINVAL;
