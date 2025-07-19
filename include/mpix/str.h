@@ -10,8 +10,11 @@
 #include <errno.h>
 #include <string.h>
 
+/** Entry of a table mapping strings to integer values, useful for macros and enums */
 struct mpix_str {
+	/** The string identifier */
 	const char *name;
+	/** The value identifier for this name */
 	uint32_t value;
 };
 

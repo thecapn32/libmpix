@@ -45,17 +45,25 @@ struct mpix_correction_black_level {
 
 /** Aggregation of all possible correction types */
 struct mpix_correction_all {
+	/** Storage for the white balance controls */
 	struct mpix_correction_white_balance white_balance;
+	/** Storage for the color correction matrix controls */
 	struct mpix_correction_color_matrix color_matrix;
+	/** Storage for the gamma correction controls */
 	struct mpix_correction_gamma gamma;
+	/** Storage for the black level correction controls */
 	struct mpix_correction_black_level black_level;
 };
 
 /** Selection of any possible correction types */
 union mpix_correction_any {
+	/** Option for the white balance controls */
 	struct mpix_correction_white_balance white_balance;
+	/** Option for the color correction matrix controls */
 	struct mpix_correction_color_matrix color_matrix;
+	/** Option for the gamma correction controls */
 	struct mpix_correction_gamma gamma;
+	/** Option for the black level correction controls */
 	struct mpix_correction_black_level black_level;
 };
 
