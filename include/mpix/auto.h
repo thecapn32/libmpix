@@ -25,7 +25,7 @@ struct mpix_auto_ctrls {
 	/** Maximum sensor exposure value */
 	int32_t exposure_max;
 	/** The correction levels */
-	struct mpix_correction correction;
+	struct mpix_correction_all correction;
 };
 
 /**

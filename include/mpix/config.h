@@ -8,6 +8,8 @@
 #ifndef MPIX_CONFIG_H
 #define MPIX_CONFIG_H
 
+#include <stdbool.h>
+
 #ifdef HAS_CONFIG_H
 #include "config.h"
 #endif

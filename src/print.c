@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <mpix/image.h>
 #include <mpix/op_convert.h>
 #include <mpix/print.h>
 #include <mpix/utils.h>
@@ -347,4 +348,20 @@ void mpix_print_y_hist(const uint16_t *y_hist, size_t y_hist_sz, uint16_t height
 
 	/* This makes the graph look more intuitive, but reduces print speed on slow UARTs */
 	mpix_print_hist_scale(y_hist_sz);
+}
+
+void mpix_image_print_ops(struct mpix_image *img)
+{
+	if (!img->flag_print_ops) {
+		return;
+	}
+
+	for (struct mpix_base_op *op = img->ops.first; op != NULL; op = op->next) {
+		mpix_port_printf(
+			" %-30s %ux%u %s -> %s, window %u lines, threshold %u bytes, "
+			"runtime %u us\n",
+			op->name, op->width, op->height, MPIX_FOURCC_TO_STR(op->fourcc_src),
+			MPIX_FOURCC_TO_STR(op->fourcc_dst), op->window_size, op->threshold,
+			op->total_time_us);
+	}
 }

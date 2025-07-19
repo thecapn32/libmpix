@@ -63,27 +63,27 @@ void mpix_auto_exposure_control(struct mpix_auto_ctrls *ctrls, struct mpix_stats
 
 void mpix_auto_black_level(struct mpix_auto_ctrls *ctrls, struct mpix_stats *stats)
 {
+	union mpix_correction_any *corr = (void *)&ctrls->correction.black_level;
 	uint16_t sum = 0;
 
-	ctrls->correction.black_level = 0;
+	ctrls->correction.black_level.level = 0;
 
 	/* Seek the first bucket that */
 	for (size_t i = 0; i < ARRAY_SIZE(stats->y_histogram); i++) {
 		sum += stats->y_histogram[i];
 
 		if (sum > CONFIG_MPIX_BLC_THRESHOLD) {
-			ctrls->correction.black_level = stats->y_histogram_vals[i];
+			ctrls->correction.black_level.level = stats->y_histogram_vals[i];
 			break;
 		}
 	}
 
 	/* Update the statistics so that they reflect the change of black level */
 	mpix_correction_black_level_raw8(stats->y_histogram_vals, stats->y_histogram_vals,
-				  sizeof(stats->y_histogram_vals), 0, &ctrls->correction);
-	mpix_correction_black_level_rgb24(stats->rgb_average, stats->rgb_average, 1, 0,
-					  &ctrls->correction);
+					 sizeof(stats->y_histogram_vals), 0, corr);
+	mpix_correction_black_level_rgb24(stats->rgb_average, stats->rgb_average, 1, 0, corr);
 
-	MPIX_DBG("New black level: %u", ctrls->correction.black_level);
+	MPIX_DBG("New black level: %u", corr->black_level.level);
 }
 
 /*
@@ -95,17 +95,17 @@ void mpix_auto_black_level(struct mpix_auto_ctrls *ctrls, struct mpix_stats *sta
  */
 void mpix_auto_white_balance(struct mpix_auto_ctrls *ctrls, struct mpix_stats *stats)
 {
+	union mpix_correction_any *corr = (void *)&ctrls->correction.white_balance;
 	uint16_t r = MAX(1, stats->rgb_average[0]);
 	uint16_t g = MAX(1, stats->rgb_average[1]);
 	uint16_t b = MAX(1, stats->rgb_average[2]);
 
-	ctrls->correction.red_level = MPIX_CORRECTION_WB_SCALE * g / r;
-	ctrls->correction.blue_level = MPIX_CORRECTION_WB_SCALE * g / b;
+	corr->white_balance.red_level = MPIX_CORRECTION_WB_SCALE * g / r;
+	corr->white_balance.blue_level = MPIX_CORRECTION_WB_SCALE * g / b;
 
 	/* Update the statistics so that they reflect the change of white balance */
-	mpix_correction_white_balance_rgb24(stats->rgb_average, stats->rgb_average, 1, 0,
-					    &ctrls->correction);
+	mpix_correction_white_balance_rgb24(stats->rgb_average, stats->rgb_average, 1, 0, corr);
 
-	MPIX_DBG("New red level: %u", ctrls->correction.red_level);
-	MPIX_DBG("New blue level: %u", ctrls->correction.blue_level);
+	MPIX_DBG("New red level: %u", corr->white_balance.red_level);
+	MPIX_DBG("New blue level: %u", corr->white_balance.blue_level);
 }

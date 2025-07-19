@@ -369,7 +369,7 @@ int mpix_image_debayer(struct mpix_image *img, uint32_t win_sz)
 		}
 	}
 	if (op == NULL) {
-		MPIX_ERR("Conversion operation from %s to %s using %ux%u window not found",
+		MPIX_ERR("Debayer operation from %s to %s using %ux%u window not found",
 			 MPIX_FOURCC_TO_STR(img->fourcc), MPIX_FOURCC_TO_STR(MPIX_FMT_RGB24),
 			 win_sz, win_sz);
 		return mpix_image_error(img, -ENOSYS);

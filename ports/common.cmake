@@ -19,6 +19,7 @@ set(LIBMPIX_SRC
   ${LIBMPIX_DIR}/src/print.c
   ${LIBMPIX_DIR}/src/sample.c
   ${LIBMPIX_DIR}/src/stats.c
+  ${LIBMPIX_DIR}/src/str.c
   ${LIBMPIX_DIR}/src/utils.c
 )
 

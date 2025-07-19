@@ -17,18 +17,46 @@
  */
 #define MPIX_CORRECTION_WB_SCALE 1024
 
-/**
- * Configuration of the image correction levels.
- */
-struct mpix_correction {
-	/** Offset removed to every pixel, 0 for no correction, 255 for dark image */
-	uint8_t black_level;
+/** Balance between the red and green value, or blue and green value */
+struct mpix_correction_white_balance {
 	/** Red value correction level multiplied by 1024: 2048 applies 2x to red channe */
 	uint16_t red_level;
 	/** Blue value correction level multiplied by 1024: 2048 applies 2x to blue channel */
 	uint16_t blue_level;
-	/** Gamma level divided by 16: min value 1 for gamma=1/16, max value 15  for gamma=15/16 */
-	uint8_t gamma_level;
+};
+
+/** Color calibration obtained from a photo of a Color Checker pattern or equivalent. */
+struct mpix_correction_color_matrix {
+	/** 3x3 array with values obtained by  */
+	uint16_t levels[9];
+};
+
+/** Gamma value affecting the strength of the gamma level */
+struct mpix_correction_gamma {
+	/** Min value 1 for gamma=1/16. Max value 15  for gamma=15/16. */
+	uint8_t level;
+};
+
+/** Offset removed to every pixel */
+struct mpix_correction_black_level {
+	/** 0 for no correction, 255 for dark image. */
+	uint8_t level;
+};
+
+/** Aggregation of all possible correction types */
+struct mpix_correction_all {
+	struct mpix_correction_white_balance white_balance;
+	struct mpix_correction_color_matrix color_matrix;
+	struct mpix_correction_gamma gamma;
+	struct mpix_correction_black_level black_level;
+};
+
+/** Selection of any possible correction types */
+union mpix_correction_any {
+	struct mpix_correction_white_balance white_balance;
+	struct mpix_correction_color_matrix color_matrix;
+	struct mpix_correction_gamma gamma;
+	struct mpix_correction_black_level black_level;
 };
 
 /**
@@ -53,10 +81,10 @@ struct mpix_correction_op {
 	/** Type of correction operation */
 	enum mpix_correction_type type;
 	/** Function to convert one line of pixels */
-	void (*correction_fn)(const uint8_t *src, uint8_t *dst,
-			      uint16_t width, uint16_t line_offset, struct mpix_correction *corr);
+	void (*correction_fn)(const uint8_t *src, uint8_t *dst, uint16_t width,
+			      uint16_t line_offset, union mpix_correction_any *corr);
 	/** Storage for the control level, when when a runtime control needed */
-	struct mpix_correction *correction;
+	union mpix_correction_any correction;
 };
 
 /**
@@ -88,19 +116,19 @@ struct mpix_correction_op {
  * @param corr Correction levels to apply to the image.
  */
 void mpix_correction_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t width,
-				      uint16_t line_offset, struct mpix_correction *corr);
+				      uint16_t line_offset, union mpix_correction_any *corr);
 /**
  * @brief Correct the black level of an input line in RGB24 pixel format.
  * @copydetails mpix_correction_black_level_raw8
  */
 void mpix_correction_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-				       uint16_t line_offset, struct mpix_correction *corr);
+				       uint16_t line_offset, union mpix_correction_any *corr);
 /**
  * @brief Correct the white balance of an input line in RGB24 pixel format.
  * @copydetails mpix_correction_black_level_raw8
  */
 void mpix_correction_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-					 uint16_t line_offset, struct mpix_correction *corr);
+					 uint16_t line_offset, union mpix_correction_any *corr);
 
 /**
  * Helper to simplify the implementation of a image correction operation.

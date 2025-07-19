@@ -63,6 +63,7 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
 	uint16_t *nums;
 	const size_t nums_sz = colors_nb * sizeof(*nums);
 	uint8_t rgb[3];
+	int ret;
 
 	sums = mpix_port_alloc(sums_sz);
 	if (sums == NULL) {
@@ -85,7 +86,12 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
 	for (uint16_t i = 0; i < num_samples; i++) {
 		uint8_t idx;
 
-		mpix_sample_random_rgb(img->buffer, img->width, img->height, img->fourcc, rgb);
+		ret = mpix_sample_random_rgb(img->buffer, img->width, img->height, img->fourcc,
+					     rgb);
+		if (ret != 0) {
+			return ret;
+		}
+
 		idx = mpix_rgb24_to_palette(rgb, palette);
 
 		sums[idx * 3 + 0] += rgb[0];

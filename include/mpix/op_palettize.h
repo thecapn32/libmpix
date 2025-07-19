@@ -47,9 +47,9 @@ struct mpix_palette_op {
  */
 #define MPIX_REGISTER_PALETTE_OP(id, fn, fmt_in, fmt_out)                                          \
 	const struct mpix_palette_op mpix_palette_op_##id = {                                      \
-		.base.name = ("palettize_" #id),                                                   \
-		.base.fourcc_src = (MPIX_FMT_##fmt_in),                                            \
-		.base.fourcc_dst = (MPIX_FMT_##fmt_out),                                           \
+		.base.name = "palettize_" #id,                                                     \
+		.base.fourcc_src = MPIX_FMT_##fmt_in,                                              \
+		.base.fourcc_dst = MPIX_FMT_##fmt_out,                                             \
 		.base.window_size = 1,                                                             \
 		.base.run = mpix_palettize_op,                                                     \
 		.palette_fn = (fn),                                                                \

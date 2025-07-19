@@ -19,6 +19,7 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 {
 	uint32_t rgb_sum[3] = {0};
 	uint16_t nvals;
+	int ret;
 
 	/* Reset the statistics to initial values */
 	nvals = stats->nvals > 0 ? stats->nvals : MPIX_STATS_DEFAULT_NVALS;
@@ -30,7 +31,10 @@ void mpix_stats_from_buf(struct mpix_stats *stats,
 		uint8_t rgb_value[3];
 		uint8_t thres = 0xf0;
 
-		mpix_sample_random_rgb(buf, width, height, fourcc, rgb_value);
+		ret = mpix_sample_random_rgb(buf, width, height, fourcc, rgb_value);
+		if (ret < 0) {
+			return;
+		}
 
 		/* Histogram statistics by ignoring the red/green/blue value */
 		stats->y_histogram[rgb_value[0] >> 2]++;

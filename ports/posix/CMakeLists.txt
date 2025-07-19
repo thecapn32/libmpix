@@ -11,6 +11,6 @@ endfunction()
 file(REAL_PATH ../.. LIBMPIX_DIR)
 include(${LIBMPIX_DIR}/ports/common.cmake)
 
-target_compile_options(libmpix INTERFACE -O3)
+target_compile_options(libmpix INTERFACE -O3 -Wall -Wextra)
 
 target_sources(libmpix INTERFACE ${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/posix/port.c)

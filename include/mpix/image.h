@@ -31,18 +31,20 @@ struct mpix_image {
 		/** Last element of of the list */
 		struct mpix_base_op *last;
 	} ops;
-	/** Current width of the image */
-	uint16_t width;
-	/** Current height of the image */
-	uint16_t height;
-	/** Current pixel format of the image */
-	uint32_t fourcc;
 	/** Input or output buffer used with the conversion */
 	uint8_t *buffer;
 	/** Size of the input or output buffer */
 	size_t size;
+	/** Current pixel format of the image */
+	uint32_t fourcc;
+	/** Current width of the image */
+	uint16_t width;
+	/** Current height of the image */
+	uint16_t height;
 	/** In case an error occurred, this is set to a matching error code */
 	int err;
+	/** Whether to print a report once the image conversion is complete */
+	uint8_t flag_print_ops:1;
 };
 
 /**
@@ -262,10 +264,10 @@ int mpix_image_kernel(struct mpix_image *img, uint32_t kernel_type, int kernel_s
  *
  * @param img Image to convert.
  * @param type The type of ISP to apply as defined in @ref mpix_op_correction_h
- * @param corr The color tuning parameters that controls the various amounts correction.
+ * @param corr The correction level to apply.
  * @return 0 on success or negative error code.
  */
-int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_correction *corr);
+int mpix_image_correction(struct mpix_image *img, uint32_t type, union mpix_correction_any *corr);
 
 /**
  * @brief Print an image using higher quality TRUECOLOR terminal escape codes.
@@ -280,6 +282,13 @@ void mpix_image_print_truecolor(struct mpix_image *img);
  * @param img Image to print.
  */
 void mpix_image_print_256color(struct mpix_image *img);
+
+/**
+ * @brief Print details about an image and its current list of operations.
+ *
+ * @param img Image to detail.
+ */
+void mpix_image_print_ops(struct mpix_image *img);
 
 /**
  * @brief Print a hexdump of the image to the console for debug purpose.

@@ -12,13 +12,13 @@
 /* Logging utilities */
 
 #if CONFIG_MPIX_LOG_LEVEL >= 1
-#define MPIX_ERR(fmt, ...) mpix_port_printf("\x1b[1mERR: %s: " fmt "\x1b[m\n", __func__, ## __VA_ARGS__)
+#define MPIX_ERR(fmt, ...) mpix_port_printf("ERR: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_ERR(fmt, ...) ((void)0)
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 2
-#define MPIX_WRN(fmt, ...) mpix_port_printf("\x1b[1mWRN: %s: " fmt "\x1b[m\n", __func__, ## __VA_ARGS__)
+#define MPIX_WRN(fmt, ...) mpix_port_printf("WRN: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_WRN(fmt, ...) ((void)0)
 #endif

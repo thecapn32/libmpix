@@ -15,14 +15,14 @@ void mpix_correction_op(struct mpix_base_op *base)
 	struct mpix_correction_op *op = (void *)base;
 
 	op->correction_fn(mpix_op_get_input_line(base), mpix_op_get_output_line(base),
-			  base->width, line_offset, op->correction);
+			  base->width, line_offset, &op->correction);
 	mpix_op_done(base);
 }
 
 void mpix_correction_black_level_raw8(const uint8_t *src, uint8_t *dst, uint16_t width,
-				      uint16_t line_offset, struct mpix_correction *corr)
+				      uint16_t line_offset, union mpix_correction_any *corr)
 {
-	int level = corr->black_level;
+	int level = corr->black_level.level;
 
 	for (size_t w = 0; w < width; w++, src++, dst++) {
 		*dst = MAX(0, *src - level);
@@ -36,9 +36,9 @@ MPIX_REGISTER_CORRECTION_OP(blc_sgbrg8, mpix_correction_black_level_raw8, BLACK_
 MPIX_REGISTER_CORRECTION_OP(blc_grey, mpix_correction_black_level_raw8, BLACK_LEVEL, GREY);
 
 void mpix_correction_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-				uint16_t line_offset, struct mpix_correction *corr)
+				       uint16_t line_offset, union mpix_correction_any *corr)
 {
-	uint8_t level = corr->black_level;
+	uint8_t level = corr->black_level.level;
 
 	for (size_t w = 0; w < width; w++, src += 3, dst += 3) {
 		dst[0] = MAX(0, src[0] - level);
@@ -49,10 +49,10 @@ void mpix_correction_black_level_rgb24(const uint8_t *src, uint8_t *dst, uint16_
 MPIX_REGISTER_CORRECTION_OP(blc_rgb24, mpix_correction_black_level_rgb24, BLACK_LEVEL, RGB24);
 
 void mpix_correction_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-					 uint16_t line_offset, struct mpix_correction *corr)
+					 uint16_t line_offset, union mpix_correction_any *corr)
 {
-	uint32_t red_level = corr->red_level;
-	uint32_t blue_level = corr->blue_level;
+	uint32_t red_level = corr->white_balance.red_level;
+	uint32_t blue_level = corr->white_balance.blue_level;
 
 	for (size_t w = 0; w < width; w++, src += 3, dst += 3) {
 		dst[0] = CLAMP(src[0] * red_level / MPIX_CORRECTION_WB_SCALE, 0x00, 0xff);
@@ -126,10 +126,10 @@ static const uint8_t mpix_gamma_x[] = {
 };
 
 void mpix_correction_gamma_raw8(const uint8_t *src, uint8_t *dst, uint16_t width,
-				uint16_t line_offset, struct mpix_correction *corr)
+				uint16_t line_offset, union mpix_correction_any *corr)
 {
-	const uint8_t gamma_level = corr->gamma_level >> 5;
-	const uint8_t *gamma_y = &mpix_gamma_y[(gamma_level - MPIX_GAMMA_MIN) * MPIX_GAMMA_STEP];
+	const uint8_t level = corr->gamma.level >> 5;
+	const uint8_t *gamma_y = &mpix_gamma_y[(level - MPIX_GAMMA_MIN) * MPIX_GAMMA_STEP];
 
 	for (size_t w = 0; w < width; w++, dst++, src++) {
 		*dst = mpix_gamma_raw8(*src, gamma_y, mpix_gamma_x, sizeof(mpix_gamma_x));
@@ -143,10 +143,10 @@ MPIX_REGISTER_CORRECTION_OP(gc_sgbrg8, mpix_correction_gamma_raw8, GAMMA, SGBRG8
 MPIX_REGISTER_CORRECTION_OP(gc_grey, mpix_correction_gamma_raw8, GAMMA, GREY);
 
 void mpix_correction_gamma_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-				 uint16_t line_offset, struct mpix_correction *corr)
+				 uint16_t line_offset, union mpix_correction_any *corr)
 {
-	const uint8_t gamma_level = corr->gamma_level >> 5;
-	const uint8_t *gamma_y = &mpix_gamma_y[(gamma_level - MPIX_GAMMA_MIN) * MPIX_GAMMA_STEP];
+	const uint8_t level = corr->gamma.level >> 5;
+	const uint8_t *gamma_y = &mpix_gamma_y[(level - MPIX_GAMMA_MIN) * MPIX_GAMMA_STEP];
 
 	for (size_t w = 0; w < width; w++, dst += 3, src += 3) {
 		dst[0] = mpix_gamma_raw8(src[0], gamma_y, mpix_gamma_x, sizeof(mpix_gamma_x));
@@ -159,7 +159,7 @@ MPIX_REGISTER_CORRECTION_OP(gc_rgb24, mpix_correction_gamma_rgb24, GAMMA, RGB24)
 static const struct mpix_correction_op **mpix_correction_op_list =
 	(const struct mpix_correction_op *[]){MPIX_LIST_CORRECTION_OP};
 
-int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_correction *corr)
+int mpix_image_correction(struct mpix_image *img, uint32_t type, union mpix_correction_any *corr)
 {
 	const struct mpix_correction_op *op = NULL;
 	struct mpix_correction_op *new;
@@ -187,7 +187,7 @@ int mpix_image_correction(struct mpix_image *img, uint32_t type, struct mpix_cor
 	}
 
 	new = (struct mpix_correction_op *)img->ops.last;
-	new->correction = corr;
+	new->correction = *corr;
 
 	return 0;
 }

@@ -134,6 +134,9 @@ int mpix_image_process(struct mpix_image *img)
 
 	mpix_op_run(img->ops.first);
 	img->size = mpix_ring_tailroom(&img->ops.last->ring);
+
+	mpix_image_print_ops(img);
+
 	mpix_image_free(img);
 
 	return 0;

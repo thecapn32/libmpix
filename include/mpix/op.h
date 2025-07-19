@@ -28,7 +28,7 @@ struct mpix_base_op {
 	/** Linked-list entry */
 	struct mpix_base_op *next;
 	/** Name of the operation, useful for debugging the operation */
-	const uint8_t *name;
+	const char *name;
 	/** Pixel input format */
 	uint32_t fourcc_src;
 	/** Pixel output format */
@@ -254,10 +254,12 @@ static inline void mpix_op_run(struct mpix_base_op *op)
  */
 static inline void mpix_op_done(struct mpix_base_op *op)
 {
-	uint32_t done_time_us = mpix_port_get_uptime_us();
+	uint32_t stop_time_us = mpix_port_get_uptime_us();
+
+	assert(op->start_time_us > 0);
 
 	/* Flush the timestamp to the counter */
-	op->total_time_us += (op->start_time_us == 0) ? (0) : (done_time_us - op->start_time_us);
+	op->total_time_us += stop_time_us - op->start_time_us;
 
 	/* Run the next operation in the chain now that more data is available */
 	mpix_op_run(op->next);

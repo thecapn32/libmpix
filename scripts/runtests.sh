@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Navigate to the base directory of the tests
+# Navigate to the base directory
 cd "${0%/*}/.."
 
 # To give the final test result
