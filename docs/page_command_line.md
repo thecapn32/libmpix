@@ -4,6 +4,16 @@
 As a way to quickly run a libmpix operation on desktop, the `mpix` command line tool gives
 access to all of the libmpix operations without having to recompile.
 
+To install it:
+
+```
+git clone https://github.com/libmpix/libmpix
+cd libmpix/cli
+cmake -B build
+cmake --build build
+sudo cmake --build build --target install
+```
+
 The syntax is inspired from [`gst-launch-1.0`][1] from Gstreamer, where the `!` character
 represents a pipe between two operations:
 
