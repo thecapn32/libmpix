@@ -17,7 +17,9 @@
  */
 #define MPIX_CORRECTION_WB_SCALE 1024
 
-/** Balance between the red and green value, or blue and green value */
+/**
+ * @brief Balance between the red and green value, or blue and green value
+ */
 struct mpix_correction_white_balance {
 	/** Red value correction level multiplied by 1024: 2048 applies 2x to red channe */
 	uint16_t red_level;
@@ -25,25 +27,33 @@ struct mpix_correction_white_balance {
 	uint16_t blue_level;
 };
 
-/** Color calibration obtained from a photo of a Color Checker pattern or equivalent. */
+/**
+ * @brief Color calibration obtained from a photo of a Color Checker pattern or equivalent
+ */
 struct mpix_correction_color_matrix {
-	/** 3x3 array with values obtained by  */
+	/** 3x3 array with values obtained by calibration */
 	uint16_t levels[9];
 };
 
-/** Gamma value affecting the strength of the gamma level */
+/**
+ * @brief Gamma value affecting the strength of the gamma level
+ */
 struct mpix_correction_gamma {
 	/** Min value 1 for gamma=1/16. Max value 15  for gamma=15/16. */
 	uint8_t level;
 };
 
-/** Offset removed to every pixel */
+/**
+ * @brief Offset removed to every pixel
+ */
 struct mpix_correction_black_level {
 	/** 0 for no correction, 255 for dark image. */
 	uint8_t level;
 };
 
-/** Aggregation of all possible correction types */
+/**
+ * @brief Aggregation of all possible correction types
+ */
 struct mpix_correction_all {
 	/** Storage for the white balance controls */
 	struct mpix_correction_white_balance white_balance;
@@ -55,7 +65,9 @@ struct mpix_correction_all {
 	struct mpix_correction_black_level black_level;
 };
 
-/** Selection of any possible correction types */
+/**
+ * @brief Selection of any possible correction types
+ */
 union mpix_correction_any {
 	/** Option for the white balance controls */
 	struct mpix_correction_white_balance white_balance;
@@ -68,7 +80,7 @@ union mpix_correction_any {
 };
 
 /**
- * Correction types that can be applied to the image.
+ * @brief Correction types that can be applied to the image
  */
 enum mpix_correction_type {
 	/** Correct the black level applied to every pixel */
@@ -82,7 +94,7 @@ enum mpix_correction_type {
 };
 
 /**
- * Image correction operation
+ * @brief Image correction operation
  * @internal
  */
 struct mpix_correction_op {
@@ -147,7 +159,7 @@ void mpix_correction_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint1
 void mpix_correction_color_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
 					    uint16_t line_offset, union mpix_correction_any *corr);
 /**
- * Helper to simplify the implementation of a image correction operation.
+ * @brief Helper to simplify the implementation of a image correction operation.
  *
  * @internal
  *
