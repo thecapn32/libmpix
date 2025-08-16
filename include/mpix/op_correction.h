@@ -15,7 +15,7 @@
 /**
  * @brief Amount of scaling applied to the red_level and blue_level values.
  */
-#define MPIX_CORRECTION_WB_SCALE 1024
+#define MPIX_CORRECTION_SCALE_BITS 10
 
 /**
  * @brief Balance between the red and green value, or blue and green value
@@ -156,8 +156,8 @@ void mpix_correction_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint1
  * @brief Perform color correction of an input line in RGB24 pixel format.
  * @copydetails mpix_correction_black_level_raw8
  */
-void mpix_correction_color_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-					    uint16_t line_offset, union mpix_correction_any *corr);
+void mpix_correction_color_matrix_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+					uint16_t line_offset, union mpix_correction_any *corr);
 /**
  * @brief Helper to simplify the implementation of a image correction operation.
  *

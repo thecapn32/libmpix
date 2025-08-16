@@ -100,8 +100,8 @@ void mpix_auto_white_balance(struct mpix_auto_ctrls *ctrls, struct mpix_stats *s
 	uint16_t g = MAX(1, stats->rgb_average[1]);
 	uint16_t b = MAX(1, stats->rgb_average[2]);
 
-	corr->white_balance.red_level = MPIX_CORRECTION_WB_SCALE * g / r;
-	corr->white_balance.blue_level = MPIX_CORRECTION_WB_SCALE * g / b;
+	corr->white_balance.red_level = (g << MPIX_CORRECTION_SCALE_BITS) / r;
+	corr->white_balance.blue_level = (g << MPIX_CORRECTION_SCALE_BITS) / b;
 
 	/* Update the statistics so that they reflect the change of white balance */
 	mpix_correction_white_balance_rgb24(stats->rgb_average, stats->rgb_average, 1, 0, corr);

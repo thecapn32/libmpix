@@ -8,219 +8,254 @@
 uint8_t src[WIDTH * HEIGHT * 3];
 uint8_t dst[WIDTH * HEIGHT * 3];
 
-void test_some_matrix()
+void test_some_matrix(void)
 {
-
-	/* uses a 3x3 matrix we will ignore offsets and just use coefficients now */
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {2,1,1,0,2,0,1,1,1}
-	};
-
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			2.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			2.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	//call correction
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_test_equal(dst[0],
+			(src[0] * correction.color_matrix.levels[0] +
+			src[1] * correction.color_matrix.levels[1] +
+			src[2] * correction.color_matrix.levels[2]));
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
+	mpix_test_equal(dst[1],
+			(src[0] * correction.color_matrix.levels[3] +
+			src[1] * correction.color_matrix.levels[4] +
+			src[2] * correction.color_matrix.levels[5]));
 
-	mpix_test_equal(dst_ptr[0],
-			(src_ptr[0] * ccm.levels[0] +
-			src_ptr[1] * ccm.levels[1] +
-			src_ptr[2] * ccm.levels[2]));
+	mpix_test_equal(dst[2],
+			(src[0] * correction.color_matrix.levels[6] +
+			src[1] * correction.color_matrix.levels[7] +
+			src[2] * correction.color_matrix.levels[8]));
+}
 
-	mpix_test_equal(dst_ptr[1],
-			(src_ptr[0] * ccm.levels[3] +
-			src_ptr[1] * ccm.levels[4] +
-			src_ptr[2] * ccm.levels[5]));
+void test_identity_matrix(void)
+{
+	union mpix_correction_any correction = {
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
+	};
 
-	mpix_test_equal(dst_ptr[2],
-			(src_ptr[0] * ccm.levels[6] +
-			src_ptr[1] * ccm.levels[7] +
-			src_ptr[2] * ccm.levels[8]));
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
+
+	mpix_test_equal(dst[0], src[0]);
+	mpix_test_equal(dst[1], src[1]);
+	mpix_test_equal(dst[2], src[2]);
 
 }
 
-void test_identity_matrix()
+void test_red_to_gray_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], src_ptr[0]);
-
-	mpix_test_equal(dst_ptr[1], src_ptr[1]);
-
-	mpix_test_equal(dst_ptr[2], src_ptr[2]);
+	mpix_test_equal(dst[0], src[0]);
+	mpix_test_equal(dst[1], 0);
+	mpix_test_equal(dst[2], 0);
 
 }
 
-void test_red_matrix()
+void test_green_to_gray_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], src_ptr[0]);
-
-	mpix_test_equal(dst_ptr[1], 0);
-
-	mpix_test_equal(dst_ptr[2], 0);
-
+	mpix_test_equal(dst[0], 0);
+	mpix_test_equal(dst[1], src[1]);
+	mpix_test_equal(dst[2], 0);
 }
 
-void test_green_matrix()
+void test_blue_to_gray_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], 0);
-
-	mpix_test_equal(dst_ptr[1], src_ptr[1]);
-
-	mpix_test_equal(dst_ptr[2], 0);
+	mpix_test_equal(dst[0], 0);
+	mpix_test_equal(dst[1], 0);
+	mpix_test_equal(dst[2], src[2]);
 }
 
-void test_blue_matrix()
+void test_grayscale_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.33 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], 0);
-
-	mpix_test_equal(dst_ptr[1], 0);
-
-	mpix_test_equal(dst_ptr[2], src_ptr[2]);
+	mpix_test_equal(dst[0], dst[1]);
+	mpix_test_equal(dst[1], dst[2]);
 }
 
-void test_grayscale_matrix()
+void test_extract_red_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], dst_ptr[1]);
-	mpix_test_equal(dst_ptr[1], dst_ptr[2]);
+	mpix_test_equal(dst[0], src[1]);
+	mpix_test_equal(dst[1], 0);
+	mpix_test_equal(dst[2], 0);
 }
 
-void test_extract_red_matrix()
+void test_extract_green_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], src_ptr[1]);
-	mpix_test_equal(dst_ptr[1], 0);
-	mpix_test_equal(dst_ptr[2], 0);
-
-
+	mpix_test_equal(dst[0], 0);
+	mpix_test_equal(dst[1], src[2]);
+	mpix_test_equal(dst[2], 0);
 }
 
-void test_extract_green_matrix()
+void test_extract_blue_matrix(void)
 {
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0}
-	};
-
 	union mpix_correction_any correction = {
-		.color_matrix = ccm
+		.color_matrix.levels  = {
+			/* 1st matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 2nd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			/* 3rd matrix row */
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			0.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+			1.0 * (1 << MPIX_CORRECTION_SCALE_BITS),
+		},
 	};
 
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
+	mpix_correction_color_matrix_rgb24(src, dst, WIDTH * HEIGHT, 0, &correction);
 
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], 0);
-	mpix_test_equal(dst_ptr[1], src_ptr[2]);
-	mpix_test_equal(dst_ptr[2], 0);
+	mpix_test_equal(dst[0], 0);
+	mpix_test_equal(dst[1], 0);
+	mpix_test_equal(dst[2], src[2]);
 }
-
-
-void test_extract_blue_matrix()
-{
-	const struct  mpix_correction_color_matrix ccm = {
-		.levels  = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0}
-	};
-
-	union mpix_correction_any correction = {
-		.color_matrix = ccm
-	};
-
-	mpix_correction_color_rgb24(src, dst, WIDTH * HEIGHT, 0,  &correction);
-
-	uint8_t *src_ptr = src;
-	uint8_t *dst_ptr = dst;
-
-	mpix_test_equal(dst_ptr[0], 0);
-	mpix_test_equal(dst_ptr[1], 0);
-	mpix_test_equal(dst_ptr[2], src_ptr[2]);
-}
-
 
 int main(void)
 {
-	printf("In test \n");
 	/* Generate test input data */
 	for (uint16_t h = 0; h < HEIGHT; h++) {
 		for (uint16_t w = 0; w < WIDTH; w++) {
@@ -232,13 +267,13 @@ int main(void)
 
 	test_some_matrix();
 	test_identity_matrix();
-	test_red_matrix();
-	test_green_matrix();
-	test_blue_matrix();
+	test_red_to_gray_matrix();
+	test_green_to_gray_matrix();
+	test_blue_to_gray_matrix();
 	test_grayscale_matrix();
 	test_extract_red_matrix();
 	test_extract_green_matrix();
 	test_extract_blue_matrix();
+
 	return 0;
 }
-

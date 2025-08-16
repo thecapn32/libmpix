@@ -55,9 +55,9 @@ void mpix_correction_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint1
 	uint32_t blue_level = corr->white_balance.blue_level;
 
 	for (size_t w = 0; w < width; w++, src += 3, dst += 3) {
-		dst[0] = MIN(src[0] * red_level / MPIX_CORRECTION_WB_SCALE, 0xff);
+		dst[0] = MIN(src[0] * red_level >> MPIX_CORRECTION_SCALE_BITS, 0xff);
 		dst[1] = src[1];
-		dst[2] = MIN(src[2] * blue_level / MPIX_CORRECTION_WB_SCALE, 0xff);
+		dst[2] = MIN(src[2] * blue_level >> MPIX_CORRECTION_SCALE_BITS, 0xff);
 	}
 }
 MPIX_REGISTER_CORRECTION_OP(wb_rgb24, mpix_correction_white_balance_rgb24, WHITE_BALANCE, RGB24);
@@ -155,18 +155,33 @@ void mpix_correction_gamma_rgb24(const uint8_t *src, uint8_t *dst, uint16_t widt
 }
 MPIX_REGISTER_CORRECTION_OP(gc_rgb24, mpix_correction_gamma_rgb24, GAMMA, RGB24);
 
-void mpix_correction_color_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-		                            uint16_t line_offset, union mpix_correction_any *corr)
+void mpix_correction_color_matrix_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+		                        uint16_t line_offset, union mpix_correction_any *corr)
 {
-	uint16_t *ccm = corr->color_matrix.levels;
+	uint16_t *levels = corr->color_matrix.levels;
 
-	for(size_t w = 0; w + 3 <= width; w++, dst += 3, src += 3) {
-		dst[0] = CLAMP(src[0] * ccm[0] + src[1] * ccm[1] + src[2] * ccm[2], 0x00, 0xff);
-		dst[1] = CLAMP(src[0] * ccm[3] + src[1] * ccm[4] + src[2] * ccm[5], 0x00, 0xff);
-		dst[2] = CLAMP(src[0] * ccm[6] + src[1] * ccm[7] + src[2] * ccm[8], 0x00, 0xff);
+	for (size_t w = 0; w + 3 <= width; w++, dst += 3, src += 3) {
+		uint32_t r;
+		uint32_t g;
+		uint32_t b;
+
+		r = src[0] * levels[0] >> MPIX_CORRECTION_SCALE_BITS;
+		g = src[1] * levels[1] >> MPIX_CORRECTION_SCALE_BITS;
+		b = src[2] * levels[2] >> MPIX_CORRECTION_SCALE_BITS;
+		dst[0] = MIN(r + g + b, 0xff);
+
+		r = src[0] * levels[3] >> MPIX_CORRECTION_SCALE_BITS;
+		g = src[1] * levels[4] >> MPIX_CORRECTION_SCALE_BITS;
+		b = src[2] * levels[5] >> MPIX_CORRECTION_SCALE_BITS;
+		dst[1] = MIN(r + g + b, 0xff);
+
+		r = src[0] * levels[6] >> MPIX_CORRECTION_SCALE_BITS;
+		g = src[1] * levels[7] >> MPIX_CORRECTION_SCALE_BITS;
+		b = src[2] * levels[8] >> MPIX_CORRECTION_SCALE_BITS;
+		dst[2] = MIN(r + g + b, 0xff);
 	}
 }
-MPIX_REGISTER_CORRECTION_OP(cc_rgb24, mpix_correction_color_rgb24, COLOR_MATRIX, RGB24);
+MPIX_REGISTER_CORRECTION_OP(ccm_rgb24, mpix_correction_color_matrix_rgb24, COLOR_MATRIX, RGB24);
 
 static const struct mpix_correction_op **mpix_correction_op_list =
 	(const struct mpix_correction_op *[]){MPIX_LIST_CORRECTION_OP};

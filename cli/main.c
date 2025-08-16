@@ -452,7 +452,7 @@ static int cmd_correction(int argc, char **argv)
 		arg = argv[2];
 
 		ull = strtoull(arg, &arg, 10);
-		if (*arg != '\0' || ull > UINT8_MAX) {
+		if (*argv[2] == '\0' || *arg != '\0' || ull > UINT8_MAX) {
 			MPIX_ERR("Invalid black level value '%s'", argv[2]);
 			return -EINVAL;
 		}
@@ -467,7 +467,7 @@ static int cmd_correction(int argc, char **argv)
 		arg = argv[2];
 
 		ull = strtof(arg, &arg) * 1024;
-		if (*arg != '\0' || ull > UINT16_MAX) {
+		if (*argv[2] == '\0' || *arg != '\0' || ull > UINT16_MAX) {
 			MPIX_ERR("Invalid red level value '%s'", argv[2]);
 			return -EINVAL;
 		}
@@ -476,7 +476,7 @@ static int cmd_correction(int argc, char **argv)
 		arg = argv[3];
 
 		ull = strtof(arg, &arg) * 1024;
-		if (*arg != '\0' || ull > UINT16_MAX) {
+		if (*argv[3] == '\0' || *arg != '\0' || ull > UINT16_MAX) {
 			MPIX_ERR("Invalid blue level value '%s'", argv[3]);
 			return -EINVAL;
 		}
@@ -491,7 +491,7 @@ static int cmd_correction(int argc, char **argv)
 		arg = argv[2];
 
 		ull = 255 * strtof(arg, &arg);
-		if (*arg != '\0' || ull > 255) {
+		if (*argv[2] == '\0' || *arg != '\0' || ull > 255) {
 			MPIX_ERR("Invalid gamma value '%s' (min=0.0, max=1.0)", ull);
 			return -EINVAL;
 		}
@@ -499,22 +499,19 @@ static int cmd_correction(int argc, char **argv)
 
 		break;
 	case MPIX_CORRECTION_COLOR_MATRIX:
-		if (argc != 11) {
+		if (argc != 2 + 9) {
 			return -EINVAL;
 		}
 
-		float ccm_val;
-
-		for(int i = 2; i < 11; i++){
+		for (int i = 2; i < 2 + 9; i++) {
 			arg = argv[i];
 
-			ccm_val = strtof(arg, &arg);
-
-			if(*arg != '\0' || ccm_val > UINT16_MAX) {
-				MPIX_ERR("Invalid CCM Coefficient '%s'", argv[i]);
+			ull = strtof(arg, &arg) * (1 << MPIX_CORRECTION_SCALE_BITS);
+			if (*argv[i] == '\0' || *arg != '\0' || ull > UINT16_MAX) {
+				MPIX_ERR("Invalid CCM coefficient '%s'", argv[i]);
 				return -EINVAL;
 			}
-			corr.color_matrix.levels[i - 2] = ccm_val;
+			corr.color_matrix.levels[i - 2] = ull;
 		}
 
 		break;
