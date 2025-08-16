@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <cerrno>
 #include <mpix/formats.h>
 #include <mpix/image.h>
 #include <mpix/utils.h>
@@ -76,7 +75,6 @@ static int parse_width(char *arg, uint16_t *width)
 
 	*width = ull;
 
-
 	return 0;
 }
 
@@ -90,7 +88,7 @@ static int cmd_read(int argc, char **argv)
 	size_t sz;
 	int ret;
 
-	if(argc < 2) {
+	if (argc < 2) {
 		MPIX_ERR("Usage: %s <filename>", argv[0]);
 		return -EINVAL;
 	}
@@ -140,14 +138,13 @@ static int cmd_read(int argc, char **argv)
 			return ret;
 		}
 
-		/*User has provided width and we know the format compute height*/
+		/* User has provided the width and we know the format to compute the height */
 		height = filesize / width ;
-
-		if(height < 1 || height > UINT16_MAX){
-			MPIX_ERR("Invalid width:%d provided, filesize:%llu does not match", width, filesize);
+		if (height < 1 || filesize / width > UINT16_MAX) {
+			MPIX_ERR("Invalid width:%d provided, filesize:%llu does not match",
+				 width, filesize);
 			return -EINVAL;
 		}
-
 	} else {
 		return -EINVAL;
 	}
