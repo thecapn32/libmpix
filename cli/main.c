@@ -82,6 +82,7 @@ static int cmd_read(int argc, char **argv)
 {
 	uint32_t fourcc = 0;
 	uint16_t width = 0;
+	uint16_t pitch = 0;
 	uint16_t height = 0;
 	long filesize;
 	FILE *fp;
@@ -139,8 +140,9 @@ static int cmd_read(int argc, char **argv)
 		}
 
 		/* User has provided the width and we know the format to compute the height */
-		height = (filesize * 8) / (width * mpix_bits_per_pixel(fourcc));
-		if (height < 1 || filesize / width > UINT16_MAX) {
+		pitch = width * mpix_bits_per_pixel(fourcc) / BITS_PER_BYTE;
+		height = filesize / pitch;
+		if (height < 1 || filesize / pitch > UINT16_MAX) {
 			MPIX_ERR("Invalid width:%d provided, filesize:%llu does not match",
 				 width, filesize);
 			return -EINVAL;
