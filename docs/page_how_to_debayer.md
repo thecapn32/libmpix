@@ -9,8 +9,9 @@ perceive colors.
 Most image sensors targetting embedded systems are able to do debayer on their own and the image
 arrives immediately in RGB565 or YUYV format, so no need to perform debayer in such case.
 
-However, sensors performing debayer directly produce more heat and digital noise so the image
-quality can be better for sensors that produce
+However, image sensors that performing debayer on their own have more noise defects
+(due to the heat and digital noise this causes. the image quality can be better for sensors
+that produce raw frames, and let their controlling chip perform debayer instead.
 
 Furthermore, raw bayer data (often 8 bit/pixel) is typically smaller than decoded data
 (often 16 bit/pixel).
