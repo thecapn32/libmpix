@@ -14,16 +14,16 @@ if [ $# = 0 ]; then set -- tests/*/; fi
 # Loop over every test, build it, run it, report
 for test in "$@"; do
 
-    printf '%20s ' "$test"
+    printf '%-20s ' "$test"
 
     if ! (cd "$test" && cmake -B "build" && cmake --build "build") >$test/build.log 2>&1; then
         build_error=$((build_error + 1))
         echo "Build error"
-        cat "$test/build.log"
+        sed 's/^/  | /' "$test/build.log"
 
     elif ! (cd "$test" && build/libmpix_test) >$test/runtime.log 2>&1; then
-        cat "$test/runtime.log"
         runtime_error=$((runtime_error + 1))
+        sed 's/^/  | /' "$test/runtime.log"
 
     else
         success=$((success + 1))

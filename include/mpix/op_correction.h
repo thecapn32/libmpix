@@ -160,12 +160,21 @@ void mpix_correction_color_matrix_rgb24(const uint8_t *src, uint8_t *dst, uint16
 					uint16_t line_offset, union mpix_correction_any *corr);
 
 /**
+ * @brief Perform color correction of an input line in RGB24 pixel format.
+ * @copydetails mpix_correction_black_level_raw8
+ */
+void mpix_correction_gamma_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
+				 uint16_t line_offset, union mpix_correction_any *corr);
+
+/**
  * @brief Fused one-pass correction on RGB24: black-level -> white-balance -> 3x3 matrix -> gamma.
- *        Uses SoA-in-registers with MVE gather/scatter for maximal throughput on Cortex-M55.
- *        This is a convenience API; it doesn't participate in the op registration pipeline.
+ *
+ * Uses SoA-in-registers with MVE gather/scatter for maximal throughput on Cortex-M55.
+ * This is a convenience API; it doesn't participate in the op registration pipeline.
  */
 void mpix_correction_fused_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
-								 uint16_t line_offset, const struct mpix_correction_all *corr);
+				 uint16_t line_offset, const struct mpix_correction_all *corr);
+
 /**
  * @brief Helper to simplify the implementation of a image correction operation.
  *

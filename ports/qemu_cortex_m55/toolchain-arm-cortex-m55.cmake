@@ -6,19 +6,18 @@ set(CMAKE_SYSTEM_PROCESSOR ARM)
 
 # Toolchain paths
 set(TOOLCHAIN_PREFIX arm-none-eabi-)
-set(TOOLCHAIN_PATH /opt/gcc-arm-none-eabi/bin)
 
 # Specify the cross compiler
-set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}g++)
-set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++)
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}gcc)
 
 # Utility tools
-set(CMAKE_OBJCOPY ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}objcopy)
-set(CMAKE_OBJDUMP ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}objdump)
-set(CMAKE_SIZE ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}size)
-set(CMAKE_DEBUGGER ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}gdb)
-set(CMAKE_CPPFILT ${TOOLCHAIN_PATH}/${TOOLCHAIN_PREFIX}c++filt)
+set(CMAKE_OBJCOPY ${TOOLCHAIN_PREFIX}objcopy)
+set(CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}objdump)
+set(CMAKE_SIZE ${TOOLCHAIN_PREFIX}size)
+set(CMAKE_DEBUGGER ${TOOLCHAIN_PREFIX}gdb)
+set(CMAKE_CPPFILT ${TOOLCHAIN_PREFIX}c++filt)
 
 # We are cross compiling so we don't want to run any programs
 set(CMAKE_CROSSCOMPILING TRUE)
@@ -27,12 +26,6 @@ set(CMAKE_CROSSCOMPILING TRUE)
 set(CMAKE_C_COMPILER_FORCED TRUE)
 set(CMAKE_CXX_COMPILER_FORCED TRUE)
 
-# Where to find the target environment
-set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN_PATH})
-
-# Search for programs only in the build host directories
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-
 # Search for libraries and headers in the target directories only
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
@@ -40,9 +33,9 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 # Cortex-M55 specific flags
 set(CPU_FLAGS
-    "-mcpu=cortex-m55" 
-    "-mfloat-abi=hard" 
-    "-mfpu=auto" 
+    "-mcpu=cortex-m55"
+    "-mfloat-abi=hard"
+    "-mfpu=auto"
 )
 
 # Common flags for both C and CXX
