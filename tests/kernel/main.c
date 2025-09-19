@@ -103,6 +103,7 @@ static void test_blur(uint32_t kernel_size, int blur_margin)
 static void test_edge(uint32_t kernel_size)
 {
 	run_kernel(MPIX_KERNEL_EDGE_DETECT, kernel_size);
+
 	/* Basic sanity: output stays in range and reacts at transitions */
 	for (uint16_t h = 0; h < HEIGHT; h++) {
 		for (uint16_t w = 1; w + 1 < WIDTH; w++) {
@@ -117,6 +118,7 @@ static void test_edge(uint32_t kernel_size)
 static void test_sharpen(uint32_t kernel_size)
 {
 	run_kernel(MPIX_KERNEL_SHARPEN, kernel_size);
+
 	/* Basic sanity: center region should differ from original where gradients exist */
 	int diff_count = 0;
 	for (uint16_t h = 1; h + 1 < HEIGHT; h++) {
@@ -136,6 +138,7 @@ static void test_boundaries(void)
 	struct mpix_image img;
 	uint8_t small_in[5 * 3];
 	uint8_t small_out[5 * 3];
+
 	for (int w = 0; w < 5; ++w) {
 		small_in[w*3+0] = (w & 1) ? 0xff : 0x00;
 		small_in[w*3+1] = (w * 40) & 0xff;
@@ -146,6 +149,7 @@ static void test_boundaries(void)
 	mpix_image_from_buf(&img, small_in, 3*3, 3, 1, MPIX_FMT_RGB24);
 	mpix_test_ok(mpix_image_kernel(&img, MPIX_KERNEL_GAUSSIAN_BLUR, 3));
 	mpix_test_ok(mpix_image_to_buf(&img, small_out, sizeof(small_out)));
+
 	/* width=5 */
 	mpix_image_from_buf(&img, small_in, 5*3, 5, 1, MPIX_FMT_RGB24);
 	mpix_test_ok(mpix_image_kernel(&img, MPIX_KERNEL_GAUSSIAN_BLUR, 5));

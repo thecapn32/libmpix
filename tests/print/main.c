@@ -12,12 +12,16 @@
 #include <mpix/formats.h>
 
 static const uint16_t rgb_hist[] = {
+	/* Red histogram values */
 	9, 4, 7, 1, 0, 5, 1, 0, 0, 2, 2, 3, 0, 1, 3, 0,
+	/* Green histogram values */
 	7, 6, 5, 1, 1, 4, 2, 0, 1, 2, 3, 4, 1, 1, 2, 2,
+	/* Blue histogram values */
 	8, 4, 7, 4, 2, 3, 1, 2, 2, 2, 2, 2, 0, 0, 1, 1,
 };
 
 static const uint16_t y_hist[] = {
+	/* Luma histogram values */
 	8, 5, 6, 2, 1, 4, 1, 1, 1, 2, 3, 3, 1, 1, 2, 1,
 };
 

@@ -14,6 +14,7 @@ int JPEGEncodeBegin_Helium(JPEGE_IMAGE *pJPEG, JPEGENCODE *pEncode, int iWidth, 
                            uint8_t ucPixelType, uint8_t ucSubSample, uint8_t ucQFactor);
 int JPEGEncodeEnd_Helium(JPEGE_IMAGE *pJPEG);
 int JPEGAddMCU_Helium(JPEGE_IMAGE *pJPEG, JPEGENCODE *pEncode, uint8_t *pPixels, int iPitch);
+
 // Internal kernels used via dispatch
 void JPEGSample24(unsigned char *pSrc, signed char *pMCU, int lsize, int cx, int cy);
 void JPEGSample24RGB(unsigned char *pSrc, signed char *pMCU, int lsize, int cx, int cy);
@@ -33,23 +34,39 @@ static void fill_quant_tables(JPEGE_IMAGE *img, uint8_t qfactor)
     // To avoid full header IO, we emulate the relevant parts
     // Use same logic as JPEGEncodeBegin for selecting quant tables
     static const unsigned short quant_lum[] = {
+	/* Row 0 */
         16, 11, 10, 16, 24, 40, 51, 61,
+	/* Row 1 */
         12, 12, 14, 19, 26, 58, 60, 55,
+	/* Row 2 */
         14, 13, 16, 24, 40, 57, 69, 56,
+	/* Row 3 */
         14, 17, 22, 29, 51, 87, 80, 62,
+	/* Row 4 */
         18, 22, 37, 56, 68,109,103, 77,
+	/* Row 5 */
         24, 35, 55, 64, 81,104,113, 92,
+	/* Row 6 */
         49, 64, 78, 87,103,121,120,101,
-        72, 92, 95, 98,112,100,103, 99
+	/* Row 7 */
+        72, 92, 95, 98,112,100,103, 99,
     };
     static const unsigned short quant_color[] = {
+	/* Row 0 */
         17,18,24,47,99,99,99,99,
+	/* Row 1 */
         18,21,26,66,99,99,99,99,
+	/* Row 2 */
         24,26,56,99,99,99,99,99,
+	/* Row 3 */
         47,66,99,99,99,99,99,99,
+	/* Row 4 */
         99,99,99,99,99,99,99,99,
+	/* Row 5 */
         99,99,99,99,99,99,99,99,
+	/* Row 6 */
         99,99,99,99,99,99,99,99,
+	/* Row 7 */
         99,99,99,99,99,99,99,99
     };
 
