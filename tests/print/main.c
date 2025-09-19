@@ -12,17 +12,13 @@
 #include <mpix/formats.h>
 
 static const uint16_t rgb_hist[] = {
-	/* Red histogram values */
-	9, 4, 7, 1, 0, 5, 1, 0, 0, 2, 2, 3, 0, 1, 3, 0,
-	/* Green histogram values */
-	7, 6, 5, 1, 1, 4, 2, 0, 1, 2, 3, 4, 1, 1, 2, 2,
-	/* Blue histogram values */
-	8, 4, 7, 4, 2, 3, 1, 2, 2, 2, 2, 2, 0, 0, 1, 1,
+	9, 4, 7, 1, 0, 5, 1, 0, 0, 2, 2, 3, 0, 1, 3, 0, /* Red histogram values */
+	7, 6, 5, 1, 1, 4, 2, 0, 1, 2, 3, 4, 1, 1, 2, 2, /* Green histogram values */
+	8, 4, 7, 4, 2, 3, 1, 2, 2, 2, 2, 2, 0, 0, 1, 1, /* Blue histogram values */
 };
 
 static const uint16_t y_hist[] = {
-	/* Luma histogram values */
-	8, 5, 6, 2, 1, 4, 1, 1, 1, 2, 3, 3, 1, 1, 2, 1,
+	8, 5, 6, 2, 1, 4, 1, 1, 1, 2, 3, 3, 1, 1, 2, 1, /* Luma histogram values */
 };
 
 static uint8_t rgb24frame[16 * 32 * 3];
@@ -39,8 +35,8 @@ void print_image(void)
 		rgb24frame[i + 2] = (beg[2] * (size - i) + end[2] * i) / size;
 	}
 
-	printf("Printing the gradient #%02x%02x%02x -> #%02x%02x%02x\n",
-		beg[0], beg[1], beg[2], end[0], end[1], end[2]);
+	printf("Printing the gradient #%02x%02x%02x -> #%02x%02x%02x\n", beg[0], beg[1], beg[2],
+	       end[0], end[1], end[2]);
 
 	printf("hexdump:\n");
 	mpix_hexdump(rgb24frame, sizeof(rgb24frame), 16, 32, MPIX_FMT_RGB24);

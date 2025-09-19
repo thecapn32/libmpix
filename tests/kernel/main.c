@@ -8,8 +8,8 @@
 #include <mpix/print.h>
 #include <mpix/test.h>
 
-#define WIDTH 20
-#define HEIGHT 20
+#define WIDTH   20
+#define HEIGHT  20
 #define VERBOSE 0
 
 /* Input/output buffers */
@@ -140,18 +140,18 @@ static void test_boundaries(void)
 	uint8_t small_out[5 * 3];
 
 	for (int w = 0; w < 5; ++w) {
-		small_in[w*3+0] = (w & 1) ? 0xff : 0x00;
-		small_in[w*3+1] = (w * 40) & 0xff;
-		small_in[w*3+2] = 0x80;
+		small_in[w * 3 + 0] = (w & 1) ? 0xff : 0x00;
+		small_in[w * 3 + 1] = (w * 40) & 0xff;
+		small_in[w * 3 + 2] = 0x80;
 	}
 
 	/* width=3 */
-	mpix_image_from_buf(&img, small_in, 3*3, 3, 1, MPIX_FMT_RGB24);
+	mpix_image_from_buf(&img, small_in, 3 * 3, 3, 1, MPIX_FMT_RGB24);
 	mpix_test_ok(mpix_image_kernel(&img, MPIX_KERNEL_GAUSSIAN_BLUR, 3));
 	mpix_test_ok(mpix_image_to_buf(&img, small_out, sizeof(small_out)));
 
 	/* width=5 */
-	mpix_image_from_buf(&img, small_in, 5*3, 5, 1, MPIX_FMT_RGB24);
+	mpix_image_from_buf(&img, small_in, 5 * 3, 5, 1, MPIX_FMT_RGB24);
 	mpix_test_ok(mpix_image_kernel(&img, MPIX_KERNEL_GAUSSIAN_BLUR, 5));
 	mpix_test_ok(mpix_image_to_buf(&img, small_out, sizeof(small_out)));
 }

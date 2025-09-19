@@ -91,14 +91,14 @@ static void test_crop_bounds_validation(void)
 	mpix_image_from_buf(&img, src_data, sizeof(src_data), 4, 4, MPIX_FMT_RGB24);
 
 	/* Test crop exceeding width */
-	ret = mpix_image_crop(&img, 3, 0, 2, 2);  /* x=3, width=2 -> exceeds 4 */
+	ret = mpix_image_crop(&img, 3, 0, 2, 2); /* x=3, width=2 -> exceeds 4 */
 	mpix_test(ret != 0);
 
 	/* Reset image */
 	mpix_image_from_buf(&img, src_data, sizeof(src_data), 4, 4, MPIX_FMT_RGB24);
 
 	/* Test crop exceeding height */
-	ret = mpix_image_crop(&img, 0, 3, 2, 2);  /* y=3, height=2 -> exceeds 4 */
+	ret = mpix_image_crop(&img, 0, 3, 2, 2); /* y=3, height=2 -> exceeds 4 */
 	mpix_test(ret != 0);
 
 	/* Reset image */
@@ -123,21 +123,15 @@ static void test_crop_different_formats(void)
 {
 	/* Test with GREY format (8-bit) */
 	uint8_t grey_src[4 * 4] = {
-		/* Row 0 */
-		0x00, 0x40, 0x80, 0xFF,
-		/* Row 1 */
-		0x20, 0x60, 0xA0, 0xE0,
-		/* Row 2 */
-		0x10, 0x50, 0x90, 0xD0,
-		/* Row 3 */
-		0x30, 0x70, 0xB0, 0xF0,
+		0x00, 0x40, 0x80, 0xFF, /* Row 0 */
+		0x20, 0x60, 0xA0, 0xE0, /* Row 1 */
+		0x10, 0x50, 0x90, 0xD0, /* Row 2 */
+		0x30, 0x70, 0xB0, 0xF0, /* Row 3 */
 	};
 
 	uint8_t grey_expected[2 * 2] = {
-		/* Row 1, starting at col 1 */
-		0x60, 0xA0,
-		/* Row 2, starting at col 1 */
-		0x50, 0x90,
+		0x60, 0xA0, /* Row 1, starting at col 1 */
+		0x50, 0x90, /* Row 2, starting at col 1 */
 	};
 
 	uint8_t grey_dst[2 * 2];

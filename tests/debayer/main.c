@@ -7,7 +7,7 @@
 #include <mpix/image.h>
 #include <mpix/test.h>
 
-#define WIDTH 16
+#define WIDTH  16
 #define HEIGHT 16
 
 #define ERROR_MARGIN 13

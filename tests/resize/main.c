@@ -10,13 +10,13 @@
 #include <mpix/print.h>
 #include <mpix/test.h>
 
-#define WIDTH_IN 6
+#define WIDTH_IN  6
 #define HEIGHT_IN 10
-#define PITCH_IN (WIDTH_IN * 3)
+#define PITCH_IN  (WIDTH_IN * 3)
 
-#define WIDTH_OUT 40
+#define WIDTH_OUT  40
 #define HEIGHT_OUT 22
-#define PITCH_OUT (WIDTH_OUT * 3)
+#define PITCH_OUT  (WIDTH_OUT * 3)
 
 #define ERROR_MARGIN 9
 

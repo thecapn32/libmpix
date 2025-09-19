@@ -8,7 +8,7 @@
 #include <mpix/image.h>
 #include <mpix/test.h>
 
-#define WIDTH 16
+#define WIDTH  16
 #define HEIGHT 16
 
 #define ERROR_MARGIN 13
@@ -138,31 +138,31 @@ void test_low_level(void)
 			ref->yuv24_bt709[2],
 		};
 
-		mpix_port_printf("\nColor #%02x%02x%02x\n",
-				 ref->rgb24[0], ref->rgb24[1], ref->rgb24[2]);
+		mpix_port_printf("\nColor #%02x%02x%02x\n", ref->rgb24[0], ref->rgb24[1],
+				 ref->rgb24[2]);
 
-		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb565be,
-				MPIX_FMT_RGB565X, 1, &mpix_convert_rgb24_to_rgb565be);
-		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb565le,
-				MPIX_FMT_RGB565, 1, &mpix_convert_rgb24_to_rgb565le);
-		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb332,
-				MPIX_FMT_RGB332, 1, &mpix_convert_rgb24_to_rgb332);
-		test_conversion(rgb565be, MPIX_FMT_RGB565X, 1, rgb24,
-				MPIX_FMT_RGB24, 1, &mpix_convert_rgb565be_to_rgb24);
-		test_conversion(rgb565le, MPIX_FMT_RGB565, 1, rgb24,
-				MPIX_FMT_RGB24, 1, &mpix_convert_rgb565le_to_rgb24);
-		test_conversion(rgb24, MPIX_FMT_RGB24, 1, yuyv_bt709,
-				MPIX_FMT_YUYV, 2, &mpix_convert_rgb24_to_yuyv_bt709);
-		test_conversion(yuyv_bt709, MPIX_FMT_YUYV, 2, rgb24,
-				MPIX_FMT_RGB24, 1, &mpix_convert_yuyv_to_rgb24_bt709);
-		test_conversion(rgb24, MPIX_FMT_RGB24, 1, yuv24_bt709,
-				MPIX_FMT_YUV24, 1, &mpix_convert_rgb24_to_yuv24_bt709);
-		test_conversion(yuv24_bt709, MPIX_FMT_YUV24, 1, rgb24,
-				MPIX_FMT_RGB24, 1, &mpix_convert_yuv24_to_rgb24_bt709);
-		test_conversion(yuv24_bt709, MPIX_FMT_YUV24, 1, yuyv_bt709,
-				MPIX_FMT_YUYV, 2, &mpix_convert_yuv24_to_yuyv);
-		test_conversion(yuyv_bt709, MPIX_FMT_YUYV, 2, yuv24_bt709,
-				MPIX_FMT_YUV24, 1, &mpix_convert_yuyv_to_yuv24);
+		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb565be, MPIX_FMT_RGB565X, 1,
+				&mpix_convert_rgb24_to_rgb565be);
+		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb565le, MPIX_FMT_RGB565, 1,
+				&mpix_convert_rgb24_to_rgb565le);
+		test_conversion(rgb24, MPIX_FMT_RGB24, 1, rgb332, MPIX_FMT_RGB332, 1,
+				&mpix_convert_rgb24_to_rgb332);
+		test_conversion(rgb565be, MPIX_FMT_RGB565X, 1, rgb24, MPIX_FMT_RGB24, 1,
+				&mpix_convert_rgb565be_to_rgb24);
+		test_conversion(rgb565le, MPIX_FMT_RGB565, 1, rgb24, MPIX_FMT_RGB24, 1,
+				&mpix_convert_rgb565le_to_rgb24);
+		test_conversion(rgb24, MPIX_FMT_RGB24, 1, yuyv_bt709, MPIX_FMT_YUYV, 2,
+				&mpix_convert_rgb24_to_yuyv_bt709);
+		test_conversion(yuyv_bt709, MPIX_FMT_YUYV, 2, rgb24, MPIX_FMT_RGB24, 1,
+				&mpix_convert_yuyv_to_rgb24_bt709);
+		test_conversion(rgb24, MPIX_FMT_RGB24, 1, yuv24_bt709, MPIX_FMT_YUV24, 1,
+				&mpix_convert_rgb24_to_yuv24_bt709);
+		test_conversion(yuv24_bt709, MPIX_FMT_YUV24, 1, rgb24, MPIX_FMT_RGB24, 1,
+				&mpix_convert_yuv24_to_rgb24_bt709);
+		test_conversion(yuv24_bt709, MPIX_FMT_YUV24, 1, yuyv_bt709, MPIX_FMT_YUYV, 2,
+				&mpix_convert_yuv24_to_yuyv);
+		test_conversion(yuyv_bt709, MPIX_FMT_YUYV, 2, yuv24_bt709, MPIX_FMT_YUV24, 1,
+				&mpix_convert_yuyv_to_yuv24);
 	}
 }
 
@@ -179,8 +179,8 @@ void test_high_level(void)
 		rgb24frame_in[i] = i / 3;
 	}
 
-	mpix_image_from_buf(&img, rgb24frame_in, sizeof(rgb24frame_in),
-			    WIDTH, HEIGHT, MPIX_FMT_RGB24);
+	mpix_image_from_buf(&img, rgb24frame_in, sizeof(rgb24frame_in), WIDTH, HEIGHT,
+			    MPIX_FMT_RGB24);
 
 	mpix_port_printf("input:\n");
 	mpix_image_print_truecolor(&img);
