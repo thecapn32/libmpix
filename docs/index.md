@@ -22,25 +22,10 @@ Features:
 - Reduces memory overhead (can process 1 MB of data with only 5 kB of RAM)
 - [POSIX support](https://github.com/libmpix/libmpix_example_posix) (Linux/BSD/MacOS),
   [Zephyr support](https://github.com/libmpix/libmpix_example_zephyr)
+  [Lua](https://github.com/libmpix/libmpix/tree/main/bindings/lua) support
+  [Command-line](https://github.com/libmpix/libmpix/tree/main/bindings/cli) support
 
 Upcoming:
 
 - [SIMD](https://www.arm.com/technologies/helium) acceleration, 2.5D GPUs acceleration
 - [MicroPython](https://micropython.org/) support,
-  [Lua](https://lua.org/) support
-
-C API:
-
-```c
-#include <mpix/image.h>
-
-struct mpix_image img;
-
-mpix_image_from_buf(&img, src, sizeof(src), MPIX_FORMAT_RGB24);
-mpix_image_kernel(&img, MPIX_KERNEL_DENOISE, 5);
-mpix_image_kernel(&img, MPIX_KERNEL_SHARPEN, 3);
-mpix_image_convert(&img, MPIX_FMT_YUYV);
-mpix_image_to_buf(&img, dst, sizeof(dst));
-
-return img.err;
-```
