@@ -5,11 +5,15 @@ print("hello world!")
 
 -- generate a map of the mpix module
 for k, v in pairs(mpix) do
-  print(type(v) .. ":" .. k)
+  print(type(v)..":"..k)
   if type(v) == "table" then
-    for kk, vv in pairs(v) do print("- " .. kk) end
+    for kk, vv in pairs(v) do print("- "..kk) end
   end
 end
+
+-- Print the current image format
+print("[format]")
+for k, v in pairs(mpix.format()) do print("- "..k..": "..v) end
 
 -- Add color correction operations
 mpix.op.correct_black_level()
