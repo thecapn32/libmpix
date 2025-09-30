@@ -137,6 +137,62 @@ static inline int mpix_image_debayer(struct mpix_image *img, uint32_t window_siz
 }
 
 /**
+ * @brief Apply Color Correction Matrix (CCM) to the image
+ *
+ * This operation only adds the processing element. To control the correction, use
+ * @ref mpix_image_ctrl_value() with @ref MPIX_CID_COLOR_MATRIX.
+ *
+ * @param img Image to correct.
+ * @return 0 on success or negative error code.
+ */
+static inline int mpix_image_correct_color_matrix(struct mpix_image *img)
+{
+	return mpix_pipeline_add(img, MPIX_OP_CORRECT_COLOR_MATRIX, NULL, 0);
+}
+
+/**
+ * @brief Apply White Balance Correction (AWB) to the image
+ *
+ * This operation only adds the processing element. To control the correction, use
+ * @ref mpix_image_ctrl_value() with @ref MPIX_CID_WHITE_BALANCE.
+ *
+ * @param img Image to correct.
+ * @return 0 on success or negative error code.
+ */
+static inline int mpix_image_correct_white_balance(struct mpix_image *img)
+{
+	return mpix_pipeline_add(img, MPIX_OP_CORRECT_WHITE_BALANCE, NULL, 0);
+}
+
+/**
+ * @brief Apply Black Level Correction (BLC) to the image
+ *
+ * This operation only adds the processing element. To control the correction, use
+ * @ref mpix_image_ctrl_value() with @ref MPIX_CID_GAMMA_LEVEL.
+ *
+ * @param img Image to correct.
+ * @return 0 on success or negative error code.
+ */
+static inline int mpix_image_correct_black_level(struct mpix_image *img)
+{
+	return mpix_pipeline_add(img, MPIX_OP_CORRECT_BLACK_LEVEL, NULL, 0);
+}
+
+/**
+ * @brief Apply Gamma Correction (GC) to the image
+ *
+ * This operation only adds the processing element. To control the correction, use
+ * @ref mpix_image_ctrl_value() with @ref MPIX_CID_GAMMA_LEVEL.
+ *
+ * @param img Image to correct.
+ * @return 0 on success or negative error code.
+ */
+static inline int mpix_image_correct_gamma(struct mpix_image *img)
+{
+	return mpix_pipeline_add(img, MPIX_OP_CORRECT_GAMMA, NULL, 0);
+}
+
+/**
  * @brief Encode an image to the QOI compressed image format
  *
  * @param img Image to convert to QOI format.
