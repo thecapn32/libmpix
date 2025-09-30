@@ -5,8 +5,7 @@
 #include <lauxlib.h>
 
 #include <mpix/image.h>
-
-#include "lua_mpix.h"
+#include <mpix/lua.h>
 
 #define WIDTH 34
 #define HEIGHT 5

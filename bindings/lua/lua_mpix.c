@@ -5,13 +5,13 @@
 #include <lauxlib.h>
 
 #include <mpix/genlist.h>
+#include <mpix/lua.h>
 #include <mpix/image.h>
 #include <mpix/operation.h>
 #include <mpix/print.h>
 
 struct mpix_image lua_mpix_image;
 struct mpix_palette lua_mpix_palette;
-size_t lua_mpix_palette_cycles;
 
 MPIX_REGISTER_OP(callback, P_BUFFER_SIZE, P_THRESHOLD);
 

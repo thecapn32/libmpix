@@ -4,7 +4,7 @@
 #define LUA_MPIX_H
 
 #include <lua.h>
-#include <mpix/image.h>
+#include <mpix/types.h>
 
 /** Image to be filled with data by the library user rather than the application */
 extern struct mpix_image lua_mpix_image;
