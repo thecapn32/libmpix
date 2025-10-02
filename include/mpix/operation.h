@@ -47,7 +47,7 @@ MPIX_FOR_EACH_OP(MPIX_OP_RUN)
 #define MPIX_OP_INPUT_BYTES(...) { int e = mpix_op_input_bytes(__VA_ARGS__); if (e) return e; }
 
 /** Call @ref mpix_op_input_done() and return the error if any */
-#define MPIX_OP_INPUT_DONE(...) { int e = mpix_op_input_done(__VA_ARGS__); assert(e == 0); if (e) return e; }
+#define MPIX_OP_INPUT_DONE(...) { int e = mpix_op_input_done(__VA_ARGS__); if (e) return e; }
 
 /** Call @ref mpix_op_input_peek() and return the error if any */
 #define MPIX_OP_INPUT_PEEK(...) { int e = mpix_op_input_peek(__VA_ARGS__); if (e) return e; }
@@ -65,7 +65,7 @@ MPIX_FOR_EACH_OP(MPIX_OP_RUN)
 #define MPIX_OP_OUTPUT_PEEK(...) { int e = mpix_op_output_peek(__VA_ARGS__); if (e) return e; }
 
 /** Call @ref mpix_op_output_flush() and return the error if any */
-#define MPIX_OP_OUTPUT_FLUSH(...) { int e = mpix_op_output_flush(__VA_ARGS__); assert(e == 0); if (e) return e; }
+#define MPIX_OP_OUTPUT_FLUSH(...) { int e = mpix_op_output_flush(__VA_ARGS__); if (e) return e; }
 
 static inline int mpix_op_input_lines(struct mpix_base_op *op, const uint8_t **src, size_t num)
 {

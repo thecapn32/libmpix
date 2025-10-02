@@ -344,7 +344,6 @@ void mpix_print_op(struct mpix_base_op *op)
 #define MPIX_CASE_PRINT_OP(X, x) \
 	case MPIX_OP_##X: name = #X; break;
 MPIX_FOR_EACH_OP(MPIX_CASE_PRINT_OP)
-	case MPIX_OP_INVAL: name = "INVAL"; break;
 	case MPIX_OP_END: name = "END"; break;
 	default: name = "UNKNOWN"; break;
 	}

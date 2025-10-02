@@ -31,9 +31,6 @@ int mpix_pipeline_add(struct mpix_image *img, enum mpix_op_type type, const int3
 MPIX_FOR_EACH_OP(CASE_MPIX_OP_ADD)
 	case MPIX_OP_END:
 		return 0;
-	case MPIX_OP_INVAL:
-		MPIX_ERR("MPIX_OP_INVAL");
-		return -EINVAL;
 	default:
 		MPIX_ERR("unknown type %u", type);
 		return -ENOTSUP;
@@ -50,29 +47,31 @@ int mpix_pipeline_run_once(struct mpix_base_op *op)
 	switch (op->type) {
 #define CASE_MPIX_OP_RUN(X, x) \
 	case MPIX_OP_##X: \
-		return mpix_run_##x(op);
+		/* -EAGAIN is the expected behavior when running out of input */ \
+		return (err = mpix_run_##x(op)) == -EAGAIN ? 0 : err;
 MPIX_FOR_EACH_OP(CASE_MPIX_OP_RUN)
 	case MPIX_OP_END:
 		return 0;
-	case MPIX_OP_INVAL:
-		MPIX_ERR("MPIX_OP_INVAL");
-		return -EINVAL;
 	default:
 		MPIX_ERR("unknown type %u", op->type);
 		return -ENOTSUP;
 	}
-
-	return err;
 }
 
 int mpix_pipeline_run_loop(struct mpix_base_op *op)
 {
+	size_t prev_size;
+	size_t curr_size;
 	int err;
 
-	/* Run the pipeline as long as there is no error */
-	do { err = mpix_pipeline_run_once(op); } while (err == 0);
+	/* Run the pipeline until it stops consuming input or until there is an error */
+	do {
+		prev_size = mpix_ring_used_size(&op->ring);
+		err = mpix_pipeline_run_once(op);
+		curr_size = mpix_ring_used_size(&op->ring);
+	} while (err == 0 && prev_size != curr_size);
 
-	/* EAGAIN indicates lack of input data to process */
+	/* EAGAIN is expected on the last iteration when all input is consumed */
 	if (err == -EAGAIN) return 0;
 
 	/* not enough data to run the operation: need to load more data later */

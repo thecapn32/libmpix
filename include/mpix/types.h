@@ -22,8 +22,8 @@ enum mpix_op_type {
 #define MPIX_OP_ENUM(X, x) \
 	MPIX_OP_##X,
 MPIX_FOR_EACH_OP(MPIX_OP_ENUM)
-	MPIX_OP_INVAL,
 	MPIX_OP_END,
+	MPIX_NB_OP,
 };
 
 /** JPEG image quality */

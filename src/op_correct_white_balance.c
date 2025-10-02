@@ -33,10 +33,11 @@ int mpix_add_correct_white_balance(struct mpix_image *img, const int32_t *params
 void mpix_correct_white_balance_rgb24(const uint8_t *src, uint8_t *dst, uint16_t width,
 				      int32_t red_level_q10, int32_t blue_level_q10)
 {
-	for (size_t w = 0; w < width; w++, src += 3, dst += 3) {
-		dst[0] = MIN(src[0] * red_level_q10 >> 10, 0xff);
-		dst[1] = src[1];
-		dst[2] = MIN(src[2] * blue_level_q10 >> 10, 0xff);
+	for (size_t x = 0; x < width; x++) {
+		enum { R, G, B };
+		dst[x * 3 + R] = MIN((src[x * 3 + R] * red_level_q10) >> 10, 0xff);
+		dst[x * 3 + G] =      src[x * 3 + G];
+		dst[x * 3 + B] = MIN((src[x * 3 + B] * blue_level_q10) >> 10, 0xff);
 	}
 }
 

@@ -132,7 +132,7 @@ static inline int mpix_image_debayer(struct mpix_image *img, uint32_t window_siz
 {
 	enum mpix_op_type type = (window_size == 1) ? MPIX_OP_DEBAYER_1X1 :
 				 (window_size == 2) ? MPIX_OP_DEBAYER_2X2 :
-				 (window_size == 3) ? MPIX_OP_DEBAYER_3X3 : MPIX_OP_INVAL;
+				 (window_size == 3) ? MPIX_OP_DEBAYER_3X3 : MPIX_NB_OP;
 	return mpix_pipeline_add(img, type, NULL, 0);
 }
 
@@ -265,7 +265,7 @@ static inline int mpix_image_sharpen(struct mpix_image *img, uint8_t level)
 {
 	int32_t p[] = { MPIX_KERNEL_SHARPEN };
 	enum mpix_op_type type = (level == 3) ? MPIX_OP_KERNEL_CONVOLVE_3X3 :
-				 (level == 5) ? MPIX_OP_KERNEL_CONVOLVE_5X5 : MPIX_OP_INVAL;
+				 (level == 5) ? MPIX_OP_KERNEL_CONVOLVE_5X5 : MPIX_NB_OP;
 	return mpix_pipeline_add(img, type, p, ARRAY_SIZE(p));
 }
 
@@ -278,7 +278,7 @@ static inline int mpix_image_sharpen(struct mpix_image *img, uint8_t level)
 static inline int mpix_image_denoise(struct mpix_image *img, uint8_t level)
 {
 	enum mpix_op_type type = (level == 3) ? MPIX_OP_KERNEL_DENOISE_3X3 :
-				 (level == 5) ? MPIX_OP_KERNEL_DENOISE_5X5 : MPIX_OP_INVAL;
+				 (level == 5) ? MPIX_OP_KERNEL_DENOISE_5X5 : MPIX_NB_OP;
 	return mpix_pipeline_add(img, type, NULL, 0);
 }
 
@@ -293,7 +293,7 @@ static inline int mpix_image_edge_detect(struct mpix_image *img, uint8_t level)
 {
 	int32_t p[] = { MPIX_KERNEL_EDGE_DETECT };
 	enum mpix_op_type type = (level == 3) ? MPIX_OP_KERNEL_CONVOLVE_3X3 :
-				 (level == 5) ? MPIX_OP_KERNEL_CONVOLVE_5X5 : MPIX_OP_INVAL;
+				 (level == 5) ? MPIX_OP_KERNEL_CONVOLVE_5X5 : MPIX_NB_OP;
 	return mpix_pipeline_add(img, type, p, ARRAY_SIZE(p));
 }
 
@@ -308,7 +308,7 @@ static inline int mpix_image_gaussian_blur(struct mpix_image *img, uint8_t level
 {
 	int32_t p[] = { MPIX_KERNEL_GAUSSIAN_BLUR };
 	enum mpix_op_type type = (level == 3) ? MPIX_OP_KERNEL_CONVOLVE_3X3 :
-				 (level == 5) ? MPIX_OP_KERNEL_CONVOLVE_5X5 : MPIX_OP_INVAL;
+				 (level == 5) ? MPIX_OP_KERNEL_CONVOLVE_5X5 : MPIX_NB_OP;
 	return mpix_pipeline_add(img, type, p, ARRAY_SIZE(p));
 }
 
