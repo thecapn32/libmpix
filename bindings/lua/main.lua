@@ -18,6 +18,7 @@ for k, v in pairs(mpix.format()) do io.stderr:write("- "..k..": "..v.."\n") end
 -- Add color correction operations
 mpix.op.correct_black_level()
 mpix.op.correct_white_balance()
+mpix.op.kernel_denoise_3x3()
 
 -- Apply controls over the pipeline
 mpix.ctrl(mpix.cid.BLACK_LEVEL, 1)
