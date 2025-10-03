@@ -54,6 +54,9 @@ int main(int argc, char **argv)
 	/* Initialize the image with this buffer */
 	mpix_image_from_buf(&img, buf, size, &fmt);
 
+	/* Assign the image to the mpix lua binding */
+	lua_mpix_set_image(&img);
+
 	/* Configure the image processing with lua */
 	{
 		/* Configure the image processing the Lua API */
@@ -61,7 +64,8 @@ int main(int argc, char **argv)
 		luaL_openlibs(L);
 
 		/* Load the "mpix" lua library with the image */
-		luaopen_mpix(L, &img);
+		luaopen_mpix(L);
+		lua_setglobal(L, "mpix");
 
 		/* Run a script to configure a pipeline into mpix_lua_image */
 		if (luaL_dofile(L, "main.lua") != LUA_OK) {

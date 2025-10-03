@@ -171,11 +171,14 @@ MPIX_FOR_EACH_OP(MPIX_IMAGE_REG)
 	{ NULL, NULL },
 };
 
-int luaopen_mpix(lua_State *L, struct mpix_image *img)
+void lua_mpix_set_image(struct mpix_image *img)
 {
 	lua_mpix_image = img;
+}
 
-	/* Table for t he module */
+int luaopen_mpix(lua_State *L)
+{
+	/* Table for the module */
 	lua_newtable(L);
 
 	/* Add top-level functions */
@@ -210,8 +213,6 @@ int luaopen_mpix(lua_State *L, struct mpix_image *img)
 	luaL_setfuncs(L, lua_mpix_op_reg, 0);
 	lua_setfield(L, -2, "op");
 
-	/* Add 'mpix' as a library */
-	lua_setglobal(L, "mpix");
-
+	/* Return the module to i.e. store a as global */
 	return 1;
 }
