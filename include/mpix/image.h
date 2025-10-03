@@ -475,7 +475,7 @@ static inline int mpix_image_ctrl_array(struct mpix_image *img, enum mpix_contro
 {
 	if (cid > MPIX_NB_CID) return -ERANGE;
 	if (img->ctrls[cid] == NULL) return -ENOENT;
-	memcpy(img->ctrls[cid], array, mpix_image_ctrl_size(cid));
+	memcpy(img->ctrls[cid], array, mpix_image_ctrl_size(cid) * sizeof(int32_t));
 	return 0;
 }
 

@@ -23,6 +23,11 @@ int simple_isp_demo(uint8_t *src_buf, size_t src_size, const struct mpix_format 
 		    uint8_t *dst_buf, size_t dst_size)
 {
 	struct mpix_image img = {};
+	int32_t color_matrix_q10[9] = {
+		1.00 * (1 << 10), 0.00 * (1 << 10), 0.00 * (1 << 10),
+		0.00 * (1 << 10), 1.00 * (1 << 10), 0.00 * (1 << 10),
+		0.00 * (1 << 10), 0.00 * (1 << 10), 1.00 * (1 << 10),
+	};
 
 	mpix_image_from_buf(&img, src_buf, src_size, src_fmt);
 
@@ -30,12 +35,14 @@ int simple_isp_demo(uint8_t *src_buf, size_t src_size, const struct mpix_format 
 	CHECK(mpix_image_correct_black_level(&img));
 	CHECK(mpix_image_correct_gamma(&img));
 	CHECK(mpix_image_correct_white_balance(&img));
+	CHECK(mpix_image_correct_color_matrix(&img));
 
 	/* Control the pipeline image tuning */
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_BLACK_LEVEL,  0));
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_RED_BALANCE,  1.3 * (1 << 10)));
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_BLUE_BALANCE, 1.7 * (1 << 10)));
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_GAMMA_LEVEL,  0.7 * (1 << 10)));
+	CHECK(mpix_image_ctrl_array(&img, MPIX_CID_COLOR_MATRIX, color_matrix_q10));
 
 	/* Process the image and store it to the destination buffer */
 	CHECK(mpix_image_to_buf(&img, dst_buf, dst_size));
