@@ -25,7 +25,7 @@ static uint8_t mpix_gray8_to_256color(uint8_t gray8)
 void mpix_print_2_rows_truecolor(const uint8_t *top, const uint8_t *bot, size_t width)
 {
 	for (uint16_t w = 0; w < width; w++) {
-		printf("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
+		mpix_port_printf("\e[48;2;%u;%u;%um\e[38;2;%u;%u;%um▄",
 			top[w * 3 + 0], top[w * 3 + 1], top[w * 3 + 2],
 			bot[w * 3 + 0], bot[w * 3 + 1], bot[w * 3 + 2]);
 	}
@@ -34,7 +34,7 @@ void mpix_print_2_rows_truecolor(const uint8_t *top, const uint8_t *bot, size_t 
 void mpix_print_2_rows_256color(const uint8_t *top, const uint8_t *bot, size_t width)
 {
 	for (uint16_t w = 0; w < width; w++) {
-		printf("\e[48;5;%um\e[38;5;%um▄",
+		mpix_port_printf("\e[48;5;%um\e[38;5;%um▄",
 			mpix_rgb24_to_256color(&top[w * 3]),
 			mpix_rgb24_to_256color(&bot[w * 3]));
 	}
@@ -43,7 +43,7 @@ void mpix_print_2_rows_256color(const uint8_t *top, const uint8_t *bot, size_t w
 void mpix_print_2_rows_256gray(const uint8_t *top, const uint8_t *bot, size_t width)
 {
 	for (uint16_t w = 0; w < width; w++) {
-		printf("\e[48;5;%um\e[38;5;%um▄",
+		mpix_port_printf("\e[48;5;%um\e[38;5;%um▄",
 			mpix_gray8_to_256color(top[w]),
 			mpix_gray8_to_256color(bot[w]));
 	}
@@ -88,7 +88,7 @@ static void mpix_print_2x2(const uint8_t *top_1x2, const uint8_t *bot_1x2, uint3
 		mpix_print_2_rows_256gray(top_1x2, bot_1x2, 2);
 		return;
 	default:
-		printf("??");
+		mpix_port_printf("??");
 		return;
 	}
 
@@ -107,7 +107,7 @@ void mpix_print_2_rows(const uint8_t *top, const uint8_t *bot, int16_t width, ui
 	for (uint16_t w = 0; w + 2 <= width; w += 2) {
 		mpix_print_2x2(&top[w * bytespp], &bot[w * bytespp], fourcc, truecolor);
 	}
-	printf("\e[m");
+	mpix_port_printf("\e[m");
 }
 
 void mpix_print_buf(const uint8_t *src, size_t size, const struct mpix_format *fmt, bool truecolor)
@@ -123,7 +123,7 @@ void mpix_print_buf(const uint8_t *src, size_t size, const struct mpix_format *f
 		size_t this_width = (next_size - curr_size) * BITS_PER_BYTE / bitspp / 2;
 
 		mpix_print_2_rows(top, bot, this_width, fmt->fourcc, truecolor);
-		printf("\e[m│\n");
+		mpix_port_printf("\e[m│\n");
 		curr_size = next_size;
 	}
 }
@@ -131,9 +131,9 @@ void mpix_print_buf(const uint8_t *src, size_t size, const struct mpix_format *f
 void mpix_hexdump_raw(const uint8_t *buf, size_t size)
 {
 	for (size_t i = 0; i < size; i++) {
-		printf(" %02x", buf[i]);
+		mpix_port_printf(" %02x", buf[i]);
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 }
 
 static void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, uint16_t height)
@@ -143,107 +143,107 @@ static void mpix_hexdump_raw8(const uint8_t *raw8, size_t size, uint16_t width, 
 			size_t i = h * width * 1 + w * 1;
 
 			if (i >= size) {
-				printf("\e[m *** end of buffer at byte %zu ***\n", i);
+				mpix_port_printf("\e[m *** end of buffer at byte %zu ***\n", i);
 				return;
 			}
 
-			printf(" %02x", raw8[i]);
+			mpix_port_printf(" %02x", raw8[i]);
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
 static void mpix_hexdump_rgb24(const uint8_t *rgb24, size_t size, uint16_t width, uint16_t height)
 {
-	printf(" ");
+	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		printf("col%-7u", w);
+		mpix_port_printf("col%-7u", w);
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		printf(" R  G  B  ");
+		mpix_port_printf(" R  G  B  ");
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 3 + w * 3;
 
 			if (i + 2 >= size) {
-				printf("\e[m *** end of buffer at byte %zu ***\n", i);
+				mpix_port_printf("\e[m *** end of buffer at byte %zu ***\n", i);
 				return;
 			}
 
-			printf(" %02x %02x %02x ", rgb24[i + 0], rgb24[i + 1], rgb24[i + 2]);
+			mpix_port_printf(" %02x %02x %02x ", rgb24[i + 0], rgb24[i + 1], rgb24[i + 2]);
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
 static void mpix_hexdump_rgb565(const uint8_t *rgb565, size_t size, uint16_t width, uint16_t height)
 {
-	printf(" ");
+	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		printf("col%-4u", w);
+		mpix_port_printf("col%-4u", w);
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		printf(" RGB565");
+		mpix_port_printf(" RGB565");
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 2 + w * 2;
 
 			if (i + 1 >= size) {
-				printf("\e[m *** end of buffer at byte %zu ***\n", i);
+				mpix_port_printf("\e[m *** end of buffer at byte %zu ***\n", i);
 				return;
 			}
 
-			printf(" %02x %02x ", rgb565[i + 0], rgb565[i + 1]);
+			mpix_port_printf(" %02x %02x ", rgb565[i + 0], rgb565[i + 1]);
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
 static void mpix_hexdump_yuyv(const uint8_t *yuyv, size_t size, uint16_t width, uint16_t height)
 {
-	printf(" ");
+	mpix_port_printf(" ");
 	for (uint16_t w = 0; w < width; w++) {
-		printf("col%-3u", w);
+		mpix_port_printf("col%-3u", w);
 		if ((w + 1) % 2 == 0) {
-			printf(" ");
+			mpix_port_printf(" ");
 		}
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t w = 0; w < width; w++) {
-		printf(" %c%u", "YUYV"[w % 2 * 2 + 0], w % 2);
-		printf(" %c%u", "YUYV"[w % 2 * 2 + 1], w % 2);
+		mpix_port_printf(" %c%u", "YUYV"[w % 2 * 2 + 0], w % 2);
+		mpix_port_printf(" %c%u", "YUYV"[w % 2 * 2 + 1], w % 2);
 		if ((w + 1) % 2 == 0) {
-			printf(" ");
+			mpix_port_printf(" ");
 		}
 	}
-	printf("\n");
+	mpix_port_printf("\n");
 
 	for (uint16_t h = 0; h < height; h++) {
 		for (uint16_t w = 0; w < width; w++) {
 			size_t i = h * width * 2 + w * 2;
 
 			if (i + 1 >= size) {
-				printf("\e[m *** end of buffer at byte %zu ***\n", i);
+				mpix_port_printf("\e[m *** end of buffer at byte %zu ***\n", i);
 				return;
 			}
 
-			printf(" %02x %02x", yuyv[i], yuyv[i + 1]);
+			mpix_port_printf(" %02x %02x", yuyv[i], yuyv[i + 1]);
 			if ((w + 1) % 2 == 0) {
-				printf(" ");
+				mpix_port_printf(" ");
 			}
 		}
-		printf(" row%u\n", h);
+		mpix_port_printf(" row%u\n", h);
 	}
 }
 
@@ -279,7 +279,7 @@ static void mpix_print_hist_scale(size_t size)
 		uint8_t scale[1] = { i * 256 / size };
 		mpix_print_2_rows_256gray(black, scale, 1);
 	}
-	printf("\e[m\n");
+	mpix_port_printf("\e[m\n");
 }
 
 void mpix_print_rgb_hist(const uint16_t *r_hist, const uint16_t *g_hist, const uint16_t *b_hist,
@@ -308,7 +308,7 @@ void mpix_print_rgb_hist(const uint16_t *r_hist, const uint16_t *g_hist, const u
 
 			mpix_print_2_rows_256color(row0, row1, 1);
 		}
-		printf("\e[m| - %u\n", h * max / height);
+		mpix_port_printf("\e[m| - %u\n", h * max / height);
 	}
 
 	mpix_print_hist_scale(size / 3);
@@ -327,9 +327,9 @@ void mpix_print_y_hist(const uint16_t *y_hist, size_t y_hist_sz, uint16_t height
 		for (size_t i = 0; i < y_hist_sz; i++) {
 			uint16_t bar_height = height * 8 * y_hist[i] / max;
 
-			printf(bar_chars[CLAMP(1 + bar_height - h, 0, 8)]);
+			mpix_port_printf(bar_chars[CLAMP(1 + bar_height - h, 0, 8)]);
 		}
-		printf("| - %u\n", h * max / height);
+		mpix_port_printf("| - %u\n", h * max / height);
 	}
 
 	/* This makes the graph look more intuitive, but reduces print speed on slow UARTs */
@@ -348,14 +348,14 @@ MPIX_FOR_EACH_OP(MPIX_CASE_PRINT_OP)
 	default: name = "UNKNOWN"; break;
 	}
 
-	printf("[op] %-24s %4ux%-4u %s %8zu bytes / %-8zu line %-4u runtime %u us\n",
+	mpix_port_printf("[op] %-24s %4ux%-4u %s %8zu bytes / %-8zu line %-4u runtime %u us\n",
 		name, op->fmt.width, op->fmt.height, MPIX_FOURCC_TO_STR(op->fmt.fourcc),
 		mpix_ring_used_size(&op->ring), op->ring.size, op->line_offset, op->total_time_us);
 }
 
 void mpix_print_pipeline(struct mpix_base_op *op)
 {
-	printf("[pipeline]\n");
+	mpix_port_printf("[pipeline]\n");
 	for (; op != NULL; op = op->next) {
 		mpix_print_op(op);
 	}
@@ -365,10 +365,10 @@ void mpix_print_stats(struct mpix_stats *stats)
 {
 	uint8_t *rgb = stats->rgb_average;
 
-	printf("Average #%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
+	mpix_port_printf("Average #%02x%02x%02x ", rgb[0], rgb[1], rgb[2]);
 	mpix_print_2_rows_truecolor(rgb, rgb, 1);
 
-	printf(" \x1b[m for %u values sampled\n", stats->nvals);
+	mpix_port_printf(" \x1b[m for %u values sampled\n", stats->nvals);
 	mpix_print_y_hist(stats->y_histogram, ARRAY_SIZE(stats->y_histogram), 10);
 }
 
@@ -376,7 +376,7 @@ void mpix_print_ctrls(int32_t *ctrls[])
 {
 	for (size_t i = 0; i < MPIX_NB_CID; i++) {
 		if (ctrls[i] != NULL) {
-			printf("[ctrl] %s = %d\n", mpix_str_cid[i], *ctrls[i]);
+			mpix_port_printf("[ctrl] %s = %d\n", mpix_str_cid[i], *ctrls[i]);
 		}
 	}
 }

@@ -198,8 +198,14 @@ static inline uint8_t *mpix_ring_read(struct mpix_ring *ring, size_t size)
 		return NULL;
 	}
 	ring->tail = (ring->tail + size) % ring->size;
-	ring->full = 0;
+	ring->full = false;
 	mpix_ring_reset_peek(ring);
+
+	/* To avoid fragmentation, re-align the buffer if empty */
+	if (mpix_ring_used_size(ring) == 0) {
+		ring->tail = ring->head = ring->peek = 0;
+	}
+
 	return buffer;
 }
 

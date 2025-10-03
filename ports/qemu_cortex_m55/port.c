@@ -91,3 +91,13 @@ void mpix_port_init(void)
     printf("libmpix QEMU Cortex-M55 port initialized\n");
     mpix_port_memory_info();
 }
+
+void mpix_port_printf(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+	fflush(stdout);
+}

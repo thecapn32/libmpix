@@ -13,4 +13,12 @@ include(${LIBMPIX_DIR}/ports/common.cmake)
 
 target_compile_options(libmpix INTERFACE -O3 -Wall -Wextra)
 
-target_sources(libmpix INTERFACE ${LIBMPIX_SRC} ${LIBMPIX_DIR}/ports/posix/port.c)
+target_sources(libmpix INTERFACE
+  ${LIBMPIX_SRC}
+  ${LIBMPIX_DIR}/ports/posix/port.c
+  ${LIBMPIX_DIR}/src/op_posix_write.c
+)
+
+libmpix_add_genlist_source(
+  ${LIBMPIX_DIR}/src/op_posix_write.c
+)

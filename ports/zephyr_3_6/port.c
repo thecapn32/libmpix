@@ -26,3 +26,12 @@ uint32_t mpix_port_get_uptime_us(void)
 {
 	return k_cycle_get_64() * 1000 * 1000 / sys_clock_hw_cycles_per_sec();
 }
+
+void mpix_port_printf(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+}

@@ -13,30 +13,31 @@
 #include <stdio.h>
 
 #include <mpix/config.h>
+#include <mpix/port.h>
 #include <mpix/types.h>
 
 /* Logging utilities */
 
 #if CONFIG_MPIX_LOG_LEVEL >= 1
-#define MPIX_ERR(fmt, ...) printf("E: %s: " fmt "\n", __func__, ## __VA_ARGS__)
+#define MPIX_ERR(fmt, ...) mpix_port_printf("E: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_ERR(fmt, ...) ((void)0)
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 2
-#define MPIX_WRN(fmt, ...) printf("W: %s: " fmt "\n", __func__, ## __VA_ARGS__)
+#define MPIX_WRN(fmt, ...) mpix_port_printf("W: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_WRN(fmt, ...) ((void)0)
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 3
-#define MPIX_INF(fmt, ...) printf("I: %s: " fmt "\n", __func__, ## __VA_ARGS__)
+#define MPIX_INF(fmt, ...) mpix_port_printf("I: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_INF(fmt, ...) ((void)0)
 #endif
 
 #if CONFIG_MPIX_LOG_LEVEL >= 4
-#define MPIX_DBG(fmt, ...) printf("D: %s: " fmt "\n", __func__, ## __VA_ARGS__)
+#define MPIX_DBG(fmt, ...) mpix_port_printf("D: %s: " fmt "\n", __func__, ## __VA_ARGS__)
 #else
 #define MPIX_DBG(fmt, ...) ((void)0)
 #endif

@@ -24,3 +24,12 @@ void mpix_port_free(void *mem)
 {
 	free(mem);
 }
+
+void mpix_port_printf(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+}

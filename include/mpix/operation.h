@@ -97,7 +97,7 @@ static inline int mpix_op_input_done(struct mpix_base_op *op, size_t lines)
 	/* Clear the requested number of lines from the input buffer */
 	const uint8_t *src = mpix_ring_read(&op->ring, mpix_format_pitch(&op->fmt) * lines);
 
-	return (src == NULL) ? -EINVAL : 0;
+	return (src == NULL) ? -EIO : 0;
 }
 
 static inline int mpix_op_input_peek(struct mpix_base_op *op, const uint8_t **src, size_t *sz)
@@ -114,9 +114,9 @@ static inline int mpix_op_input_peek(struct mpix_base_op *op, const uint8_t **sr
 static inline int mpix_op_input_flush(struct mpix_base_op *op, size_t bytes)
 {
 	/* Clear out the specified number of bytes from the input buffer */
-	uint8_t *src = mpix_ring_read(&op->ring, bytes);
+	const uint8_t *src = mpix_ring_read(&op->ring, bytes);
 
-	return (src == NULL) ? -EINVAL : 0;
+	return (src == NULL) ? -EIO : 0;
 }
 
 static inline void mpix_op_input_all(struct mpix_base_op *op, const uint8_t **src, size_t *sz)
@@ -165,7 +165,6 @@ static inline int mpix_op_output_line(struct mpix_base_op *op, uint8_t **dst)
 	/* Get one line from the output buffer */
 	*dst = mpix_ring_write(&op->next->ring, mpix_format_pitch(&op->next->fmt));
 
-	if (*dst == NULL) MPIX_ERR("no buffer for %s", mpix_str_op[op->type]);
 	return (*dst == NULL) ? -ENOBUFS : 0;
 }
 
