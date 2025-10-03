@@ -13,7 +13,7 @@ int mpix_add_kernel_denoise_3x3(struct mpix_image *img, const int32_t *params)
 	(void)params;
 
 	/* Add an operation */
-	op = mpix_op_append(img, MPIX_OP_KERNEL_DENOISE_5X5, sizeof(*op), pitch * 3);
+	op = mpix_op_append(img, MPIX_OP_KERNEL_DENOISE_3X3, sizeof(*op), pitch * 3);
 	if (op == NULL) {
 		return -ENOMEM;
 	}
