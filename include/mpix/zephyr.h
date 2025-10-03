@@ -7,7 +7,7 @@
 #ifndef MPIX_ZEPHYR_H
 #define MPIX_ZEPHYR_H
 
-#include <drivers/video.h>
+#include <zephyr/drivers/video.h>
 #include <mpix/image.h>
 #include <mpix/types.h>
 
@@ -19,10 +19,11 @@
  * @param fmt Video format describing the buffer.
  */
 static inline void mpix_image_from_vbuf(struct mpix_image *img, struct video_buffer *vbuf,
-					struct video_format *fmt)
+					struct video_format *vfmt)
 {
-	mpix_image_from_buf(img, vbuf->buffer, vbuf->bytesused, fmt->width, fmt->height,
-			    fmt->pixelformat);
+	struct mpix_format fmt =
+		{ .width = vfmt->width, .height = vfmt->height, .fourcc = vfmt->pixelformat };
+	mpix_image_from_buf(img, vbuf->buffer, vbuf->bytesused, &fmt);
 }
 
 /**
