@@ -19,13 +19,13 @@ static int lua_mpix_op(lua_State *L, enum mpix_op_type type, const char *name)
 	size_t nb = 0;
 	int err;
 
-	/* P*: fill all into a C array */
+	/* p*: fill all into a c array */
 	for (nb = 0; nb < ARRAY_SIZE(params) && nb + 1 <= (size_t)lua_gettop(L); nb++) {
 		params[nb] = lua_tointeger(L, nb + 1);
 	}
 	lua_pop(L, nb);
 
-	/* Add the element to the pipeline */
+	/* add the element to the pipeline */
 	err = mpix_pipeline_add(lua_mpix_image, type, params, nb);
 	if (err == -EBADMSG) luaL_error(L, "invalid number of arguments for %s operation", name);
 	if (err) luaL_error(L, "failed to add %s to the pipeline: %s", name, strerror(-err));
@@ -42,12 +42,6 @@ static int lua_mpix_dump(lua_State *L)
 {
 	mpix_print_pipeline(lua_mpix_image->first_op);
 	mpix_print_ctrls(lua_mpix_image->ctrls);
-	return 0;
-}
-
-static int lua_mpix_free(lua_State *L)
-{
-	mpix_image_free(lua_mpix_image);
 	return 0;
 }
 
@@ -114,15 +108,46 @@ static void lua_mpix_palette_hooks(lua_State *L)
 {
 	struct mpix_image *img = lua_mpix_image;
 	struct mpix_palette *palette = &lua_mpix_palette;
+	struct mpix_image palette_img = {};
 	int err;
 
 	/* Try to find a palette through the image to get the fourcc */
 	err = mpix_pipeline_get_palette_fourcc(img->first_op, palette);
 	if (err) return; /* nothing to do */
 
+	/* Turn the color palette into an image to apply the correction on it */
+	mpix_image_from_palette(&palette_img, palette);
+
+	/* Apply the color corretction to the palette */
+	for (struct mpix_base_op *op = img->first_op; op != NULL; op = op->next) {
+		switch (op->type) {
+		case MPIX_OP_CORRECT_BLACK_LEVEL:
+		case MPIX_OP_CORRECT_COLOR_MATRIX:
+		case MPIX_OP_CORRECT_GAMMA:
+		case MPIX_OP_CORRECT_WHITE_BALANCE:
+			err = mpix_pipeline_add(&palette_img, op->type, NULL, 0);
+			if (err) luaL_error(L, "%s at line %u", __func__, __LINE__);
+			break;
+		default:
+			break;
+		}
+	}
+
+	/* Transfer all controls present on both */
+	for (int cid = 0; cid < MPIX_NB_CID; cid++) {
+		if (img->ctrls[cid] != NULL && palette_img.ctrls[cid] != NULL) {
+			size_t size =  mpix_image_ctrl_size(cid) * sizeof(*img->ctrls);
+			memcpy(palette_img.ctrls[cid], img->ctrls[cid], size);
+		}
+	}
+
+	/* Apply the image correction to the color palette to get accurate colors */
+	err = mpix_image_to_palette(&palette_img, palette);
+	if (err) luaL_error(L, "%s at line %u", __func__, __LINE__);
+
 	/* Apply it to all palette operations */
 	err = mpix_pipeline_set_palette(img->first_op, palette);
-	if (err) luaL_error(L, "failed to set the color palette: %s", strerror(-err));
+	if (err) luaL_error(L, "%s at line %u", __func__, __LINE__);
 }
 
 int lua_mpix_hooks(lua_State *L)
@@ -135,7 +160,6 @@ static const struct luaL_Reg lua_mpix_reg[] = {
 	{ "optimize_palette", lua_mpix_optimize_palette },
 	{ "dump", lua_mpix_dump },
 	{ "ctrl", lua_mpix_ctrl },
-	{ "free", lua_mpix_free },
 	{ "format", lua_mpix_format },
 	{ NULL, NULL },
 };
@@ -151,6 +175,7 @@ int luaopen_mpix(lua_State *L, struct mpix_image *img)
 {
 	lua_mpix_image = img;
 
+	/* Table for t he module */
 	lua_newtable(L);
 
 	/* Add top-level functions */

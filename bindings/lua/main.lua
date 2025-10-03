@@ -21,9 +21,10 @@ mpix.op.correct_white_balance()
 mpix.op.kernel_denoise_3x3()
 
 -- Apply controls over the pipeline
-mpix.ctrl(mpix.cid.BLACK_LEVEL, 1)
-mpix.ctrl(mpix.cid.RED_BALANCE, 1.8 * (1 << 10))
-mpix.ctrl(mpix.cid.BLUE_BALANCE, 2.0 * (1 << 10))
+function q10(float) return math.ceil(float * (1 << 10)) end
+mpix.ctrl(mpix.cid.BLACK_LEVEL, 10)
+mpix.ctrl(mpix.cid.RED_BALANCE, q10(1.5))
+mpix.ctrl(mpix.cid.BLUE_BALANCE, q10(1.9))
 
 -- Test a few pixel format conversions
 mpix.op.convert(mpix.fmt.RGB565)
