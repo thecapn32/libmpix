@@ -1,36 +1,84 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#include <stdio.h>
+#include <unistd.h>
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 
 #include <mpix/image.h>
 #include <mpix/lua.h>
+#include <mpix/posix.h>
 
-#define WIDTH 34
-#define HEIGHT 5
-
-uint8_t buf[WIDTH * HEIGHT * 3];
+#define CHECK(x) \
+	({ int e = (x); if (e) { fprintf(stderr, "%s: %s\n", #x, strerror(-e)); return e; } })
 
 int main(int argc, char **argv)
 {
-	struct mpix_format fmt = { .width = WIDTH, .height = HEIGHT, .fourcc = MPIX_FMT_RGB24 };
-	lua_State *L = luaL_newstate();
-	luaL_openlibs(L);
-	luaopen_mpix(L);
+	const struct mpix_format fmt = { .width = 640, .height = 480, .fourcc = MPIX_FMT_RGB24 };
+	size_t size = mpix_format_pitch(&fmt) * fmt.height;
+	uint8_t *buf;
 
-	/* Initialize the image from the outside of the library */
-	mpix_image_from_buf(&lua_mpix_image, buf, sizeof(buf), &fmt);
-
-	/* Fill with test data that can easily be printed */
-	for (size_t i = 0; i < sizeof(buf); i++) buf[i] = 'a' + (i / 2) % ('z' - 'a');
-
-	if (luaL_dofile(L, "main.lua") != LUA_OK) {
-		luaL_error(L, "%s", lua_tostring(L, -1));
-		return 1;
+	if (argc != 2) {
+		fprintf(stderr, "usage: %s input-file.raw >output-file.raw\n", argv[0]);
+		return EXIT_FAILURE;
 	}
 
-	lua_close(L);
+	/* Read the input file and store it into the image */
+	{
+		FILE *fp = fopen(argv[1], "r");
+		if (fp == NULL) {
+			perror(argv[1]);
+			return EXIT_FAILURE;
+		}
+
+		buf = malloc(size);
+		if (buf == NULL) {
+			perror("allocating source buffer");
+			return EXIT_FAILURE;
+		}
+
+		size_t n = fread(buf, 1, size, fp);
+		if (n != size) {
+			perror(argv[1]);
+			return EXIT_FAILURE;
+		}
+
+		fclose(fp);
+	}
+
+	struct mpix_image img = {};
+
+	/* Initialize the image with this buffer */
+	mpix_image_from_buf(&img, buf, size, &fmt);
+
+	/* Configure the image processing with lua */
+	{
+		/* Configure the image processing the Lua API */
+		lua_State *L = luaL_newstate();
+		luaL_openlibs(L);
+
+		/* Load the "mpix" lua library with the image */
+		luaopen_mpix(L, &img);
+
+		/* Run a script to configure a pipeline into mpix_lua_image */
+		if (luaL_dofile(L, "main.lua") != LUA_OK) {
+			luaL_error(L, "%s", lua_tostring(L, -1));
+			return EXIT_FAILURE;
+		}
+
+		/* All the state is now contained within the pipeline, no more scripting needed */
+		lua_close(L);
+
+		/* Run hooks to complete the configuration */
+		lua_mpix_hooks(L);
+	}
+
+	/* Convert the image to the output buffer */
+	CHECK(mpix_image_to_file(&img, STDOUT_FILENO, 4096));
+
+	free(buf);
 
 	return 0;
 }

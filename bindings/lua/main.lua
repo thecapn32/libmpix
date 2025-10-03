@@ -1,19 +1,19 @@
 -- SPDX-License-Identifier: Apache-2.0
 
 -- test that normal Lua works
-print("hello world!")
+io.stderr:write("hello world!\n")
 
 -- generate a map of the mpix module
 for k, v in pairs(mpix) do
-  print(type(v)..":"..k)
+  io.stderr:write(type(v)..":"..k.."\n")
   if type(v) == "table" then
-    for kk, vv in pairs(v) do print("- "..kk) end
+    for kk, vv in pairs(v) do io.stderr:write("- "..kk.."\n") end
   end
 end
 
 -- Print the current image format
-print("[format]")
-for k, v in pairs(mpix.format()) do print("- "..k..": "..v) end
+io.stderr:write("[format]\n")
+for k, v in pairs(mpix.format()) do io.stderr:write("- "..k..": "..v.."\n") end
 
 -- Add color correction operations
 mpix.op.correct_black_level()
@@ -21,15 +21,8 @@ mpix.op.correct_white_balance()
 
 -- Apply controls over the pipeline
 mpix.ctrl(mpix.cid.BLACK_LEVEL, 1)
-mpix.ctrl(mpix.cid.RED_BALANCE, 1 << 10)
-mpix.ctrl(mpix.cid.BLUE_BALANCE, 1 << 10)
-
--- Compute a color from the current image
-mpix.optimize_palette(200)
-
--- Apply the palette
-mpix.op.palette_encode(mpix.fmt.PALETTE8)
-mpix.op.palette_decode()
+mpix.ctrl(mpix.cid.RED_BALANCE, 1.8 * (1 << 10))
+mpix.ctrl(mpix.cid.BLUE_BALANCE, 2.0 * (1 << 10))
 
 -- Test a few pixel format conversions
 mpix.op.convert(mpix.fmt.RGB565)
@@ -37,14 +30,14 @@ mpix.op.convert(mpix.fmt.RGB24)
 mpix.op.convert(mpix.fmt.YUYV)
 mpix.op.convert(mpix.fmt.RGB24)
 
--- Finally add an operation for the function callback
-mpix.op.callback(102, 1)
+-- Compute a color from the current image
+mpix.optimize_palette(1000)
 
--- Read the data from the pipeline chunk by chunk
-mpix.run(function (buf) print("[buffer] " .. buf) end)
+-- Apply the palette
+mpix.op.palette_encode(mpix.fmt.PALETTE8)
+mpix.op.palette_decode()
 
--- Show the pipeline topology
+-- Show the pipeline topology to inspect it before it runs
 mpix.dump()
 
--- Reset the image struct, in case the caller is not taking care of that
-mpix.free()
+-- The pipeline will be run after the script returns

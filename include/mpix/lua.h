@@ -6,10 +6,10 @@
 #include <lua.h>
 #include <mpix/types.h>
 
-/** Image to be filled with data by the library user rather than the application */
-extern struct mpix_image lua_mpix_image;
-
 /** Open the mpix lua library */
-int luaopen_mpix(lua_State *L);
+int luaopen_mpix(lua_State *L, struct mpix_image *img);
+
+/** Run hooks, to call just before processing the pipeline built by Lua */
+int lua_mpix_hooks(lua_State *L);
 
 #endif
