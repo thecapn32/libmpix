@@ -1,19 +1,5 @@
 -- SPDX-License-Identifier: Apache-2.0
-
--- test that normal Lua works
-io.stderr:write("hello world!\n")
-
--- generate a map of the mpix module
-for k, v in pairs(mpix) do
-  io.stderr:write(type(v)..":"..k.."\n")
-  if type(v) == "table" then
-    for kk, vv in pairs(v) do io.stderr:write("- "..kk.."\n") end
-  end
-end
-
--- Print the current image format
-io.stderr:write("[format]\n")
-for k, v in pairs(mpix.format()) do io.stderr:write("- "..k..": "..v.."\n") end
+-- Example ISP pipeline script in Lua
 
 -- Add color correction operations
 mpix.op.correct_black_level()
@@ -32,11 +18,7 @@ mpix.op.convert(mpix.fmt.RGB24)
 mpix.op.convert(mpix.fmt.YUYV)
 mpix.op.convert(mpix.fmt.RGB24)
 
--- Compute a color from the current image
-mpix.optimize_palette(1000)
-
--- Apply the palette
-mpix.op.palette_encode(mpix.fmt.PALETTE8)
-mpix.op.palette_decode()
+-- JPEG encode the result for convenience
+mpix.op.jpeg_encode()
 
 -- The pipeline will be run after the script returns

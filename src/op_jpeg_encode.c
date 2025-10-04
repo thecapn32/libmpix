@@ -49,6 +49,18 @@ int mpix_add_jpeg_encode(struct mpix_image *img, const int32_t *params)
 
 #define JPEGENC_HIGHWATER_MARGIN 4096
 
+static int _err(int err)
+{
+	return	err == JPEGE_SUCCESS ? 0 :
+		err == JPEGE_INVALID_PARAMETER ? -EINVAL :
+		err == JPEGE_ENCODE_ERROR ? -EBADMSG :
+		err == JPEGE_MEM_ERROR ? -ENOMEM :
+		err == JPEGE_NO_BUFFER ? -ENOBUFS :
+		err == JPEGE_UNSUPPORTED_FEATURE ? -ENOTSUP :
+		err == JPEGE_INVALID_FILE ? -EBADF :
+		-EIO;
+}
+
 int mpix_jpeg_encode_init(struct mpix_operation *op, uint8_t *dst, size_t size)
 {
 	switch (op->base.fmt.fourcc) {
@@ -70,11 +82,11 @@ int mpix_jpeg_encode_init(struct mpix_operation *op, uint8_t *dst, size_t size)
 	op->image.iBufferSize = size;
 	op->image.pHighWater = &dst[size] - JPEGENC_HIGHWATER_MARGIN;
 
-	return JPEGEncodeBegin(&op->image, &op->encoder, fmt->width, fmt->height,
-			       op->image.ucPixelType, JPEGENC_SUBSAMPLE, op->quality);
+	return _err(JPEGEncodeBegin(&op->image, &op->encoder, fmt->width, fmt->height,
+				    op->image.ucPixelType, JPEGENC_SUBSAMPLE, op->quality));
 }
 
-__attribute__((weak)) int mpix_run_jpeg_encode(struct mpix_base_op *base)
+int mpix_run_jpeg_encode(struct mpix_base_op *base)
 {
 	struct mpix_operation *op = (void *)base;
 	const uint8_t *src;
@@ -90,7 +102,7 @@ __attribute__((weak)) int mpix_run_jpeg_encode(struct mpix_base_op *base)
 	if (base->line_offset == 0) {
 		err = mpix_jpeg_encode_init(op, dst, dst_size);
 		if (err != JPEGE_SUCCESS) {
-			return -EBADMSG;
+			return _err(err);
 		}
 	}
 
@@ -100,7 +112,7 @@ __attribute__((weak)) int mpix_run_jpeg_encode(struct mpix_base_op *base)
 		err = JPEGAddMCU(&op->image, &op->encoder, (uint8_t *)&(src[i * bytespp]), pitch);
 		if (err != JPEGE_SUCCESS) {
 			MPIX_ERR("Failed to add an image block at column %u", i);
-			return err;
+			return _err(err);
 		}
 	}
 
