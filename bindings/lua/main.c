@@ -83,7 +83,6 @@ int main(int argc, char **argv)
 	/* Convert the image to the output buffer */
 	CHECK(mpix_image_to_file(&img, STDOUT_FILENO, 4096));
 
-	mpix_print_pipeline(img.first_op);
 	mpix_image_free(&img);
 
 	free(buf);
