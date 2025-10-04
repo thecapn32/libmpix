@@ -23,6 +23,12 @@ static inline void mpix_image_from_vbuf(struct mpix_image *img, struct video_buf
 {
 	struct mpix_format fmt =
 		{ .width = vfmt->width, .height = vfmt->height, .fourcc = vfmt->pixelformat };
+
+	/* Zephyr 3.6 compat */
+	if (fmt.fourcc == MPIX_FOURCC('B', 'G', 'G', 'R')) {
+		fmt.fourcc = MPIX_FMT_SBGGR8;
+	}
+
 	mpix_image_from_buf(img, vbuf->buffer, vbuf->bytesused, &fmt);
 }
 

@@ -204,8 +204,6 @@ static inline uint32_t mpix_palette_fourcc(uint8_t bit_depth)
  * @endcode
  */
 #define MPIX_FMT_SBGGR8 MPIX_FOURCC('B', 'A', '8', '1')
-/** Same as @ref MPIX_FMT_SBGGR8 for Zephyr 3.6 compatibility */
-#define MPIX_FMT_BGGR8 MPIX_FOURCC('B', 'G', 'G', 'R')
 
 /**
  * @code{.unparsed}
@@ -388,7 +386,6 @@ static inline uint8_t mpix_bits_per_pixel(uint32_t fourcc)
 		return 8;
 
 	/* Bayer formats */
-	case MPIX_FMT_BGGR8:
 	case MPIX_FMT_SRGGB8:
 	case MPIX_FMT_SBGGR8:
 	case MPIX_FMT_SGBRG8:

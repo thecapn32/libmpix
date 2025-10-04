@@ -493,7 +493,7 @@ static inline int mpix_image_read_output(struct mpix_image *img, const uint8_t *
 {
 	if (img->last_op == NULL) return -EINVAL;
 	mpix_op_input_all(img->last_op, buf, size);
-	return (*size == 0) ? -ENOBUFS : 0;
+	return (*size == 0) ? -ENODATA : 0;
 }
 
 #endif /** @} */
