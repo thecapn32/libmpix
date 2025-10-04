@@ -27,6 +27,7 @@ int mpix_pipeline_add(struct mpix_image *img, enum mpix_op_type type, const int3
 	switch (type) {
 #define CASE_MPIX_OP_ADD(X, x) \
 	case MPIX_OP_##X: \
+		MPIX_DBG("Adding %s to the pipeline", #X); \
 		return mpix_params_nb_##x != params_nb ? -EBADMSG : mpix_add_##x(img, params);
 MPIX_FOR_EACH_OP(CASE_MPIX_OP_ADD)
 	case MPIX_OP_END:

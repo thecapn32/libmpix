@@ -136,13 +136,14 @@ static void lua_mpix_palette_hooks(lua_State *L)
 	/* Transfer all controls present on both */
 	for (int cid = 0; cid < MPIX_NB_CID; cid++) {
 		if (img->ctrls[cid] != NULL && palette_img.ctrls[cid] != NULL) {
-			size_t size =  mpix_image_ctrl_size(cid) * sizeof(*img->ctrls);
+			size_t size = mpix_image_ctrl_size(cid) * sizeof(*img->ctrls[cid]);
 			memcpy(palette_img.ctrls[cid], img->ctrls[cid], size);
 		}
 	}
 
 	/* Apply the image correction to the color palette to get accurate colors */
 	err = mpix_image_to_palette(&palette_img, palette);
+	mpix_image_free(&palette_img);
 	if (err) luaL_error(L, "%s at line %u", __func__, __LINE__);
 
 	/* Apply it to all palette operations */

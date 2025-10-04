@@ -39,7 +39,4 @@ mpix.optimize_palette(1000)
 mpix.op.palette_encode(mpix.fmt.PALETTE8)
 mpix.op.palette_decode()
 
--- Show the pipeline topology to inspect it before it runs
-mpix.dump()
-
 -- The pipeline will be run after the script returns

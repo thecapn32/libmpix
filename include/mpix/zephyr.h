@@ -41,12 +41,9 @@ static inline void mpix_image_from_vbuf(struct mpix_image *img, struct video_buf
  */
 static inline int mpix_image_to_vbuf(struct mpix_image *img, struct video_buffer *vbuf)
 {
-	int ret;
-
-	ret = mpix_image_to_buf(img, vbuf->buffer, vbuf->size);
-	vbuf->bytesused = img->size;
-
-	return ret;
+	int err = mpix_image_to_buf(img, vbuf->buffer, vbuf->size);
+	vbuf->bytesused = mpix_ring_used_size(&img->last_op->ring);
+	return err;
 }
 
 #endif /** @} */

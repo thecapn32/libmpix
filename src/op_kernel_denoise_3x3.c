@@ -54,33 +54,33 @@ static inline void mpix_kernel_denoise_3x3_rgb24(const uint8_t *src[3], uint8_t 
 						 uint16_t width)
 {
 	enum { R, G, B };
-	uint16_t w = 0;
+	uint16_t x = 0;
 
 	/* Edge case on first two columns, repeat the left column to fill the blank */
 
-	mpix_kernel_denoise_3x3(w * 3 + R, src, 0, 0, 3, dst, 0);
-	mpix_kernel_denoise_3x3(w * 3 + G, src, 0, 0, 3, dst, 0);
-	mpix_kernel_denoise_3x3(w * 3 + B, src, 0, 0, 3, dst, 0);
+	mpix_kernel_denoise_3x3(x * 3 + R, src, 0, 0, 3, dst, 0);
+	mpix_kernel_denoise_3x3(x * 3 + G, src, 0, 0, 3, dst, 0);
+	mpix_kernel_denoise_3x3(x * 3 + B, src, 0, 0, 3, dst, 0);
 
 	/* process as much as possible with SIMD acceleration when available */
 
 #ifdef CONFIG_MPIX_SIMD_HELIUM
-	w += mpix_kernel_denoise_rgb24_3x3_helium(&src[w], &dst[w], width - w);
+	x += mpix_kernel_denoise_rgb24_3x3_helium(&src[x], &dst[x], width - x);
 #endif
 
 	/* Process the entire line except the first two and last two columns (edge cases) */
 
-	for (; w + 5 <= width; w++) {
-		mpix_kernel_denoise_3x3(w * 3 + R, src, 0, 3, 6, dst, 3);
-		mpix_kernel_denoise_3x3(w * 3 + G, src, 0, 3, 6, dst, 3);
-		mpix_kernel_denoise_3x3(w * 3 + B, src, 0, 3, 6, dst, 3);
+	for (; x + 3 <= width; x++) {
+		mpix_kernel_denoise_3x3(x * 3 + R, src, 0, 3, 6, dst, 3);
+		mpix_kernel_denoise_3x3(x * 3 + G, src, 0, 3, 6, dst, 3);
+		mpix_kernel_denoise_3x3(x * 3 + B, src, 0, 3, 6, dst, 3);
 	}
 
 	/* Edge case on last two columns, repeat the right column to fill the blank */
 
-	mpix_kernel_denoise_3x3(w * 3 + R, src, 3, 6, 6, dst, 3);
-	mpix_kernel_denoise_3x3(w * 3 + G, src, 3, 6, 6, dst, 3);
-	mpix_kernel_denoise_3x3(w * 3 + B, src, 3, 6, 6, dst, 3);
+	mpix_kernel_denoise_3x3(x * 3 + R, src, 0, 3, 3, dst, 3);
+	mpix_kernel_denoise_3x3(x * 3 + G, src, 0, 3, 3, dst, 3);
+	mpix_kernel_denoise_3x3(x * 3 + B, src, 0, 3, 3, dst, 3);
 }
 
 int mpix_run_kernel_denoise_3x3(struct mpix_base_op *base)
