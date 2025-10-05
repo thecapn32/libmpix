@@ -38,13 +38,6 @@ static int lua_mpix_op(lua_State *L, enum mpix_op_type type, const char *name)
 static int lua_mpix_##x(lua_State *L) { return lua_mpix_op(L, MPIX_OP_##X, #X); }
 MPIX_FOR_EACH_OP(LUA_MPIX_IMAGE_FN)
 
-static int lua_mpix_dump(lua_State *L)
-{
-	mpix_print_pipeline(lua_mpix_image->first_op);
-	mpix_print_ctrls(lua_mpix_image->ctrls);
-	return 0;
-}
-
 static int lua_mpix_format(lua_State *L)
 {
 	struct mpix_image *img = lua_mpix_image;
@@ -159,7 +152,6 @@ int lua_mpix_hooks(lua_State *L)
 
 static const struct luaL_Reg lua_mpix_reg[] = {
 	{ "optimize_palette", lua_mpix_optimize_palette },
-	{ "dump", lua_mpix_dump },
 	{ "ctrl", lua_mpix_ctrl },
 	{ "format", lua_mpix_format },
 	{ NULL, NULL },

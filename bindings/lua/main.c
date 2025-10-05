@@ -80,6 +80,9 @@ int main(int argc, char **argv)
 		lua_mpix_hooks(L);
 	}
 
+	/* Show the pipeline built by the script */
+	mpix_print_pipeline(img.first_op);
+
 	/* Convert the image to the output buffer */
 	CHECK(mpix_image_to_file(&img, STDOUT_FILENO, 1024 * 1024));
 
