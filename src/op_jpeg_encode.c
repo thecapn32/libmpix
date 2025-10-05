@@ -61,7 +61,7 @@ static int _err(int err)
 		-EIO;
 }
 
-int mpix_jpeg_encode_init(struct mpix_operation *op, uint8_t *dst, size_t size)
+static int _init(struct mpix_operation *op, uint8_t *dst, size_t size)
 {
 	switch (op->base.fmt.fourcc) {
 	case MPIX_FMT_RGB565:
@@ -100,7 +100,7 @@ int mpix_run_jpeg_encode(struct mpix_base_op *base)
 	MPIX_OP_OUTPUT_PEEK(base, &dst, &dst_size);
 
 	if (base->line_offset == 0) {
-		err = mpix_jpeg_encode_init(op, dst, dst_size);
+		err = _init(op, dst, dst_size);
 		if (err != JPEGE_SUCCESS) {
 			return _err(err);
 		}

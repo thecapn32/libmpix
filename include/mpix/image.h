@@ -18,6 +18,8 @@
 /**
  * @brief Initialize an image from a memory buffer.
  *
+ * @note The image fields will not be reset to zero, which is the responsibility of the caller.
+ *
  * @param img Image to initialize.
  * @param buf Memory containinig input image data to process.
  * @param size Total available size in the buffer, can be bigger/smaller than full width x height.
@@ -28,8 +30,9 @@
 static inline void mpix_image_from_buf(struct mpix_image *img, const uint8_t *buffer, size_t size,
 				       const struct mpix_format *fmt)
 {
-	memset(img, 0x00, sizeof(*img));
-	img->buffer = buffer, img->size = size, img->fmt = *fmt;
+	img->buffer = buffer;
+	img->size = size;
+	img->fmt = *fmt;
 }
 
 /**
@@ -363,6 +366,8 @@ int mpix_image_optimize_palette(struct mpix_image *img, struct mpix_palette *pal
  *
  * This frees all intermediate buffers allocated automatically, but not the @c buffer field of
  * @p img which is managed by the caller.
+ *
+ * @note The image fields will all be set to zero.
  *
  * @param img Image to free.
  */
