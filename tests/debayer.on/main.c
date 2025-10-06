@@ -19,7 +19,7 @@ void test_bayer(uint32_t fourcc, uint32_t window_size, uint32_t expected_color)
 	uint8_t r = expected_color >> 16;
 	uint8_t g = expected_color >> 8;
 	uint8_t b = expected_color >> 0;
-	struct mpix_image img;
+	struct mpix_image img = {};
 	struct mpix_format fmt = {.width = WIDTH, .height = HEIGHT, .fourcc = fourcc};
 
 	mpix_image_from_buf(&img, src_buf, sizeof(src_buf), &fmt);

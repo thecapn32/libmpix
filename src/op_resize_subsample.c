@@ -3,9 +3,9 @@
 #include <mpix/low_level.h>
 #include <mpix/operation.h>
 
-MPIX_REGISTER_OP(subsample, P_WIDTH, P_HEIGHT);
+MPIX_REGISTER_OP(resize_subsample, P_WIDTH, P_HEIGHT);
 
-int mpix_add_subsample(struct mpix_image *img, const int32_t *params)
+int mpix_add_resize_subsample(struct mpix_image *img, const int32_t *params)
 {
 	struct mpix_base_op *op;
 	size_t pitch = mpix_format_pitch(&img->fmt);
@@ -17,7 +17,7 @@ int mpix_add_subsample(struct mpix_image *img, const int32_t *params)
 	}
 
 	/* Add an operation */
-	op = mpix_op_append(img, MPIX_OP_SUBSAMPLE, sizeof(*op), pitch);
+	op = mpix_op_append(img, MPIX_OP_RESIZE_SUBSAMPLE, sizeof(*op), pitch);
 	if (op == NULL) {
 		return -ENOMEM;
 	}
@@ -29,8 +29,9 @@ int mpix_add_subsample(struct mpix_image *img, const int32_t *params)
 	return 0;
 }
 
-static inline void mpix_subsample_line(const uint8_t *src_buf, size_t src_width, uint8_t *dst_buf,
-				       size_t dst_width, uint8_t bits_per_pixel)
+static inline void mpix_resize_subsample_line(const uint8_t *src_buf, size_t src_width,
+					      uint8_t *dst_buf, size_t dst_width,
+					      uint8_t bits_per_pixel)
 {
 	for (size_t dst_w = 0; dst_w < dst_width; dst_w++) {
 		size_t src_w = dst_w * src_width / dst_width;
@@ -41,21 +42,21 @@ static inline void mpix_subsample_line(const uint8_t *src_buf, size_t src_width,
 	}
 }
 
-void mpix_subsample_frame(const uint8_t *src_buf, size_t src_width, size_t src_height,
-			  uint8_t *dst_buf, size_t dst_width, size_t dst_height,
-			  uint8_t bits_per_pixel)
+void mpix_resize_subsample_frame(const uint8_t *src_buf, size_t src_width, size_t src_height,
+				 uint8_t *dst_buf, size_t dst_width, size_t dst_height,
+				 uint8_t bits_per_pixel)
 {
 	for (size_t dst_h = 0; dst_h < dst_height; dst_h++) {
 		size_t src_h = dst_h * src_height / dst_height;
 		size_t src_i = src_h * src_width * bits_per_pixel / BITS_PER_BYTE;
 		size_t dst_i = dst_h * dst_width * bits_per_pixel / BITS_PER_BYTE;
 
-		mpix_subsample_line(&src_buf[src_i], src_width, &dst_buf[dst_i], dst_width,
-				    bits_per_pixel);
+		mpix_resize_subsample_line(&src_buf[src_i], src_width, &dst_buf[dst_i], dst_width,
+					   bits_per_pixel);
 	}
 }
 
-int mpix_run_subsample(struct mpix_base_op *base)
+int mpix_run_resize_subsample(struct mpix_base_op *base)
 {
 	const uint8_t *src;
 	uint8_t *dst;
@@ -69,7 +70,8 @@ int mpix_run_subsample(struct mpix_base_op *base)
 
 	for (uint16_t i = 0; prev_offset + i < next_offset; i++) {
 		MPIX_OP_OUTPUT_LINE(base, &dst);
-		mpix_subsample_line(src, base->fmt.width, dst, next->fmt.width, bits_per_pixel);
+		mpix_resize_subsample_line(src, base->fmt.width, dst, next->fmt.width,
+					   bits_per_pixel);
 		MPIX_OP_OUTPUT_DONE(base);
 	}
 

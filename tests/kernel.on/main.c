@@ -16,7 +16,7 @@ static uint8_t dst_buf[WIDTH * HEIGHT * 3];
 static void run_kernel(enum mpix_op_type type, const int32_t *params, size_t params_nb)
 {
 	struct mpix_format fmt = { .width = WIDTH, .height = HEIGHT, .fourcc = MPIX_FMT_RGB24 };
-	struct mpix_image img;
+	struct mpix_image img = {};
 
 	mpix_image_from_buf(&img, src_buf, sizeof(src_buf), &fmt);
 
@@ -132,7 +132,7 @@ static void test_sharpen(enum mpix_op_type type)
 static void test_boundaries(void)
 {
 	/* width 3 and 5 to exercise tail and last-pixel paths */
-	struct mpix_image img;
+	struct mpix_image img = {};
 	struct mpix_format fmt3 = { .width = 3, .height = 3, .fourcc = MPIX_FMT_RGB24 };
 	struct mpix_format fmt5 = { .width = 5, .height = 5, .fourcc = MPIX_FMT_RGB24 };
 	uint8_t small_in[5 * 5 * 3];

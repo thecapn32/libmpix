@@ -88,11 +88,14 @@ void mpix_convert_palette1_to_rgb24(const uint8_t *src, uint8_t *dst, uint16_t w
 uint8_t mpix_palette_encode(const uint8_t rgb[3], const uint8_t colors_rgb24[], uint8_t bit_depth);
 
 /* Resize */
-void mpix_resize_frame_raw24(const uint8_t *src_buf, uint16_t src_width, uint16_t src_height,
-			     uint8_t *dst_buf, uint16_t dst_width, uint16_t dst_height);
-void mpix_resize_frame_raw16(const uint8_t *src_buf, uint16_t src_width, uint16_t src_height,
-			     uint8_t *dst_buf, uint16_t dst_width, uint16_t dst_height);
-void mpix_resize_frame_raw8(const uint8_t *src_buf, uint16_t src_width, uint16_t src_height,
-			    uint8_t *dst_buf, uint16_t dst_width, uint16_t dst_height);
+void mpix_resize_subsample_frame_raw24(const uint8_t *src_buf, uint16_t src_width,
+				       uint16_t src_height, uint8_t *dst_buf, uint16_t dst_width,
+				       uint16_t dst_height);
+void mpix_resize_subsample_frame_raw16(const uint8_t *src_buf, uint16_t src_width,
+				       uint16_t src_height, uint8_t *dst_buf, uint16_t dst_width,
+				       uint16_t dst_height);
+void mpix_resize_subsample_frame_raw8(const uint8_t *src_buf, uint16_t src_width,
+				      uint16_t src_height, uint8_t *dst_buf, uint16_t dst_width,
+				      uint16_t dst_height);
 
 #endif /** @} */

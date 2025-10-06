@@ -27,9 +27,9 @@ const struct mpix_format src_fmt = {
 	.fourcc = MPIX_FMT_RGB24,
 };
 
-static void test_subsample(uint32_t fourcc)
+static void test_resize_subsample(uint32_t fourcc)
 {
-	struct mpix_image img;
+	struct mpix_image img = {};
 	const size_t w = DST_WIDTH;
 	const size_t h = DST_HEIGHT;
 	const size_t p = PITCH_OUT;
@@ -42,7 +42,7 @@ static void test_subsample(uint32_t fourcc)
 	mpix_print_buf(src_buf, sizeof(src_buf), &src_fmt, true);
 
 	assert(mpix_image_convert(&img, fourcc) == 0);
-	assert(mpix_image_subsample(&img, DST_WIDTH, DST_HEIGHT) == 0);
+	assert(mpix_image_resize_subsample(&img, DST_WIDTH, DST_HEIGHT) == 0);
 	assert(mpix_image_convert(&img, MPIX_FMT_RGB24) == 0);
 	assert(mpix_image_to_buf(&img, dst_buf, sizeof(dst_buf)) == 0);
 	MPIX_INF("output:");
@@ -94,9 +94,9 @@ int main(void)
 		}
 	}
 
-	test_subsample(MPIX_FMT_RGB24);
-	test_subsample(MPIX_FMT_RGB565);
-	test_subsample(MPIX_FMT_RGB565X);
+	test_resize_subsample(MPIX_FMT_RGB24);
+	test_resize_subsample(MPIX_FMT_RGB565);
+	test_resize_subsample(MPIX_FMT_RGB565X);
 
 	return 0;
 }

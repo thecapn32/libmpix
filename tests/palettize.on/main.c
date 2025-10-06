@@ -156,7 +156,7 @@ int main(void)
 				pal.colors_rgb24[i] = RGB32(v, v, v);
 			}
 
-			struct mpix_image img = {0};
+			struct mpix_image img = {};
 			mpix_image_from_buf(&img, src, sizeof(src), &fmt);
 			assert(mpix_image_palette_encode(&img, pal.fourcc) == 0);
 			assert(mpix_image_palette_decode(&img) == 0);

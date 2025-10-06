@@ -58,7 +58,7 @@ static void test_crop_rgb24_basic(void)
 
 	uint8_t dst_data[2 * 2 * 3] = {};
 	struct mpix_format fmt = { .width = 4, .height = 4, .fourcc = MPIX_FMT_RGB24 };
-	struct mpix_image img;
+	struct mpix_image img = {};
 
 	/* Initialize image */
 	mpix_image_from_buf(&img, src_data, sizeof(src_data), &fmt);

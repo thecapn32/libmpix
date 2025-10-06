@@ -39,13 +39,13 @@ int main(void)
 	mpix_print_buf(src_buf, sizeof(src_buf), &src_fmt, true);
 
 	/* Turn it into a tall vertical image, now displeasant "banding" artifacts appear */
-	assert(mpix_image_subsample(&img, 5, 40) == 0);
+	assert(mpix_image_resize_subsample(&img, 5, 40) == 0);
 
 	/* Try to attenuate it with a blur effect (comment this line to see the difference) */
 	assert(mpix_image_gaussian_blur(&img, 3) == 0);
 
 	/* Stretch the gradient horizontally over the entire size of the output buffer */
-	//assert(mpix_image_subsample(&img, 120, img.fmt.height) == 0);
+	assert(mpix_image_resize_subsample(&img, 120, img.fmt.height) == 0);
 
 	/* Save the image into the output buffer and check for errors */
 	assert(mpix_image_to_buf(&img, dst_buf, sizeof(dst_buf)) == 0);

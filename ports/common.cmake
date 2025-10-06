@@ -25,7 +25,7 @@ set(LIBMPIX_SRC
   ${LIBMPIX_DIR}/src/op_palette_decode.c
   ${LIBMPIX_DIR}/src/op_palette_encode.c
   ${LIBMPIX_DIR}/src/op_qoi.c
-  ${LIBMPIX_DIR}/src/op_subsample.c
+  ${LIBMPIX_DIR}/src/op_resize_subsample.c
   ${LIBMPIX_DIR}/src/palette.c
   ${LIBMPIX_DIR}/src/pipeline.c
   ${LIBMPIX_DIR}/src/print.c

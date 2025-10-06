@@ -231,10 +231,11 @@ static inline int mpix_image_jpeg_encode(struct mpix_image *img, enum mpix_jpeg_
  * @param height The new height in pixels.
  * @return 0 on success or negative error code.
  */
-static inline int mpix_image_subsample(struct mpix_image *img, uint16_t width, uint16_t height)
+static inline int mpix_image_resize_subsample(struct mpix_image *img,
+					      uint16_t width, uint16_t height)
 {
 	int32_t p[] = { width, height };
-	return mpix_pipeline_add(img, MPIX_OP_SUBSAMPLE, p, ARRAY_SIZE(p));
+	return mpix_pipeline_add(img, MPIX_OP_RESIZE_SUBSAMPLE, p, ARRAY_SIZE(p));
 }
 
 /**
