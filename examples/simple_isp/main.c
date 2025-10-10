@@ -30,6 +30,7 @@ int simple_isp_demo(uint8_t *buf, size_t size, const struct mpix_format *fmt)
 	CHECK(mpix_image_correct_gamma(&img));
 	CHECK(mpix_image_correct_white_balance(&img));
 	CHECK(mpix_image_correct_color_matrix(&img));
+	CHECK(mpix_image_jpeg_encode(&img));
 
 	/* Control the pipeline image tuning */
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_BLACK_LEVEL,  0));
@@ -37,9 +38,10 @@ int simple_isp_demo(uint8_t *buf, size_t size, const struct mpix_format *fmt)
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_BLUE_BALANCE, 1.7 * (1 << 10)));
 	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_GAMMA_LEVEL,  0.7 * (1 << 10)));
 	CHECK(mpix_image_ctrl_array(&img, MPIX_CID_COLOR_MATRIX, color_matrix_q10));
+	CHECK(mpix_image_ctrl_value(&img, MPIX_CID_JPEG_QUALITY, MPIX_JPEG_QUALITY_DEFAULT));
 
 	/* Process the image and write it to standard output */
-	CHECK(mpix_image_to_file(&img, STDOUT_FILENO, 4096));
+	CHECK(mpix_image_to_file(&img, STDOUT_FILENO, fmt->width * fmt->height * 2));
 
 	/* Print the completed pipeline and release the memory */
 	mpix_print_pipeline(img.first_op);
