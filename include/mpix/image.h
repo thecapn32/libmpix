@@ -210,13 +210,11 @@ static inline int mpix_image_qoi_encode(struct mpix_image *img)
  * @brief Compressed an image to the JPEG format.
  *
  * @param img Image to convert to JPEG.
- * @param quality The quality level to use for encoding.
  * @return 0 on success or negative error code.
  */
-static inline int mpix_image_jpeg_encode(struct mpix_image *img, enum mpix_jpeg_quality quality)
+static inline int mpix_image_jpeg_encode(struct mpix_image *img)
 {
-	int32_t p[] = { quality };
-	return mpix_pipeline_add(img, MPIX_OP_JPEG_ENCODE, p, ARRAY_SIZE(p));
+	return mpix_pipeline_add(img, MPIX_OP_JPEG_ENCODE, NULL, 0);
 }
 
 /**
